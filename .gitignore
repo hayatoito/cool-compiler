@@ -1,3 +1,4 @@
 lexer
 src/scanner.cpp
 *.o
+*.out
