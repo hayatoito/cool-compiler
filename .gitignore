@@ -1,2 +1,2 @@
-src/lexer #lexer executable
-src/scanner.cpp #flex output
+src/lexer 
+src/scanner.cpp
