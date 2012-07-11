@@ -1,49 +1,28 @@
-/*
- *  The scanner definition for COOL.
- */
+%option c++
+%option noyywrap
+%option yylineno
 
-/*
- *  Stuff enclosed in %{ %} in the first section is copied verbatim to the
- *  output, so headers and global definitions are placed here to be visible
- * to the code in the file.  Don't remove anything that was here initially
- */
 %{
-#include <cool-parse.h>
-#include <stringtab.h>
-#include <utilities.h>
 
-/* The compiler assumes these identifiers. */
-#define yylval cool_yylval
-#define yylex  cool_yylex
+#include "tokens.hpp"
+#include "tokentable.hpp"
+#include "symboltable.hpp"
+// #include "y.tab.h"
 
-/* Max size of string constants */
-#define MAX_STR_CONST 1025
-#define YY_NO_UNPUT   /* keep g++ happy */
+static const int MAX_STR_CONST = 1025;
 
-extern FILE *fin; /* we read from this file */
+extern IdentifierTable idtable;
+extern IntTable inttable;
+extern StringTable stringtable;
 
-/* define YY_INPUT so we read from the FILE fin:
- * This change makes it possible to use this scanner in
- * the Cool compiler.
- */
-#undef YY_INPUT
-#define YY_INPUT(buf,result,max_size) \
-	if ( (result = fread( (char*)buf, sizeof(char), max_size, fin)) < 0) \
-		YY_FATAL_ERROR( "read() in flex scanner failed");
-
-char string_buf[MAX_STR_CONST]; /* to assemble string constants */
+char string_buf[MAX_STR_CONST];  // buffer to store string contstants encountered in source file
 char *string_buf_ptr;
 
-extern int curr_lineno;
-extern int verbose_flag;
+size_t num_comment = 0;      // count to keep track how many opening comment tokens have been encountered
+size_t curr_lineno = 0;      // keep track of current line number of source file
+bool str_too_long = false;   // used to handle string constant size error check
 
-extern YYSTYPE cool_yylval;
-
-/*
- *  Add Your own definitions here
- */
-int num_comment = 0;
-int str_too_long = 0;
+extern YYSTYPE yylval;
 
 %}
 
@@ -51,17 +30,9 @@ int str_too_long = 0;
 %x LINECOMMENT
 %x STRING
 
-/*
- * Define names for regular expressions here.
- */
-
-DARROW          =>
+DARROW =>
 
 %%
-
- /*
-  *  Nested comments
-  */
 
 "(*" {
     BEGIN(COMMENT);
@@ -70,7 +41,7 @@ DARROW          =>
 
 "*)" {
     if (num_comment <= 0) {
-        cool_yylval.error_msg = "Unmatched *)";
+        yylval.error_msg = "Unmatched *)";
         return ERROR;
     }
 }
@@ -78,7 +49,7 @@ DARROW          =>
 <COMMENT>"*)" {
     num_comment--;
     if (num_comment < 0) {
-        cool_yylval.error_msg = "Unmatched *)";
+        yylval.error_msg = "Unmatched *)";
         return ERROR;
     }
 
@@ -92,7 +63,7 @@ DARROW          =>
 }
 
 <COMMENT>[^\n] {
-    /* eat characters */
+    // eat everything within comments
 }
 
 <COMMENT>\n {
@@ -110,19 +81,13 @@ DARROW          =>
 
 <COMMENT><<EOF>> {
     BEGIN(INITIAL);
-    cool_yylval.error_msg = "EOF in comment";
+    yylval.error_msg = "EOF in comment";
     return ERROR;
 }
 
- /*
-  *  The multiple-character operators.
-  */
-{DARROW}		{ return (DARROW); }
-
- /*
-  * Keywords are case-insensitive except for the values true and false,
-  * which must begin with a lower-case letter.
-  */
+"=>" {
+    return DARROW; 
+}
 
 (?i:class) {
     return CLASS;
@@ -193,17 +158,17 @@ DARROW          =>
 }
 
 t(?i:rue) {
-    cool_yylval.boolean = 1;
+    yylval.boolean = true;
     return BOOL_CONST;
 }
 
 f(?i:alse) {
-    cool_yylval.boolean = 0;
+    yylval.boolean = false;
     return BOOL_CONST;
 }
 
 [0-9]+ {
-    cool_yylval.symbol = inttable.add_string(yytext);
+    yylval.int_const = YYText();
     return INT_CONST;
 }
 
@@ -217,18 +182,18 @@ f(?i:alse) {
 
 
 [A-Z][a-zA-Z0-9_]* {
-    cool_yylval.symbol = idtable.add_string(yytext);
+    yylval.id = YYText();
     return TYPEID;
 }
 
 
 [a-z][a-zA-Z0-9_]* {
-    cool_yylval.symbol = idtable.add_string(yytext);
+    yylval.id = YYText();
     return OBJECTID;
 }
 
 ";"|","|"{"|"}"|":"|"("|")"|"+"|"-"|"*"|"/"|"="|"~"|"<"|"."|"@" {
-    return *yytext;
+    return *YYText();
 }
 
 \n {
@@ -254,17 +219,17 @@ f(?i:alse) {
 
 <STRING>\" {
     BEGIN(INITIAL);
-    cool_yylval.symbol = stringtable.add_string(string_buf);
+    yylval.str_const = string_buf;
     return STR_CONST;
 }
 
 <STRING>\0[^\n]*\" {
     BEGIN(INITIAL);
     if (str_too_long) {
-        str_too_long = 0;
+        str_too_long = false;
     }
     else {
-        cool_yylval.error_msg = "String contains null character";
+        yylval.error_msg = "String contains null character";
         return ERROR;
     }
 }
@@ -273,12 +238,12 @@ f(?i:alse) {
     if (str_too_long) {
         yyinput(); /* eat quote */
         BEGIN(INITIAL);
-        str_too_long = 0;
+        str_too_long = false;
     }
     else {
-        if (yytext[yyleng - 1] != '\\') {
+        if (YYText()[YYLeng() - 1] != '\\') {
             BEGIN(INITIAL);
-            cool_yylval.error_msg = "String contains null character";
+            yylval.error_msg = "String contains null character";
             return ERROR;
         }
     }
@@ -286,15 +251,15 @@ f(?i:alse) {
 
 <STRING><<EOF>> {
     BEGIN(INITIAL);
-    cool_yylval.error_msg = "EOF in string constant";
+    yylval.error_msg = "EOF in string constant";
     return ERROR;
 }
 
 <STRING>\\ {
     if (strlen(string_buf) >= MAX_STR_CONST - 1) {
-        str_too_long = 1;
+        str_too_long = true;
         unput('\0');
-        cool_yylval.error_msg = "String constant too long";
+        yylval.error_msg = "String constant too long";
         return ERROR;
     }
 
@@ -327,23 +292,23 @@ f(?i:alse) {
 <STRING>\n {
     ++curr_lineno;
     BEGIN(INITIAL);
-    cool_yylval.error_msg = "Unterminated string constant";
+    yylval.error_msg = "Unterminated string constant";
     return ERROR;
 }
 
 <STRING>. {
     if (strlen(string_buf) >= MAX_STR_CONST - 1) {
-        str_too_long = 1;
+        str_too_long = true;
         unput('\0');
-        cool_yylval.error_msg = "String constant too long";
+        yylval.error_msg = "String constant too long";
         return ERROR;
     }
 
-    *string_buf_ptr++ = *yytext;
+    *string_buf_ptr++ = *YYText();
 }
     
 . /* error for invalid tokens */ {
-    cool_yylval.error_msg = yytext;
+    yylval.error_msg = YYText();
     return ERROR;
 }
 
