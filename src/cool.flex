@@ -4,6 +4,7 @@
 
 %{
 
+#include "flexbison.hpp"
 #include "tokentable.hpp"
 #include "symboltable.hpp"
 #include "y.tab.h"
@@ -157,17 +158,15 @@ DARROW =>
 }
 
 t(?i:rue) {
-    yylval.boolean = true;
     return BOOL_CONST;
 }
 
 f(?i:alse) {
-    yylval.boolean = false;
     return BOOL_CONST;
 }
 
 [0-9]+ {
-    yylval.int_const = YYText();
+    yylval.symbol = inttable.add(YYText());
     return INT_CONST;
 }
 
@@ -181,13 +180,13 @@ f(?i:alse) {
 
 
 [A-Z][a-zA-Z0-9_]* {
-    yylval.id = YYText();
+    yylval.symbol = idtable.add(YYText());
     return TYPEID;
 }
 
 
 [a-z][a-zA-Z0-9_]* {
-    yylval.id = YYText();
+    yylval.symbol = idtable.add(YYText());
     return OBJECTID;
 }
 
@@ -218,7 +217,7 @@ f(?i:alse) {
 
 <STRING>\" {
     BEGIN(INITIAL);
-    yylval.str_const = string_buf;
+    yylval.symbol = stringtable.add(string_buf);
     return STR_CONST;
 }
 
@@ -307,7 +306,6 @@ f(?i:alse) {
 }
     
 . /* error for invalid tokens */ {
-    yylval.error_msg = YYText();
     return ERROR;
 }
 

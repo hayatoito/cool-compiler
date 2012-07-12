@@ -1,5 +1,9 @@
 %{
 
+#define YY_DECL int yylex (semantic_type* yylval, location_type* yylloc)
+YY_DECL;;
+
+#include "flexbison.hpp"
 #include "symboltable.hpp"
 #include "tokentable.hpp"
 #include "ast.hpp"
@@ -7,37 +11,12 @@
 #include <iostream>
     
 void yyerror(char *s);        
-extern int yylex();           
 
-std::shared_ptr<Program> ast_root;
-   
+extern std::shared_ptr<Program> ast_root;
 extern IdentifierTable idtable;
 extern IntTable inttable;
 extern StringTable stringtable;
 
-class ParserType
-{
-public:
-    std::shared_ptr<BoolConst> boolean;
-    Symbol symbol;
-    std::shared_ptr<Program> program;
-    std::shared_ptr<Class> clazz;
-    Classes classes;
-    std::shared_ptr<Feature> feature;
-    Features features;
-    std::shared_ptr<Formal> formal;
-    Formals formals;
-    std::shared_ptr<CaseBranch> branch;
-    Cases cases;
-    std::shared_ptr<Expression> expression;
-    Expressions expressions;
-    char* error_msg;
-
-    ParserType() {}
-};
-
-#define YYSTYPE ParserType
-    
 %}
     
 %token CLASS 258 ELSE 259 FI 260 IF 261 IN 262 
