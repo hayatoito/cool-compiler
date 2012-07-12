@@ -10,13 +10,10 @@ void yyerror(char *s);
 extern int yylex();           
 
 std::shared_ptr<Program> ast_root;
-std::vector<std::shared_ptr<Class>> classes;
-std::vector<std::shared_ptr<Feature>> features;
-std::vector<std::shared_ptr<Expression>> block_exprs;
-std::vector<std::shared_ptr<Expression>> method_exprs;
-std::vector<std::shared_ptr<Formal>> formals;
-std::vector<std::shared_ptr<CaseBranch>> cases;
-
+   
+extern IdentifierTable idtable;
+extern IntTable inttable;
+extern StringTable stringtable;
 
 class ParserType
 {
@@ -31,7 +28,7 @@ public:
     std::shared_ptr<Formal> formal;
     Formals formals;
     std::shared_ptr<CaseBranch> branch;
-    std::shared_ptr<Case> caze;
+    Cases cases;
     std::shared_ptr<Expression> expression;
     Expressions expressions;
     char* error_msg;
@@ -63,7 +60,7 @@ public:
 %type <formal> formal
 %type <formals> formal_list
 %type <branch> case
-%type <caze> case_list
+%type <cases> case_list
     
 /* Precedence declarations go here. */
 %nonassoc '='
@@ -82,47 +79,47 @@ public:
 program	: class_list	{ @$ = @1; ast_root = std::make_shared<Program>($1); }
 ;
 
-class_list : class { $$ = classes.push_back($1); }
-            | class_list class { $$ = classes.push_back($2); }
+class_list : class { $$ = std::vector<std::shared_ptr<Class>>(); $$.push_back($1); }
+            | class_list class { $1.push_back($2); }
 ;
 
 class : CLASS TYPEID '{' feature_list '}' ';' { $$ = std::make_shared<Class>($2, idtable.add("Object"), stringtable.add("filename"), $4); }
-        | CLASS TYPEID INHERITS TYPEID '{' feature_list '}' ';' { $$ = std::make_shared<Class>($2, $4, stringtable.add(curr_filename), $6); }
+        | CLASS TYPEID INHERITS TYPEID '{' feature_list '}' ';' { $$ = std::make_shared<Class>($2, $4, stringtable.add("filename"), $6); }
         | error ';' { } 
 ;
 
 /* Feature list may be empty, but no empty features in list. */
-feature_list : /* no methods */ {  }
-                | feature_list feature { $$ = features.push_back($2); }
+feature_list : /* no methods */ { $$ = std::vector<std::shared_ptr<Feature>>(); }
+                | feature_list feature { $1.push_back($2); }
 ;
 
 feature : OBJECTID '(' formal_list ')' ':' TYPEID '{' expression '}' ';' { $$ = std::make_shared<Method>($1, $6, $3, $8); }
-        | OBJECTID '(' ')' ':' TYPEID '{' expression '}' ';' { $$ = std::make_shared<Method>($1, $5, nil_Formals(), $7); }
+        | OBJECTID '(' ')' ':' TYPEID '{' expression '}' ';' { $$ = std::make_shared<Method>($1, $5, Formals(), $7); }
         | OBJECTID ':' TYPEID ';' { $$ = std::make_shared<Attribute>($1, $3, std::make_shared<NoExpr>()); }
         | OBJECTID ':' TYPEID ASSIGN expression ';' { $$ = std::make_shared<Attribute>($1, $3, $5); }
         | error ';' { } 
 ;
 
-formal_list : formal { $$ = formals.push_back($1); }
-            | formal_list ',' formal { $$ = formals.push_back($3); } 
+formal_list : formal { $$ = std::vector<std::shared_ptr<Formal>>(); $$.push_back($1); }
+            | formal_list ',' formal { $1.push_back($3); } 
 ;
 
 formal : OBJECTID ':' TYPEID { $$ = std::make_shared<Formal>($1, $3); }
 ;
 
-case_list : case { $$ = cases.push_back($1); }
-            | case_list case { $$ = cases.push_back($2); }
+case_list : case { $$ = std::vector<std::shared_ptr<CaseBranch>>(); $$.push_back($1); }
+            | case_list case { $1.push_back($2); }
 ;
 
 case : OBJECTID ':' TYPEID DARROW expression ';' { $$ = std::make_shared<CaseBranch>($1, $3, $5); }
 ;
 
-method_expr_list : expression { $$ = method_exprs.push_back($1); }
-                    | method_expr_list ',' expression { $$ = method_exprs.push_back($3); }
+method_expr_list : expression { $$ = std::vector<std::shared_ptr<Expression>>(); $$.push_back($1); }
+                    | method_expr_list ',' expression { $1.push_back($3); }
 ;
 
-expression_list : expression ';' { $$ = block_exprs.push_back($1); }
-                | expression_list expression ';' { $$ = block_exprs.push_back($2); }
+expression_list : expression ';' { $$ = std::vector<std::shared_ptr<Expression>>(); $$.push_back($1); }
+                | expression_list expression ';' { $1.push_back($2); }
                 | error ';' { }
 ;
 
@@ -136,11 +133,11 @@ let_expr : OBJECTID ':' TYPEID IN expression %prec LET { $$ = std::make_shared<L
 
 expression : OBJECTID ASSIGN expression { $$ = std::make_shared<Assign>($1, $3); }
             | expression '.' OBJECTID '(' method_expr_list ')' { $$ = std::make_shared<DynamicDispatch>($1, $3, $5); }
-            | expression '.' OBJECTID '(' ')' { $$ = std::make_shared<DynamicDispatch>($1, $3, nil_Expressions()); }
+            | expression '.' OBJECTID '(' ')' { $$ = std::make_shared<DynamicDispatch>($1, $3, Expressions()); }
             | expression '@' TYPEID '.' OBJECTID '(' method_expr_list ')' { $$ = std::make_shared<StaticDispatch>($1, $3, $5, $7); }
-            | expression '@' TYPEID '.' OBJECTID '(' ')' { $$ = std::make_shared<StaticDispatch>($1, $3, $5, nil_Expressions()); }
+            | expression '@' TYPEID '.' OBJECTID '(' ')' { $$ = std::make_shared<StaticDispatch>($1, $3, $5, Expressions()); }
             | OBJECTID '(' method_expr_list ')' { $$ = std::make_shared<DynamicDispatch>(std::make_shared<Object>(idtable.add("self")), $1, $3); } 
-            | OBJECTID '(' ')' { $$ = std::make_shared<DynamicDispatch>(std::make_shared<Object>(idtable.add("self")), $1, nil_Expressions()); } 
+            | OBJECTID '(' ')' { $$ = std::make_shared<DynamicDispatch>(std::make_shared<Object>(idtable.add("self")), $1, Expressions()); } 
             | IF expression THEN expression ELSE expression FI { $$ = std::make_shared<If>($2, $4, $6); }
             | WHILE expression LOOP expression POOL { $$ = std::make_shared<While>($2, $4); }
             | '{' expression_list '}' { $$ = std::make_shared<Block>($2); }
@@ -161,7 +158,7 @@ expression : OBJECTID ASSIGN expression { $$ = std::make_shared<Assign>($1, $3);
             | OBJECTID { $$ = std::make_shared<Object>($1); }
             | INT_CONST { $$ = std::make_shared<IntConst>($1); }
             | STR_CONST { $$ = std::make_shared<StringConst>($1); }
-            | BOOL_CONST { $$ = std::make_shared<BoolConst>($1); }
+            /* | BOOL_CONST { $$ = std::make_shared<BoolConst>($1); } */
 ;
 
 %%

@@ -4,10 +4,9 @@
 
 %{
 
-#include "tokens.hpp"
 #include "tokentable.hpp"
 #include "symboltable.hpp"
-// #include "y.tab.h"
+#include "y.tab.h"
 
 static const int MAX_STR_CONST = 1025;
 

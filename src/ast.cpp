@@ -28,7 +28,7 @@ Feature::feature_type Attribute::get_type() const
 
 
 Method::Method(const Symbol& mname, const Symbol& ret, 
-        const std::vector<Formal>& formals, const std::shared_ptr<Expression>& expr)
+        const std::vector<std::shared_ptr<Formal>>& formals, const std::shared_ptr<Expression>& expr)
     : name(mname), return_type(ret), params(formals), body(expr)
 {
 
@@ -165,7 +165,7 @@ Not::Not(const std::shared_ptr<Expression>& rhs)
 }
 
 StaticDispatch::StaticDispatch(const std::shared_ptr<Expression>& objexpr, const Symbol& stype, 
-        const Symbol& func, const std::shared_ptr<Expression>& act)
+        const Symbol& func, const std::vector<std::shared_ptr<Expression>>& act)
    : obj(objexpr), type(stype), method(func), actual(act)
 {
 
@@ -173,7 +173,7 @@ StaticDispatch::StaticDispatch(const std::shared_ptr<Expression>& objexpr, const
 
 
 DynamicDispatch::DynamicDispatch(const std::shared_ptr<Expression>& objexpr, 
-        const Symbol& func, const std::shared_ptr<Expression>& act)
+        const Symbol& func, const std::vector<std::shared_ptr<Expression>>& act)
     : obj(objexpr), method(func), actual(act)
 {
 
@@ -186,7 +186,7 @@ Let::Let(const Symbol& lname, const Symbol& type, const std::shared_ptr<Expressi
 
 }
 
-Case::Case(const std::shared_ptr<Expression>& exp, const std::vector<CaseBranch>& cb)
+Case::Case(const std::shared_ptr<Expression>& exp, const std::vector<std::shared_ptr<CaseBranch>>& cb)
     : expr(exp), branches(cb)
 {
 

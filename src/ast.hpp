@@ -258,10 +258,10 @@ public:
     std::shared_ptr<Expression> obj;
     Symbol type;
     Symbol method;
-    std::shared_ptr<Expression> actual;
+    std::vector<std::shared_ptr<Expression>> actual;
 
     StaticDispatch(const std::shared_ptr<Expression>&, const Symbol&, const Symbol&,
-           const std::shared_ptr<Expression>&); 
+           const std::vector<std::shared_ptr<Expression>>&); 
 };
 
 class DynamicDispatch : public Expression
@@ -269,10 +269,10 @@ class DynamicDispatch : public Expression
 public:
     std::shared_ptr<Expression> obj;
     Symbol method;
-    std::shared_ptr<Expression> actual;
+    std::vector<std::shared_ptr<Expression>> actual;
 
     DynamicDispatch(const std::shared_ptr<Expression>&, const Symbol&, 
-            const std::shared_ptr<Expression>&);
+            const std::vector<std::shared_ptr<Expression>>&);
 };
 
 class Let : public Expression
@@ -291,9 +291,9 @@ class Case : public Expression
 {
 public:
     std::shared_ptr<Expression> expr;
-    std::vector<CaseBranch> branches;
+    std::vector<std::shared_ptr<CaseBranch>> branches;
 
-    Case(const std::shared_ptr<Expression>&, const std::vector<CaseBranch>&);
+    Case(const std::shared_ptr<Expression>&, const std::vector<std::shared_ptr<CaseBranch>>&);
 };
 
 class Object : public Expression
@@ -304,13 +304,15 @@ public:
     Object(const Symbol&);
 };
 
-class NoExpr : Expression
+class NoExpr : public Expression
 {
-
+public:
+    NoExpr() {}
 };
 
 typedef std::vector<std::shared_ptr<Class>> Classes;
 typedef std::vector<std::shared_ptr<Formal>> Formals;
+typedef std::vector<std::shared_ptr<CaseBranch>> Cases;
 typedef std::vector<std::shared_ptr<Feature>> Features;
 typedef std::vector<std::shared_ptr<Expression>> Expressions;
 
