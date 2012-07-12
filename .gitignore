@@ -2,7 +2,8 @@ lexer
 src/scanner.cpp
 *.o
 *.out
-lex.yy.cc
 y.output
 y.tab.c
 y.tab.h
+parser
+lex.yy.*
