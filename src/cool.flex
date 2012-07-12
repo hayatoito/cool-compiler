@@ -1,4 +1,3 @@
-%option c++
 %option noyywrap
 %option yylineno
 
@@ -18,11 +17,10 @@ extern StringTable stringtable;
 char string_buf[MAX_STR_CONST];  // buffer to store string contstants encountered in source file
 char *string_buf_ptr;
 
-size_t num_comment = 0;      // count to keep track how many opening comment tokens have been encountered
+int num_comment = 0;      // count to keep track how many opening comment tokens have been encountered
 size_t curr_lineno = 0;      // keep track of current line number of source file
 bool str_too_long = false;   // used to handle string constant size error check
 
-extern YYSTYPE yylval;
 
 %}
 
@@ -166,7 +164,7 @@ f(?i:alse) {
 }
 
 [0-9]+ {
-    yylval.symbol = inttable.add(YYText());
+    yylval.symbol = inttable.add(yytext);
     return INT_CONST;
 }
 
@@ -180,18 +178,18 @@ f(?i:alse) {
 
 
 [A-Z][a-zA-Z0-9_]* {
-    yylval.symbol = idtable.add(YYText());
+    yylval.symbol = idtable.add(yytext);
     return TYPEID;
 }
 
 
 [a-z][a-zA-Z0-9_]* {
-    yylval.symbol = idtable.add(YYText());
+    yylval.symbol = idtable.add(yytext);
     return OBJECTID;
 }
 
 ";"|","|"{"|"}"|":"|"("|")"|"+"|"-"|"*"|"/"|"="|"~"|"<"|"."|"@" {
-    return *YYText();
+    return *yytext;
 }
 
 \n {
@@ -239,7 +237,7 @@ f(?i:alse) {
         str_too_long = false;
     }
     else {
-        if (YYText()[YYLeng() - 1] != '\\') {
+        if (yytext[yyleng - 1] != '\\') {
             BEGIN(INITIAL);
             yylval.error_msg = "String contains null character";
             return ERROR;
@@ -302,7 +300,7 @@ f(?i:alse) {
         return ERROR;
     }
 
-    *string_buf_ptr++ = *YYText();
+    *string_buf_ptr++ = *yytext;
 }
     
 . /* error for invalid tokens */ {

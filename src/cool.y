@@ -1,8 +1,5 @@
 %{
 
-#define YY_DECL int yylex (semantic_type* yylval, location_type* yylloc)
-YY_DECL;;
-
 #include "flexbison.hpp"
 #include "symboltable.hpp"
 #include "tokentable.hpp"
@@ -10,13 +7,14 @@ YY_DECL;;
 
 #include <iostream>
     
-void yyerror(char *s);        
-
 extern std::shared_ptr<Program> ast_root;
 extern IdentifierTable idtable;
 extern IntTable inttable;
 extern StringTable stringtable;
 
+extern int yylex();
+
+void yyerror(char *s);        
 %}
     
 %token CLASS 258 ELSE 259 FI 260 IF 261 IN 262 

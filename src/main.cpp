@@ -9,7 +9,7 @@ IntTable inttable;
 StringTable stringtable;
 std::shared_ptr<Program> ast_root;
 
-extern void yyparse();
+extern int yyparse();
 
 int main(int argc, char **argv)
 {
