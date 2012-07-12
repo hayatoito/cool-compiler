@@ -10,7 +10,7 @@ SRCS=y.tab.c ast.cpp tokentable.cpp symboltable.cpp main.cpp lex.yy.c
 OBJS=y.tab.o ast.o tokentable.o symboltable.o main.o lex.yy.o
 
 parser : ${OBJS}
-	${CC} ${CFLAGS} ${SRCS} -o $@
+	${CC} ${CFLAGS} -o $@
 
 ${OBJS} : ${SRCS}
 	${CC} ${CFLAGS} -c ${SRCS}
