@@ -3,28 +3,45 @@
 
 #include "symboltable.hpp"
 #include <vector>
+#include <memory>
+
 
 class AstNode
 {
-
+public:
+    AstNode() {}
 };
 
-class Expression : AstNode
+class Expression : public AstNode
 {
-
+public:
+    Expression() {}
 };
 
-class Attribute : AstNode
+class Feature : public AstNode
+{
+public:
+    enum feature_type
+    {
+        ATTRIBUTE,
+        METHOD
+    };
+
+    virtual feature_type get_type() const = 0;
+};
+
+class Attribute : public Feature
 {
 public:
     Symbol name;
     Symbol type_decl;
-    Expression init;
+    std::shared_ptr<Expression> init;
 
-    Attribute(const Symbol&, const Symbol&, const Expression&);
+    Attribute(const Symbol&, const Symbol&, const std::shared_ptr<Expression>&);
+    feature_type get_type() const;
 };
 
-class Formal : AstNode
+class Formal : public AstNode
 {
 public:
     Symbol name;
@@ -34,40 +51,40 @@ public:
 };
 
 
-class Method : AstNode
+class Method : public Feature
 {
 public:
     Symbol name;
     Symbol return_type;
-    std::vector<Formal> params;
-    Expression body;
+    std::vector<std::shared_ptr<Formal>> params;
+    std::shared_ptr<Expression> body;
 
-    Method(const Symbol&, const Symbol&, const std::vector<Formal>&,
-            const Expression&);
+    Method(const Symbol&, const Symbol&, const std::vector<std::shared_ptr<Formal>>&,
+            const std::shared_ptr<Expression>&);
+    feature_type get_type() const;
 };
 
-class Class : AstNode
+class Class : public AstNode
 {
 public:
     Symbol name;
     Symbol parent;
     Symbol filename;
-    std::vector<Attribute> attributes;
-    std::vector<Method> methods;
+    std::vector<std::shared_ptr<Feature>> features;
 
     Class(const Symbol&, const Symbol&, const Symbol&, 
-            const std::vector<Attribute>&, const std::vector<Method>&);
+           const std::vector<std::shared_ptr<Feature>>&); 
 };
 
-class Program : AstNode
+class Program : public AstNode
 {
 public:
-    std::vector<Class> classes;
+    std::vector<std::shared_ptr<Class>> classes;
 
-    Program(const std::vector<Class>&);
+    Program(const std::vector<std::shared_ptr<Class>>&);
 };
 
-class StringConst : Expression
+class StringConst : public Expression
 {
 public:
     Symbol token;
@@ -75,7 +92,7 @@ public:
     StringConst(const Symbol&);
 };
 
-class IntConst : Expression
+class IntConst : public Expression
 {
 public:
     Symbol token;
@@ -83,7 +100,7 @@ public:
     IntConst(const Symbol&);
 };
 
-class BoolConst : Expression
+class BoolConst : public Expression
 {
 public:
     bool value;
@@ -91,7 +108,7 @@ public:
     BoolConst(bool);
 };
 
-class New : Expression
+class New : public Expression
 {
 public:
     Symbol type;
@@ -99,183 +116,187 @@ public:
     New(const Symbol&);
 };
 
-class IsVoid : Expression
+class IsVoid : public Expression
 {
 public:
-    Expression expr;
+    std::shared_ptr<Expression> expr;
 
-    IsVoid(const Expression&);
+    IsVoid(const std::shared_ptr<Expression>&);
 };
 
-class CaseBranch : Expression
+class CaseBranch : public Expression
 {
 public:
     Symbol name;
     Symbol type_decl;
-    Expression expr;
+    std::shared_ptr<Expression> expr;
 
-    CaseBranch(const Symbol&, const Symbol&, const Expression&);
+    CaseBranch(const Symbol&, const Symbol&, const std::shared_ptr<Expression>&);
 };
 
-class Assign : Expression
+class Assign : public Expression
 {
 public:
     Symbol name;
-    Expression rhs;
+    std::shared_ptr<Expression> rhs;
 
-    Assign(const Symbol&, const Expression&);
+    Assign(const Symbol&, const std::shared_ptr<Expression>&);
 };
 
-class Block : Expression
+class Block : public Expression
 {
 public:
-    std::vector<Expression> body;
+    std::vector<std::shared_ptr<Expression>> body;
 
-    Block(const std::vector<Expression>&);
+    Block(const std::vector<std::shared_ptr<Expression>>&);
 };
 
-class If : Expression
+class If : public Expression
 {
 public:
-    Expression predicate;
-    Expression iftrue;
-    Expression iffalse;
+    std::shared_ptr<Expression> predicate;
+    std::shared_ptr<Expression> iftrue;
+    std::shared_ptr<Expression> iffalse;
 
-    If(const Expression&, const Expression&, const Expression&);
+    If(const std::shared_ptr<Expression>&, const std::shared_ptr<Expression>&, 
+            const std::shared_ptr<Expression>&);
 };
 
-class While : Expression
+class While : public Expression
 {
 public:
-    Expression predicate;
-    Expression body;
+    std::shared_ptr<Expression> predicate;
+    std::shared_ptr<Expression> body;
 
-    While(const Expression&, const Expression&);
+    While(const std::shared_ptr<Expression>&, const std::shared_ptr<Expression>&);
 };
 
-class Complement : Expression
+class Complement : public Expression
 {
 public:
-    Expression expr;
+    std::shared_ptr<Expression> expr;
 
-    Complement(const Expression&);
+    Complement(const std::shared_ptr<Expression>&);
 };
 
-class LessThan : Expression
+class LessThan : public Expression
 {
 public:
-    Expression lhs;
-    Expression rhs;
+    std::shared_ptr<Expression> lhs;
+    std::shared_ptr<Expression> rhs;
 
-    LessThan(const Expression&, const Expression&);
+    LessThan(const std::shared_ptr<Expression>&, const std::shared_ptr<Expression>&);
 };
 
-class EqualTo : Expression
+class EqualTo : public Expression
 {
 public:
-    Expression lhs;
-    Expression rhs;
+    std::shared_ptr<Expression> lhs;
+    std::shared_ptr<Expression> rhs;
 
-    EqualTo(const Expression&, const Expression&);
+    EqualTo(const std::shared_ptr<Expression>&, const std::shared_ptr<Expression>&);
 };
 
-class LessThanEqualTo : Expression
+class LessThanEqualTo : public Expression
 {
 public:
-    Expression lhs;
-    Expression rhs;
+    std::shared_ptr<Expression> lhs;
+    std::shared_ptr<Expression> rhs;
 
-    LessThanEqualTo(const Expression&, const Expression&);
+    LessThanEqualTo(const std::shared_ptr<Expression>&, 
+            const std::shared_ptr<Expression>&);
 };
 
-class Plus : Expression
+class Plus : public Expression
 {
 public:
-    Expression lhs;
-    Expression rhs;
+    std::shared_ptr<Expression> lhs;
+    std::shared_ptr<Expression> rhs;
 
-    Plus(const Expression&, const Expression&);
+    Plus(const std::shared_ptr<Expression>&, const std::shared_ptr<Expression>&);
 };
 
-class Sub : Expression
+class Sub : public Expression
 {
 public:
-    Expression lhs;
-    Expression rhs;
+    std::shared_ptr<Expression> lhs;
+    std::shared_ptr<Expression> rhs;
 
-    Sub(const Expression&, const Expression&);
+    Sub(const std::shared_ptr<Expression>&, const std::shared_ptr<Expression>&);
 };
 
-class Mul : Expression
+class Mul : public Expression
 {
 public:
-    Expression lhs;
-    Expression rhs;
+    std::shared_ptr<Expression> lhs;
+    std::shared_ptr<Expression> rhs;
 
-    Mul(const Expression&, const Expression&);
+    Mul(const std::shared_ptr<Expression>&, const std::shared_ptr<Expression>&);
 };
 
-class Div : Expression
+class Div : public Expression
 {
 public:
-    Expression lhs;
-    Expression rhs;
+    std::shared_ptr<Expression> lhs;
+    std::shared_ptr<Expression> rhs;
 
-    Div(const Expression&, const Expression&);
+    Div(const std::shared_ptr<Expression>&, 
+            const std::shared_ptr<Expression>&);
 };
 
-class Not : Expression
+class Not : public Expression
 {
 public:
-    Expression expr;
+    std::shared_ptr<Expression> expr;
 
-    Not(const Expression&);
+    Not(const std::shared_ptr<Expression>&);
 };
 
-class StaticDispatch : Expression
+class StaticDispatch : public Expression
 {
 public:
-    Expression obj;
+    std::shared_ptr<Expression> obj;
     Symbol type;
     Symbol method;
-    Expression actual;
+    std::shared_ptr<Expression> actual;
 
-    StaticDispatch(const Expression&, const Symbol&, const Symbol&,
-           const Expression&); 
+    StaticDispatch(const std::shared_ptr<Expression>&, const Symbol&, const Symbol&,
+           const std::shared_ptr<Expression>&); 
 };
 
-class DynamicDispatch : Expression
+class DynamicDispatch : public Expression
 {
 public:
-    Expression obj;
+    std::shared_ptr<Expression> obj;
     Symbol method;
-    Expression actual;
+    std::shared_ptr<Expression> actual;
 
-    DynamicDispatch(const Expression&, const Symbol&, const Expression&);
+    DynamicDispatch(const std::shared_ptr<Expression>&, const Symbol&, 
+            const std::shared_ptr<Expression>&);
 };
 
-class Let : Expression
+class Let : public Expression
 {
 public:
     Symbol name;
     Symbol type_decl;
-    Expression init;
-    Expression body;
+    std::shared_ptr<Expression> init;
+    std::shared_ptr<Expression> body;
 
-    Let(const Symbol&, const Symbol&, const Expression&,
-            const Expression&);
+    Let(const Symbol&, const Symbol&, const std::shared_ptr<Expression>&,
+            const std::shared_ptr<Expression>&);
 };
 
-class Case : Expression
+class Case : public Expression
 {
 public:
-    Expression expr;
+    std::shared_ptr<Expression> expr;
     std::vector<CaseBranch> branches;
 
-    Case(const Expression&, const std::vector<CaseBranch>&);
+    Case(const std::shared_ptr<Expression>&, const std::vector<CaseBranch>&);
 };
 
-class Object : Expression
+class Object : public Expression
 {
 public:
     Symbol name;
@@ -287,5 +308,10 @@ class NoExpr : Expression
 {
 
 };
+
+typedef std::vector<std::shared_ptr<Class>> Classes;
+typedef std::vector<std::shared_ptr<Formal>> Formals;
+typedef std::vector<std::shared_ptr<Feature>> Features;
+typedef std::vector<std::shared_ptr<Expression>> Expressions;
 
 #endif
