@@ -9,11 +9,11 @@ CC=g++
 SRCS=y.tab.c ast.cpp tokentable.cpp symboltable.cpp main.cpp lex.yy.c
 OBJS=y.tab.o ast.o tokentable.o symboltable.o main.o lex.yy.o
 
-parser : ${OBJS}
-	${CC} ${CFLAGS} -o $@
+parser : ${OBJS} 
+	${CC} ${CFLAGS} -o $@ ${OBJS}
 
-${OBJS} : ${SRCS}
-	${CC} ${CFLAGS} -c ${SRCS}
+%.o : %.cpp 
+	${CC} ${CFLAGS} -c $<
 
 y.tab.c : cool.y
 	${BISON} ${BFLAGS} cool.y
@@ -21,3 +21,8 @@ y.tab.c : cool.y
 lex.yy.c : cool.flex
 	${FLEX} ${FFLAGS} cool.flex
 
+.depend: ${SRCS} 
+	rm -f ./.depend
+	${CC} ${CFLAGS} -MM $^>>./.depend
+
+include .depend

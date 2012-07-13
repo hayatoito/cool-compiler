@@ -14,5 +14,9 @@ extern int yyparse();
 int main(int argc, char **argv)
 {
     yyparse();
+    
+    AstNodePrintVisitor print(std::cout);
+    ast_root->accept(print);
+
     return 0;
 }
