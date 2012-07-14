@@ -8,11 +8,11 @@
 #include "symboltable.hpp"
 #include "y.tab.h"
 
-static const int MAX_STR_CONST = 1025;
+extern IdentifierTable idtable; // defined in main.cpp
+extern IntTable inttable;  // defined in main.cpp
+extern StringTable stringtable; // defined in main.cpp
 
-extern IdentifierTable idtable;
-extern IntTable inttable;
-extern StringTable stringtable;
+static const int MAX_STR_CONST = 1025;
 
 char string_buf[MAX_STR_CONST];  // buffer to store string contstants encountered in source file
 char *string_buf_ptr;

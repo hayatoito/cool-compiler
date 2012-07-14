@@ -5,15 +5,23 @@
 #include <cstdio>
 #include <iostream>
 
+extern int yyparse(); 
+extern int yynerrs; 
+extern FILE* yyin;
+
+// Following tables are used by both the lexer and parser
+// to manage symbols like constants
 IdentifierTable idtable;
 IntTable inttable;
 StringTable stringtable;
-std::shared_ptr<Program> ast_root;
-std::string curr_filename;
 
-extern int yyparse();
-extern int yynerrs;
-extern FILE* yyin;
+// Root of AST used by the parser. This should be populated
+// after parsing phase
+std::shared_ptr<Program> ast_root;
+
+// Used by the error handling routines in both lexer and
+// parser to provide a more informative error message
+std::string curr_filename;
 
 int main(int argc, char **argv)
 {
