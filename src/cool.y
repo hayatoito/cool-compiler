@@ -14,6 +14,7 @@ extern StringTable stringtable;
 
 extern int yylex();
 extern int yylineno;
+extern std::string curr_filename;
 
 void yyerror(char *s);        
 %}
@@ -144,9 +145,9 @@ expression : OBJECTID ASSIGN expression { $$ = std::make_shared<Assign>($1, $3);
 void yyerror(char *s)
 {
     if (yylval.error_msg.length() <= 0)
-        std::cerr << "error:" << yylineno << ": " << "syntax error near or at character '" << (char) yychar << "'\n";
+        std::cerr << curr_filename << ":error:" << yylineno << ": " << "syntax error near or at character '" << (char) yychar << "'\n";
     else
-        std::cerr << "error:" << yylineno << ": " << yylval.error_msg << "\n";
+        std::cerr << curr_filename << ":error:" << yylineno << ": " << yylval.error_msg << "\n";
 }
 
 
