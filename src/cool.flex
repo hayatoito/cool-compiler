@@ -156,10 +156,12 @@ DARROW =>
 }
 
 t(?i:rue) {
+    yylval.boolean = true;
     return BOOL_CONST;
 }
 
 f(?i:alse) {
+    yylval.boolean = false;
     return BOOL_CONST;
 }
 
@@ -304,6 +306,7 @@ f(?i:alse) {
 }
     
 . /* error for invalid tokens */ {
+    yylval.error_msg = std::string(yytext) + " is not a valid character in the current context.";
     return ERROR;
 }
 
