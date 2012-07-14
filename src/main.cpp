@@ -2,19 +2,45 @@
 #include "tokentable.hpp"
 #include "ast.hpp"
 
+#include <cstdio>
 #include <iostream>
 
 IdentifierTable idtable;
 IntTable inttable;
 StringTable stringtable;
 std::shared_ptr<Program> ast_root;
+std::string curr_filename;
 
 extern int yyparse();
 extern int yynerrs;
+extern FILE* yyin;
 
 int main(int argc, char **argv)
 {
-    yyparse();
+    if (argc == 1)
+    {
+        curr_filename = "<stdin>";
+        yyin = stdin;
+        yyparse();
+    }
+    else
+    {
+        for (int i = 1; i < argc; ++i)
+        {
+            curr_filename = argv[i];
+            yyin = std::fopen(argv[i], "r");
+
+            if (yyin)
+            {
+                yyparse();
+                std::fclose(yyin);
+            }
+            else
+            {
+                std::cerr << argv[i] << ":error:cannot be opened\n";
+            }
+        }
+    }
 
     if (yynerrs > 0)
     {
