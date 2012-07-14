@@ -13,6 +13,7 @@ extern IntTable inttable;
 extern StringTable stringtable;
 
 extern int yylex();
+extern int yylineno;
 
 void yyerror(char *s);        
 %}
@@ -57,54 +58,54 @@ program	: class_list	{ @$ = @1; ast_root = std::make_shared<Program>($1); }
 ;
 
 class_list : class { $$ = std::vector<std::shared_ptr<Class>>(); $$.push_back($1); }
-            | class_list class { $1.push_back($2); }
+            | class_list class { $$.push_back($2); }
 ;
 
 class : CLASS TYPEID '{' feature_list '}' ';' { $$ = std::make_shared<Class>($2, idtable.add("Object"), stringtable.add("filename"), $4); }
         | CLASS TYPEID INHERITS TYPEID '{' feature_list '}' ';' { $$ = std::make_shared<Class>($2, $4, stringtable.add("filename"), $6); }
-        | error ';' { } 
+        | error ';' { yyerrok; } 
 ;
 
 /* Feature list may be empty, but no empty features in list. */
 feature_list : /* no methods */ { $$ = std::vector<std::shared_ptr<Feature>>(); }
-                | feature_list feature { $1.push_back($2); }
+                | feature_list feature { $$.push_back($2); }
 ;
 
 feature : OBJECTID '(' formal_list ')' ':' TYPEID '{' expression '}' ';' { $$ = std::make_shared<Method>($1, $6, $3, $8); }
         | OBJECTID '(' ')' ':' TYPEID '{' expression '}' ';' { $$ = std::make_shared<Method>($1, $5, Formals(), $7); }
         | OBJECTID ':' TYPEID ';' { $$ = std::make_shared<Attribute>($1, $3, std::make_shared<NoExpr>()); }
         | OBJECTID ':' TYPEID ASSIGN expression ';' { $$ = std::make_shared<Attribute>($1, $3, $5); }
-        | error ';' { } 
+        | error ';' { yyerrok; } 
 ;
 
 formal_list : formal { $$ = std::vector<std::shared_ptr<Formal>>(); $$.push_back($1); }
-            | formal_list ',' formal { $1.push_back($3); } 
+            | formal_list ',' formal { $$.push_back($3); } 
 ;
 
 formal : OBJECTID ':' TYPEID { $$ = std::make_shared<Formal>($1, $3); }
 ;
 
 case_list : case { $$ = std::vector<std::shared_ptr<CaseBranch>>(); $$.push_back($1); }
-            | case_list case { $1.push_back($2); }
+            | case_list case { $$.push_back($2); }
 ;
 
 case : OBJECTID ':' TYPEID DARROW expression ';' { $$ = std::make_shared<CaseBranch>($1, $3, $5); }
 ;
 
 method_expr_list : expression { $$ = std::vector<std::shared_ptr<Expression>>(); $$.push_back($1); }
-                    | method_expr_list ',' expression { $1.push_back($3); }
+                    | method_expr_list ',' expression { $$.push_back($3); }
 ;
 
 expression_list : expression ';' { $$ = std::vector<std::shared_ptr<Expression>>(); $$.push_back($1); }
-                | expression_list expression ';' { $1.push_back($2); }
-                | error ';' { }
+                | expression_list expression ';' { $$.push_back($2); }
+                | error ';' { yyerrok; }
 ;
 
 let_expr : OBJECTID ':' TYPEID IN expression %prec LET { $$ = std::make_shared<Let>($1, $3, std::make_shared<NoExpr>(), $5); }
             | OBJECTID ':' TYPEID ASSIGN expression IN expression %prec LET { $$ = std::make_shared<Let>($1, $3, $5, $7); }
             | OBJECTID ':' TYPEID ',' let_expr { $$ = std::make_shared<Let>($1, $3, std::make_shared<NoExpr>(), $5); }
             | OBJECTID ':' TYPEID ASSIGN expression ',' let_expr { $$ = std::make_shared<Let>($1, $3, $5, $7); }
-            | error ',' let_expr { }
+            | error ',' let_expr { yyerrok; }
 ;
             
 
@@ -135,14 +136,17 @@ expression : OBJECTID ASSIGN expression { $$ = std::make_shared<Assign>($1, $3);
             | OBJECTID { $$ = std::make_shared<Object>($1); }
             | INT_CONST { $$ = std::make_shared<IntConst>($1); }
             | STR_CONST { $$ = std::make_shared<StringConst>($1); }
-            /* | BOOL_CONST { $$ = std::make_shared<BoolConst>($1); } */
+            | BOOL_CONST { $$ = std::make_shared<BoolConst>($1); } 
 ;
 
 %%
 
 void yyerror(char *s)
 {
-    std::cerr << "Error!\n";
+    if (yylval.error_msg.length() <= 0)
+        std::cerr << "error:" << yylineno << ": " << "syntax error near or at character '" << (char) yychar << "'\n";
+    else
+        std::cerr << "error:" << yylineno << ": " << yylval.error_msg << "\n";
 }
 
 
