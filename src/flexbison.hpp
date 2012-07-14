@@ -9,7 +9,7 @@
 class ParserType
 {
 public:
-    std::shared_ptr<BoolConst> boolean;
+    bool boolean;
     Symbol symbol;
     std::shared_ptr<Program> program;
     std::shared_ptr<Class> clazz;
@@ -22,7 +22,7 @@ public:
     Cases cases;
     std::shared_ptr<Expression> expression;
     Expressions expressions;
-    char* error_msg;
+    std::string error_msg;
 
     ParserType() {}
 }; 
