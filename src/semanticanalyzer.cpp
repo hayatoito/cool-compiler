@@ -64,3 +64,8 @@ bool SemanticAnalyzer::validate_inheritance(const Classes& classes)
     return true;
 }
 
+bool SemanticAnalyzer::type_check(const std::shared_ptr<Program>& root)
+{
+    Environment env;
+    root->type_check(*this, env);
+}

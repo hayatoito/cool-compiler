@@ -4,6 +4,17 @@
 #include "ast.hpp"
 #include <map>
 #include <set>
+#include <vector>
+#include <memory>
+
+class Program;
+class Class;
+typedef std::vector<std::shared_ptr<Class>> Classes;
+
+struct Environment
+{
+    Symbol curr_class;
+};
 
 class SemanticAnalyzer
 {
@@ -16,6 +27,7 @@ private:
 
 public:
     bool validate_inheritance(const Classes&); 
+    bool type_check(const std::shared_ptr<Program>&);
 };
 
 
