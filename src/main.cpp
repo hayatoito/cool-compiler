@@ -1,6 +1,7 @@
 #include "symboltable.hpp"
 #include "tokentable.hpp"
 #include "ast.hpp"
+#include "semanticanalyzer.hpp"
 
 #include <cstdio>
 #include <iostream>
@@ -56,8 +57,17 @@ int main(int argc, char **argv)
         exit(1);
     }
     
+    /*
     AstNodePrintVisitor print(std::cout);
     ast_root->accept(print);
+    */
+
+    SemanticAnalyzer semant;
+    if (!semant.validate_inheritance(ast_root->classes))
+    {
+        std:: cerr << argv[0] << ": **compilation halted due to inheritance errors.**\n";
+        exit(1);
+    }
 
     return 0;
 }
