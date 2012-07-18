@@ -356,6 +356,156 @@ void NoExpr::accept(AstNodeVisitor& visitor) const
     visitor.visit(*this);
 }
 
+Symbol Program::type_check(SemanticAnalyzer& sa, Environment& env) const
+{
+
+}
+
+Symbol Class::type_check(SemanticAnalyzer& sa, Environment& env) const 
+{
+
+}
+
+Symbol Attribute::type_check(SemanticAnalyzer& sa, Environment& env) const
+{
+
+}
+
+Symbol Method::type_check(SemanticAnalyzer& sa, Environment& env) const
+{
+
+}
+
+Symbol Formal::type_check(SemanticAnalyzer& sa, Environment& env) const
+{
+
+}
+
+Symbol StringConst::type_check(SemanticAnalyzer& sa, Environment& env) const
+{
+
+}
+
+
+Symbol IntConst::type_check(SemanticAnalyzer& sa, Environment& env) const
+{
+
+}
+
+Symbol BoolConst::type_check(SemanticAnalyzer& sa, Environment& env) const
+{
+
+}
+
+Symbol New::type_check(SemanticAnalyzer& sa, Environment& env) const
+{
+
+}
+
+Symbol IsVoid::type_check(SemanticAnalyzer& sa, Environment& env) const
+{
+
+}
+
+Symbol CaseBranch::type_check(SemanticAnalyzer& sa, Environment& env) const
+{
+
+}
+
+Symbol Assign::type_check(SemanticAnalyzer& sa, Environment& env) const
+{
+
+}
+
+Symbol Block::type_check(SemanticAnalyzer& sa, Environment& env) const
+{
+
+}
+
+Symbol If::type_check(SemanticAnalyzer& sa, Environment& env) const
+{
+
+}
+
+Symbol While::type_check(SemanticAnalyzer& sa, Environment& env) const
+{
+
+}
+
+Symbol Complement::type_check(SemanticAnalyzer& sa, Environment& env) const
+{
+
+}
+
+Symbol LessThan::type_check(SemanticAnalyzer& sa, Environment& env) const
+{
+
+}
+
+Symbol EqualTo::type_check(SemanticAnalyzer& sa, Environment& env) const
+{
+
+}
+
+Symbol LessThanEqualTo::type_check(SemanticAnalyzer& sa, Environment& env) const
+{
+
+}
+
+Symbol Plus::type_check(SemanticAnalyzer& sa, Environment& env) const
+{
+
+}
+
+Symbol Sub::type_check(SemanticAnalyzer& sa, Environment& env) const
+{
+
+}
+
+Symbol Mul::type_check(SemanticAnalyzer& sa, Environment& env) const
+{
+
+}
+
+Symbol Div::type_check(SemanticAnalyzer& sa, Environment& env) const
+{
+
+}
+
+Symbol Not::type_check(SemanticAnalyzer& sa, Environment& env) const
+{
+
+}
+
+Symbol StaticDispatch::type_check(SemanticAnalyzer& sa, Environment& env) const
+{
+
+}
+
+Symbol DynamicDispatch::type_check(SemanticAnalyzer& sa, Environment& env) const
+{
+
+}
+
+Symbol Let::type_check(SemanticAnalyzer& sa, Environment& env) const
+{
+
+}
+
+Symbol Case::type_check(SemanticAnalyzer& sa, Environment& env) const
+{
+
+}
+
+Symbol Object::type_check(SemanticAnalyzer& sa, Environment& env) const
+{
+
+}
+
+Symbol NoExpr::type_check(SemanticAnalyzer& sa, Environment& env) const
+{
+
+}
 
 // Visitor Implementation
 

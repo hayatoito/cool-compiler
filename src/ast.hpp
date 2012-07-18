@@ -2,10 +2,13 @@
 #define AST_H
 
 #include "symboltable.hpp"
+#include "semanticanalyzer.hpp"
 #include <vector>
 #include <memory>
 
 class AstNodeVisitor;
+class SemanticAnalyzer;
+struct Environment;
 
 class AstNode
 {
@@ -18,6 +21,7 @@ class Expression : public AstNode
 public:
     Expression() {}
     virtual void accept(AstNodeVisitor&) const = 0;
+    virtual Symbol type_check(SemanticAnalyzer&, Environment&) const = 0;
 };
 
 class Feature : public AstNode
@@ -31,6 +35,7 @@ public:
 
     virtual feature_type get_type() const = 0;
     virtual void accept(AstNodeVisitor&) const = 0;
+    virtual Symbol type_check(SemanticAnalyzer&, Environment&) const = 0;
 };
 
 class Attribute : public Feature
@@ -43,6 +48,7 @@ public:
     Attribute(const Symbol&, const Symbol&, const std::shared_ptr<Expression>&);
     feature_type get_type() const;
     void accept(AstNodeVisitor&) const;
+    virtual Symbol type_check(SemanticAnalyzer&, Environment&) const;
 };
 
 class Formal : public AstNode
@@ -53,6 +59,7 @@ public:
 
     Formal(const Symbol&, const Symbol&);
     void accept(AstNodeVisitor&) const;
+    virtual Symbol type_check(SemanticAnalyzer&, Environment&) const;
 };
 
 
@@ -68,6 +75,7 @@ public:
             const std::shared_ptr<Expression>&);
     feature_type get_type() const;
     void accept(AstNodeVisitor&) const;
+    virtual Symbol type_check(SemanticAnalyzer&, Environment&) const;
 };
 
 class Class : public AstNode
@@ -81,6 +89,7 @@ public:
     Class(const Symbol&, const Symbol&, const Symbol&, 
            const std::vector<std::shared_ptr<Feature>>&); 
     void accept(AstNodeVisitor&) const;
+    virtual Symbol type_check(SemanticAnalyzer&, Environment&) const;
 };
 
 class Program : public AstNode
@@ -90,6 +99,7 @@ public:
 
     Program(const std::vector<std::shared_ptr<Class>>&);
     void accept(AstNodeVisitor&) const;
+    virtual Symbol type_check(SemanticAnalyzer&, Environment&) const;
 };
 
 class StringConst : public Expression
@@ -99,6 +109,7 @@ public:
 
     StringConst(const Symbol&);
     void accept(AstNodeVisitor&) const;
+    virtual Symbol type_check(SemanticAnalyzer&, Environment&) const;
 };
 
 class IntConst : public Expression
@@ -108,6 +119,7 @@ public:
 
     IntConst(const Symbol&);
     void accept(AstNodeVisitor&) const;
+    virtual Symbol type_check(SemanticAnalyzer&, Environment&) const;
 };
 
 class BoolConst : public Expression
@@ -117,6 +129,7 @@ public:
 
     BoolConst(bool);
     void accept(AstNodeVisitor&) const;
+    virtual Symbol type_check(SemanticAnalyzer&, Environment&) const;
 };
 
 class New : public Expression
@@ -126,6 +139,7 @@ public:
 
     New(const Symbol&);
     void accept(AstNodeVisitor&) const;
+    virtual Symbol type_check(SemanticAnalyzer&, Environment&) const;
 };
 
 class IsVoid : public Expression
@@ -135,6 +149,7 @@ public:
 
     IsVoid(const std::shared_ptr<Expression>&);
     void accept(AstNodeVisitor&) const;
+    virtual Symbol type_check(SemanticAnalyzer&, Environment&) const;
 };
 
 class CaseBranch : public Expression
@@ -146,6 +161,7 @@ public:
 
     CaseBranch(const Symbol&, const Symbol&, const std::shared_ptr<Expression>&);
     void accept(AstNodeVisitor&) const;
+    virtual Symbol type_check(SemanticAnalyzer&, Environment&) const;
 };
 
 class Assign : public Expression
@@ -156,6 +172,7 @@ public:
 
     Assign(const Symbol&, const std::shared_ptr<Expression>&);
     void accept(AstNodeVisitor&) const;
+    virtual Symbol type_check(SemanticAnalyzer&, Environment&) const;
 };
 
 class Block : public Expression
@@ -165,6 +182,7 @@ public:
 
     Block(const std::vector<std::shared_ptr<Expression>>&);
     void accept(AstNodeVisitor&) const;
+    virtual Symbol type_check(SemanticAnalyzer&, Environment&) const;
 };
 
 class If : public Expression
@@ -177,6 +195,7 @@ public:
     If(const std::shared_ptr<Expression>&, const std::shared_ptr<Expression>&, 
             const std::shared_ptr<Expression>&);
     void accept(AstNodeVisitor&) const;
+    virtual Symbol type_check(SemanticAnalyzer&, Environment&) const;
 };
 
 class While : public Expression
@@ -187,6 +206,7 @@ public:
 
     While(const std::shared_ptr<Expression>&, const std::shared_ptr<Expression>&);
     void accept(AstNodeVisitor&) const;
+    virtual Symbol type_check(SemanticAnalyzer&, Environment&) const;
 };
 
 class Complement : public Expression
@@ -196,6 +216,7 @@ public:
 
     Complement(const std::shared_ptr<Expression>&);
     void accept(AstNodeVisitor&) const;
+    virtual Symbol type_check(SemanticAnalyzer&, Environment&) const;
 };
 
 class LessThan : public Expression
@@ -206,6 +227,7 @@ public:
 
     LessThan(const std::shared_ptr<Expression>&, const std::shared_ptr<Expression>&);
     void accept(AstNodeVisitor&) const;
+    virtual Symbol type_check(SemanticAnalyzer&, Environment&) const;
 };
 
 class EqualTo : public Expression
@@ -216,6 +238,7 @@ public:
 
     EqualTo(const std::shared_ptr<Expression>&, const std::shared_ptr<Expression>&);
     void accept(AstNodeVisitor&) const;
+    virtual Symbol type_check(SemanticAnalyzer&, Environment&) const;
 };
 
 class LessThanEqualTo : public Expression
@@ -227,6 +250,7 @@ public:
     LessThanEqualTo(const std::shared_ptr<Expression>&, 
             const std::shared_ptr<Expression>&);
     void accept(AstNodeVisitor&) const;
+    virtual Symbol type_check(SemanticAnalyzer&, Environment&) const;
 };
 
 class Plus : public Expression
@@ -237,6 +261,7 @@ public:
 
     Plus(const std::shared_ptr<Expression>&, const std::shared_ptr<Expression>&);
     void accept(AstNodeVisitor&) const;
+    virtual Symbol type_check(SemanticAnalyzer&, Environment&) const;
 };
 
 class Sub : public Expression
@@ -247,6 +272,7 @@ public:
 
     Sub(const std::shared_ptr<Expression>&, const std::shared_ptr<Expression>&);
     void accept(AstNodeVisitor&) const;
+    virtual Symbol type_check(SemanticAnalyzer&, Environment&) const;
 };
 
 class Mul : public Expression
@@ -257,6 +283,7 @@ public:
 
     Mul(const std::shared_ptr<Expression>&, const std::shared_ptr<Expression>&);
     void accept(AstNodeVisitor&) const;
+    virtual Symbol type_check(SemanticAnalyzer&, Environment&) const;
 };
 
 class Div : public Expression
@@ -268,6 +295,7 @@ public:
     Div(const std::shared_ptr<Expression>&, 
             const std::shared_ptr<Expression>&);
     void accept(AstNodeVisitor&) const;
+    virtual Symbol type_check(SemanticAnalyzer&, Environment&) const;
 };
 
 class Not : public Expression
@@ -277,6 +305,7 @@ public:
 
     Not(const std::shared_ptr<Expression>&);
     void accept(AstNodeVisitor&) const;
+    virtual Symbol type_check(SemanticAnalyzer&, Environment&) const;
 };
 
 class StaticDispatch : public Expression
@@ -290,6 +319,7 @@ public:
     StaticDispatch(const std::shared_ptr<Expression>&, const Symbol&, const Symbol&,
            const std::vector<std::shared_ptr<Expression>>&); 
     void accept(AstNodeVisitor&) const;
+    virtual Symbol type_check(SemanticAnalyzer&, Environment&) const;
 };
 
 class DynamicDispatch : public Expression
@@ -302,6 +332,7 @@ public:
     DynamicDispatch(const std::shared_ptr<Expression>&, const Symbol&, 
             const std::vector<std::shared_ptr<Expression>>&);
     void accept(AstNodeVisitor&) const;
+    virtual Symbol type_check(SemanticAnalyzer&, Environment&) const;
 };
 
 class Let : public Expression
@@ -315,6 +346,7 @@ public:
     Let(const Symbol&, const Symbol&, const std::shared_ptr<Expression>&,
             const std::shared_ptr<Expression>&);
     void accept(AstNodeVisitor&) const;
+    virtual Symbol type_check(SemanticAnalyzer&, Environment&) const;
 };
 
 class Case : public Expression
@@ -325,6 +357,7 @@ public:
 
     Case(const std::shared_ptr<Expression>&, const std::vector<std::shared_ptr<CaseBranch>>&);
     void accept(AstNodeVisitor&) const;
+    virtual Symbol type_check(SemanticAnalyzer&, Environment&) const;
 };
 
 class Object : public Expression
@@ -334,6 +367,7 @@ public:
 
     Object(const Symbol&);
     void accept(AstNodeVisitor&) const;
+    virtual Symbol type_check(SemanticAnalyzer&, Environment&) const;
 };
 
 class NoExpr : public Expression
@@ -341,6 +375,7 @@ class NoExpr : public Expression
 public:
     NoExpr();
     void accept(AstNodeVisitor&) const;
+    virtual Symbol type_check(SemanticAnalyzer&, Environment&) const;
 };
 
 
@@ -487,7 +522,6 @@ public:
     void visit(const Object&);
     void visit(const NoExpr&);
 };
-
 
 typedef std::vector<std::shared_ptr<Class>> Classes;
 typedef std::vector<std::shared_ptr<Formal>> Formals;
