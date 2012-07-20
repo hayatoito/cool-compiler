@@ -69,5 +69,7 @@ int main(int argc, char **argv)
         exit(1);
     }
 
+    semant.type_check(ast_root);
+
     return 0;
 }
