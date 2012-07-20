@@ -30,6 +30,11 @@ inline bool operator!=(const Symbol& s1, const Symbol& s2)
     return !(s1.get_val() == s2.get_val());
 }
 
+inline bool operator<(const Symbol& s1, const Symbol& s2)
+{
+    return s1.get_val() < s2.get_val();
+}
+
 
 template<typename K, typename V>
 class SymbolTable
