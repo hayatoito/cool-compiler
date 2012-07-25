@@ -1,5 +1,12 @@
 #include "astnodevisitor.hpp"
+#include "tokentable.hpp"
+#include <memory>
 #include <iomanip>
+
+extern IdentifierTable idtable;
+extern IntTable inttable;
+extern StringTable stringtable;
+extern std::shared_ptr<Program> ast_root;
 
 AstNodeDisplayer::AstNodeDisplayer(std::ostream& stream)
     : os(stream), depth(0)
@@ -500,6 +507,18 @@ void AstNodeCodeGenerator::emit_syscall()
 void AstNodeCodeGenerator::emit_nop()
 {
     os << "nop\n";
+}
+
+void AstNodeCodeGenerator::install_basic()
+{
+    Features object_features = { 
+        std::make_shared<Method>(idtable.add("abort"), idtable.add("Object"), Formals(), std::make_shared<NoExpr>()),
+        std::make_shared<Method>(idtable.add("type_name"), idtable.add("String"), Formals(), std::make_shared<NoExpr>()),
+        std::make_shared<Method>(idtable.add("copy"), idtable.add("SELF_TYPE"), Formals(), std::make_shared<NoExpr>())
+    };
+
+    ast_root->classes.push_back(std::make_shared<Class>(idtable.add("Object"), idtable.add("NoClass"), idtable.add("filename"), object_features));
+
 }
 
 void AstNodeCodeGenerator::visit(const Program& prog)
