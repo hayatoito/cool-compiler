@@ -224,8 +224,6 @@ private:
     void emit_sgt(const char*, const char*, int);
     void emit_sle(const char*, const char*, const char*);
     void emit_sle(const char*, const char*, int);
-    void emit_slt(const char*, const char*, const char*);
-    void emit_slti(const char*, const char*, int);
     void emit_sne(const char*, const char*, const char*);
     void emit_sne(const char*, const char*, int);
 
