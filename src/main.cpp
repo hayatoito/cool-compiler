@@ -62,6 +62,7 @@ int main(int argc, char **argv)
     ast_root->accept(print);
     */
 
+    /*
     SemanticAnalyzer semant;
     if (!semant.validate_inheritance(ast_root->classes))
     {
@@ -70,6 +71,9 @@ int main(int argc, char **argv)
     }
 
     semant.type_check(ast_root);
+    */
+
+
 
     return 0;
 }
