@@ -8,9 +8,6 @@
 #include <iostream>
     
 extern std::shared_ptr<Program> ast_root;
-extern IdentifierTable idtable;
-extern IntTable inttable;
-extern StringTable stringtable;
 
 extern int yylex();
 extern int yylineno;
@@ -62,8 +59,8 @@ class_list : class { $$ = std::vector<std::shared_ptr<Class>>(); $$.push_back($1
             | class_list class { $$.push_back($2); }
 ;
 
-class : CLASS TYPEID '{' feature_list '}' ';' { $$ = std::make_shared<Class>($2, idtable.add("Object"), stringtable.add("filename"), $4); }
-        | CLASS TYPEID INHERITS TYPEID '{' feature_list '}' ';' { $$ = std::make_shared<Class>($2, $4, stringtable.add("filename"), $6); }
+class : CLASS TYPEID '{' feature_list '}' ';' { $$ = std::make_shared<Class>($2, idtable().add("Object"), stringtable().add("filename"), $4); }
+        | CLASS TYPEID INHERITS TYPEID '{' feature_list '}' ';' { $$ = std::make_shared<Class>($2, $4, stringtable().add("filename"), $6); }
         | error ';' { yyerrok; } 
 ;
 
@@ -115,8 +112,8 @@ expression : OBJECTID ASSIGN expression { $$ = std::make_shared<Assign>($1, $3);
             | expression '.' OBJECTID '(' ')' { $$ = std::make_shared<DynamicDispatch>($1, $3, Expressions()); }
             | expression '@' TYPEID '.' OBJECTID '(' method_expr_list ')' { $$ = std::make_shared<StaticDispatch>($1, $3, $5, $7); }
             | expression '@' TYPEID '.' OBJECTID '(' ')' { $$ = std::make_shared<StaticDispatch>($1, $3, $5, Expressions()); }
-            | OBJECTID '(' method_expr_list ')' { $$ = std::make_shared<DynamicDispatch>(std::make_shared<Object>(idtable.add("self")), $1, $3); } 
-            | OBJECTID '(' ')' { $$ = std::make_shared<DynamicDispatch>(std::make_shared<Object>(idtable.add("self")), $1, Expressions()); } 
+            | OBJECTID '(' method_expr_list ')' { $$ = std::make_shared<DynamicDispatch>(std::make_shared<Object>(idtable().add("self")), $1, $3); } 
+            | OBJECTID '(' ')' { $$ = std::make_shared<DynamicDispatch>(std::make_shared<Object>(idtable().add("self")), $1, Expressions()); } 
             | IF expression THEN expression ELSE expression FI { $$ = std::make_shared<If>($2, $4, $6); }
             | WHILE expression LOOP expression POOL { $$ = std::make_shared<While>($2, $4); }
             | '{' expression_list '}' { $$ = std::make_shared<Block>($2); }

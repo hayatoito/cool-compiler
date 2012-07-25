@@ -8,10 +8,6 @@
 #include "symboltable.hpp"
 #include "y.tab.h"
 
-extern IdentifierTable idtable; // defined in main.cpp
-extern IntTable inttable;  // defined in main.cpp
-extern StringTable stringtable; // defined in main.cpp
-
 static const int MAX_STR_CONST = 1025;
 
 char string_buf[MAX_STR_CONST];  // buffer to store string contstants encountered in source file
@@ -166,7 +162,7 @@ f(?i:alse) {
 }
 
 [0-9]+ {
-    yylval.symbol = inttable.add(yytext);
+    yylval.symbol = inttable().add(yytext);
     return INT_CONST;
 }
 
@@ -180,13 +176,13 @@ f(?i:alse) {
 
 
 [A-Z][a-zA-Z0-9_]* {
-    yylval.symbol = idtable.add(yytext);
+    yylval.symbol = idtable().add(yytext);
     return TYPEID;
 }
 
 
 [a-z][a-zA-Z0-9_]* {
-    yylval.symbol = idtable.add(yytext);
+    yylval.symbol = idtable().add(yytext);
     return OBJECTID;
 }
 
@@ -217,7 +213,7 @@ f(?i:alse) {
 
 <STRING>\" {
     BEGIN(INITIAL);
-    yylval.symbol = stringtable.add(string_buf);
+    yylval.symbol = stringtable().add(string_buf);
     return STR_CONST;
 }
 

@@ -12,12 +12,6 @@ extern int yyparse();
 extern int yynerrs; 
 extern FILE* yyin;
 
-// Following tables are used by both the lexer and parser
-// to manage symbols like constants
-IdentifierTable idtable;
-IntTable inttable;
-StringTable stringtable;
-
 // Root of AST used by the parser. This should be populated
 // after parsing phase
 std::shared_ptr<Program> ast_root;
@@ -59,10 +53,8 @@ int main(int argc, char **argv)
         exit(1);
     }
     
-    /*
     AstNodeDisplayer print(std::cout);
     ast_root->accept(print);
-    */
 
     SemanticAnalyzer semant;
     if (!semant.validate_inheritance(ast_root->classes))
@@ -75,6 +67,7 @@ int main(int argc, char **argv)
 
     std::ofstream out("output.s");
     AstNodeCodeGenerator codegen(semant.get_inherit_graph(), out);
+    codegen.install_basic();
     ast_root->accept(codegen);
 
     return 0;
