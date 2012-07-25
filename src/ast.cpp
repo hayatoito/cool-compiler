@@ -3,7 +3,7 @@
 #include <iomanip>
 #include <iostream>
 
-Program::Program(const std::vector<std::shared_ptr<Class>>& c)
+Program::Program(const Classes& c)
     : classes(c)
 {
 
@@ -15,7 +15,7 @@ void Program::accept(AstNodeVisitor& visitor) const
 }
 
 Class::Class(const Symbol& cname, const Symbol& super, const Symbol& file, 
-        const std::vector<std::shared_ptr<Feature>>& f)
+        const Features& f)
     : name(cname), parent(super), filename(file), features(f)
 {
 
@@ -50,7 +50,7 @@ void Feature::accept(AstNodeVisitor& visitor) const
 }
 
 Method::Method(const Symbol& mname, const Symbol& ret, 
-        const std::vector<std::shared_ptr<Formal>>& formals, const std::shared_ptr<Expression>& expr)
+        const Formals& formals, const std::shared_ptr<Expression>& expr)
     : name(mname), return_type(ret), params(formals), body(expr)
 {
 
@@ -155,7 +155,7 @@ void Assign::accept(AstNodeVisitor& visitor) const
     visitor.visit(*this);
 }
 
-Block::Block(const std::vector<std::shared_ptr<Expression>>& block)
+Block::Block(const Expressions& block)
     : body(block)
 {
 
@@ -290,7 +290,7 @@ void Not::accept(AstNodeVisitor& visitor) const
 }
 
 StaticDispatch::StaticDispatch(const std::shared_ptr<Expression>& objexpr, const Symbol& stype, 
-        const Symbol& func, const std::vector<std::shared_ptr<Expression>>& act)
+        const Symbol& func, const Expressions& act)
    : obj(objexpr), type(stype), method(func), actual(act)
 {
 
@@ -302,7 +302,7 @@ void StaticDispatch::accept(AstNodeVisitor& visitor) const
 }
 
 DynamicDispatch::DynamicDispatch(const std::shared_ptr<Expression>& objexpr, 
-        const Symbol& func, const std::vector<std::shared_ptr<Expression>>& act)
+        const Symbol& func, const Expressions& act)
     : obj(objexpr), method(func), actual(act)
 {
 
@@ -325,7 +325,7 @@ void Let::accept(AstNodeVisitor& visitor) const
     visitor.visit(*this);
 }
 
-Case::Case(const std::shared_ptr<Expression>& exp, const std::vector<std::shared_ptr<CaseBranch>>& cb)
+Case::Case(const std::shared_ptr<Expression>& exp, const Cases& cb)
     : expr(exp), branches(cb)
 {
 
