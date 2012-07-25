@@ -7,11 +7,11 @@ lex.yy.*
 y.output
 y.tab.c
 y.tab.h
-parser
 
 #objects/executables
 *.o
 *.out
+cooc
 
 .depend
 test.cl
