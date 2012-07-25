@@ -1,18 +1,18 @@
 FFLAGS=
 BFLAGS=-d -v -y 
-CFLAGS=-Wall -Wextra -std=c++11 -Wno-write-strings
+CFLAGS=-g -Wall -Wextra -std=c++11 -Wno-write-strings
 
 FLEX=flex
 BISON=bison
 CC=g++
 
-SRCS=y.tab.c ast.cpp tokentable.cpp symboltable.cpp main.cpp lex.yy.c semanticanalyzer.cpp
-OBJS=y.tab.o ast.o tokentable.o symboltable.o main.o lex.yy.o semanticanalyzer.o
+SRCS=y.tab.c ast.cpp tokentable.cpp symboltable.cpp main.cpp lex.yy.c semanticanalyzer.cpp astnodevisitor.cpp
+OBJS=y.tab.o ast.o tokentable.o symboltable.o main.o lex.yy.o semanticanalyzer.o astnodevisitor.o
 
-parser : ${OBJS} 
+cooc : ${OBJS} 
 	${CC} ${CFLAGS} -o $@ ${OBJS}
 
-%.o : %.cpp 
+%.o : %.cpp
 	${CC} ${CFLAGS} -c $<
 
 y.tab.c : cool.y

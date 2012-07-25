@@ -2,6 +2,7 @@
 #define ASTNODEVISITOR_H
 
 #include "ast.hpp"
+#include <iostream>
 
 //Forward declarations since there are 
 //circular dependencies of the ast node classes
@@ -145,14 +146,14 @@ public:
 };
 
 //Visitor that dumps (pretty prints) the AST
-class AstNodePrint : public AstNodeVisitor
+class AstNodeDisplayer : public AstNodeVisitor
 {
 private:
     std::ostream& os; 
     size_t depth; //Used to keep track of the AST depth of the visitor for proper indentation
 
 public:
-    AstNodePrint(std::ostream&);
+    AstNodeDisplayer(std::ostream&);
 
     void visit(const Program&);
     void visit(const Class&);
@@ -187,6 +188,48 @@ public:
     void visit(const NoExpr&);
 };
 
+//Visitor that performs code generation for each AST node
+class AstNodeCodeGenerator : public AstNodeVisitor
+{
+private:
+    std::map<std::string, std::string> inherit_graph;
+    std::ostream& os;
 
+public:
+    AstNodeCodeGenerator(const std::map<std::string, std::string>&, 
+            std::ostream&);
+
+    void visit(const Program&);
+    void visit(const Class&);
+    void visit(const Feature&);
+    void visit(const Attribute&);
+    void visit(const Formal&);
+    void visit(const Method&);
+    void visit(const StringConst&);
+    void visit(const IntConst&);
+    void visit(const BoolConst&);
+    void visit(const New&);
+    void visit(const IsVoid&);
+    void visit(const CaseBranch&);
+    void visit(const Assign&);
+    void visit(const Block&);
+    void visit(const If&);
+    void visit(const While&);
+    void visit(const Complement&);
+    void visit(const LessThan&);
+    void visit(const EqualTo&);
+    void visit(const LessThanEqualTo&);
+    void visit(const Plus&);
+    void visit(const Sub&);
+    void visit(const Mul&);
+    void visit(const Div&);
+    void visit(const Not&);
+    void visit(const StaticDispatch&);
+    void visit(const DynamicDispatch&);
+    void visit(const Let&);
+    void visit(const Case&);
+    void visit(const Object&);
+    void visit(const NoExpr&);
+};
 
 #endif

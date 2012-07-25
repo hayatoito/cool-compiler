@@ -29,8 +29,6 @@ bool SemanticAnalyzer::cyclic_check(std::map<std::string, std::string>& graph, c
 
 bool SemanticAnalyzer::validate_inheritance(const Classes& classes)
 {
-    std::map<std::string, std::string> inherit_graph;
-
     for (auto& c : classes)
     {
         std::string class_name = c->name.get_val();
@@ -68,4 +66,9 @@ bool SemanticAnalyzer::type_check(const std::shared_ptr<Program>& root)
 {
     Environment env;
     root->type_check(*this, env);
+}
+
+std::map<std::string, std::string> SemanticAnalyzer::get_inherit_graph() const
+{
+    return inherit_graph;
 }

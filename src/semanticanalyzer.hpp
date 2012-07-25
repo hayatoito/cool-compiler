@@ -32,6 +32,8 @@ private:
     std::set<std::string> visited;   
     std::set<std::string> processed;
 
+    std::map<std::string, std::string> inherit_graph;
+
     bool invalid_parent(const std::string&); 
 
     //Performs a DFS traversal of the inheritance graph created from the list
@@ -45,6 +47,8 @@ public:
 
     //Calls on the AST to type check and scope check its nodes
     bool type_check(const std::shared_ptr<Program>&);
+
+    std::map<std::string, std::string> get_inherit_graph() const;
 };
 
 

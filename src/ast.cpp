@@ -5,17 +5,6 @@
 
 extern IdentifierTable idtable;
 
-//Declare some static objects to be used by the 
-//type checker
-static Symbol object = idtable.add("Object");
-static Symbol integer = idtable.add("Int");
-static Symbol boolean = idtable.add("Bool");
-static Symbol string = idtable.add("String");
-static Symbol no_expr = idtable.add("NoExpr");
-static Symbol no_type = idtable.add("NoType");
-static Symbol self_type = idtable.add("SELF_TYPE");
-static Symbol self = idtable.add("self");
-
 Program::Program(const std::vector<std::shared_ptr<Class>>& c)
     : classes(c)
 {
@@ -372,20 +361,12 @@ void NoExpr::accept(AstNodeVisitor& visitor) const
 
 Symbol Program::type_check(SemanticAnalyzer& sa, Environment& env) const
 {
-    for (auto& cl : classes)
-        cl->type_check(sa, env);
+
 }
 
 Symbol Class::type_check(SemanticAnalyzer& sa, Environment& env) const 
 {
-    env.symtbl.enter_scope();
-    env.curr_class = name;
 
-    for (auto& feature : features)
-        feature->type_check(sa, env);
-
-    env.symtbl.exit_scope();
-    return object;
 }
 
 Symbol Attribute::type_check(SemanticAnalyzer& sa, Environment& env) const
@@ -411,23 +392,22 @@ Symbol StringConst::type_check(SemanticAnalyzer& sa, Environment& env) const
 
 Symbol IntConst::type_check(SemanticAnalyzer& sa, Environment& env) const
 {
-    return integer;
+
 }
 
 Symbol BoolConst::type_check(SemanticAnalyzer& sa, Environment& env) const
 {
-    return boolean;
+
 }
 
 Symbol New::type_check(SemanticAnalyzer& sa, Environment& env) const
 {
-    return type == self_type ? env.curr_class : type;
+    
 }
 
 Symbol IsVoid::type_check(SemanticAnalyzer& sa, Environment& env) const
 {
-    expr->type_check(sa, env);
-    return boolean;
+
 }
 
 Symbol CaseBranch::type_check(SemanticAnalyzer& sa, Environment& env) const
@@ -532,11 +512,10 @@ Symbol Object::type_check(SemanticAnalyzer& sa, Environment& env) const
     }
     */
 
-    return obj_type;
+    
 }
 
 Symbol NoExpr::type_check(SemanticAnalyzer& sa, Environment& env) const
 {
-    return no_type;
-}
 
+}

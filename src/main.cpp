@@ -2,9 +2,11 @@
 #include "tokentable.hpp"
 #include "ast.hpp"
 #include "semanticanalyzer.hpp"
+#include "astnodevisitor.hpp"
 
 #include <cstdio>
 #include <iostream>
+#include <fstream>
 
 extern int yyparse(); 
 extern int yynerrs; 
@@ -58,11 +60,10 @@ int main(int argc, char **argv)
     }
     
     /*
-    AstNodePrintVisitor print(std::cout);
+    AstNodeDisplayer print(std::cout);
     ast_root->accept(print);
     */
 
-    /*
     SemanticAnalyzer semant;
     if (!semant.validate_inheritance(ast_root->classes))
     {
@@ -70,10 +71,10 @@ int main(int argc, char **argv)
         exit(1);
     }
 
-    semant.type_check(ast_root);
-    */
+    //semant.type_check(ast_root);
 
-
+    //std::ofstream out("output.s");
+//    AstNodeCodeGenerator codegen(semant.get_inherit_graph(), out);
 
     return 0;
 }
