@@ -3,9 +3,6 @@
 #include <memory>
 #include <iomanip>
 
-extern IdentifierTable idtable;
-extern IntTable inttable;
-extern StringTable stringtable;
 extern std::shared_ptr<Program> ast_root;
 
 AstNodeDisplayer::AstNodeDisplayer(std::ostream& stream)
@@ -284,6 +281,32 @@ AstNodeCodeGenerator::AstNodeCodeGenerator(const std::map<std::string, std::stri
 
 }
 
+const Symbol AstNodeCodeGenerator::object = idtable().add("Object");
+const Symbol AstNodeCodeGenerator::integer = idtable().add("Int");
+const Symbol AstNodeCodeGenerator::boolean = idtable().add("Bool");
+const Symbol AstNodeCodeGenerator::string = idtable().add("String");
+const Symbol AstNodeCodeGenerator::io = idtable().add("IO");
+const Symbol AstNodeCodeGenerator::self = idtable().add("self");
+const Symbol AstNodeCodeGenerator::SELF_TYPE = idtable().add("SELF_TYPE");
+const Symbol AstNodeCodeGenerator::noclass = idtable().add("NoClass");
+const Symbol AstNodeCodeGenerator::notype = idtable().add("NoType");
+const Symbol AstNodeCodeGenerator::prim_slot = idtable().add("prim_slot");
+const Symbol AstNodeCodeGenerator::abort = idtable().add("abort");
+const Symbol AstNodeCodeGenerator::type_name = idtable().add("type_name");
+const Symbol AstNodeCodeGenerator::copy = idtable().add("copy");
+const Symbol AstNodeCodeGenerator::main = idtable().add("main");
+const Symbol AstNodeCodeGenerator::out_int = idtable().add("out_int");
+const Symbol AstNodeCodeGenerator::in_int = idtable().add("in_int");
+const Symbol AstNodeCodeGenerator::in_string = idtable().add("in_string");
+const Symbol AstNodeCodeGenerator::out_string = idtable().add("out_string");
+const Symbol AstNodeCodeGenerator::substr = idtable().add("substr");
+const Symbol AstNodeCodeGenerator::length = idtable().add("length");
+const Symbol AstNodeCodeGenerator::concat = idtable().add("concat");
+const Symbol AstNodeCodeGenerator::arg = idtable().add("arg");
+const Symbol AstNodeCodeGenerator::arg2 = idtable().add("arg2");
+const Symbol AstNodeCodeGenerator::val = idtable().add("val");
+const Symbol AstNodeCodeGenerator::str_field = idtable().add("str_field");
+
 void AstNodeCodeGenerator::emit_addiu(const char* dst, const char* src1, int imm)
 {
     os << "addiu\t$" << dst << ", $" << src1 << ", " << imm << "\n";
@@ -512,13 +535,51 @@ void AstNodeCodeGenerator::emit_nop()
 void AstNodeCodeGenerator::install_basic()
 {
     Features object_features = { 
-        std::make_shared<Method>(idtable.add("abort"), idtable.add("Object"), Formals(), std::make_shared<NoExpr>()),
-        std::make_shared<Method>(idtable.add("type_name"), idtable.add("String"), Formals(), std::make_shared<NoExpr>()),
-        std::make_shared<Method>(idtable.add("copy"), idtable.add("SELF_TYPE"), Formals(), std::make_shared<NoExpr>())
+        std::make_shared<Method>(abort, object, Formals(), std::make_shared<NoExpr>()),
+        std::make_shared<Method>(type_name, string, Formals(), std::make_shared<NoExpr>()),
+        std::make_shared<Method>(copy, SELF_TYPE, Formals(), std::make_shared<NoExpr>())
     };
 
-    ast_root->classes.push_back(std::make_shared<Class>(idtable.add("Object"), idtable.add("NoClass"), idtable.add("filename"), object_features));
+    ast_root->classes.push_back(std::make_shared<Class>(object, noclass, idtable().add("filename"), object_features));
 
+    Formals io_formal1 = { std::make_shared<Formal>(arg, string) };
+    Formals io_formal2 = { std::make_shared<Formal>(arg, integer) };
+    Features io_features = {
+        std::make_shared<Method>(out_string, SELF_TYPE, io_formal1, std::make_shared<NoExpr>()),
+        std::make_shared<Method>(out_int, SELF_TYPE, io_formal2, std::make_shared<NoExpr>()),
+        std::make_shared<Method>(in_string, string, Formals(), std::make_shared<NoExpr>()),
+        std::make_shared<Method>(in_int, integer, Formals(), std::make_shared<NoExpr>())
+    };
+
+    ast_root->classes.push_back(std::make_shared<Class>(io, object, idtable().add("filename"), io_features));
+
+    Features int_features = {
+        std::make_shared<Attribute>(val, prim_slot, std::make_shared<NoExpr>())
+    };
+
+    ast_root->classes.push_back(std::make_shared<Class>(integer, object, idtable().add("filename"), int_features));
+
+    Features bool_features = {
+        std::make_shared<Attribute>(val, prim_slot, std::make_shared<NoExpr>())
+    };
+
+    ast_root->classes.push_back(std::make_shared<Class>(boolean, object, idtable().add("filename"), bool_features));
+
+    Formals string_formal1 = { std::make_shared<Formal>(arg, string) };
+    Formals string_formal2 = { 
+        std::make_shared<Formal>(arg, integer),
+        std::make_shared<Formal>(arg2, integer)
+    };
+
+    Features string_features = {
+        std::make_shared<Attribute>(val, integer, std::make_shared<NoExpr>()),
+        std::make_shared<Attribute>(str_field, prim_slot, std::make_shared<NoExpr>()),    
+        std::make_shared<Method>(length, integer, Formals(), std::make_shared<NoExpr>()),
+        std::make_shared<Method>(concat, string, string_formal1, std::make_shared<NoExpr>()),
+        std::make_shared<Method>(substr, string, string_formal2, std::make_shared<NoExpr>())
+    };
+
+    ast_root->classes.push_back(std::make_shared<Class>(string, object, idtable().add("filename"), string_features));
 }
 
 void AstNodeCodeGenerator::visit(const Program& prog)

@@ -2,6 +2,7 @@
 #define ASTNODEVISITOR_H
 
 #include "ast.hpp"
+#include "tokentable.hpp"
 #include <iostream>
 
 //Forward declarations since there are 
@@ -192,8 +193,36 @@ public:
 class AstNodeCodeGenerator : public AstNodeVisitor
 {
 private:
-    std::map<std::string, std::string> inherit_graph;
-    std::ostream& os;
+    //symbol constants for convinience
+    static const Symbol object;
+    static const Symbol integer;
+    static const Symbol boolean;
+    static const Symbol string;
+    static const Symbol io;
+    static const Symbol self;
+    static const Symbol SELF_TYPE;
+    static const Symbol noclass;
+    static const Symbol notype;
+    static const Symbol prim_slot;
+    static const Symbol abort;
+    static const Symbol type_name;
+    static const Symbol copy;
+    static const Symbol main;
+    static const Symbol out_int;
+    static const Symbol in_int;
+    static const Symbol in_string;
+    static const Symbol out_string;
+    static const Symbol substr;
+    static const Symbol length;
+    static const Symbol concat;
+    static const Symbol arg;
+    static const Symbol arg2;
+    static const Symbol val;
+    static const Symbol str_field;
+
+
+    std::map<std::string, std::string> inherit_graph; //inheritance graph created from semantic analysis stage
+    std::ostream& os; //output stream
 
     //arithmetic instructions
     void emit_addiu(const char*, const char*, int);
