@@ -268,12 +268,18 @@ void AstNodeDisplayer::visit(const NoExpr&)
     os << "-noexpr\n";
 }
 
+
 //Code generation implementation
 AstNodeCodeGenerator::AstNodeCodeGenerator(const std::map<std::string, std::string>& ig, 
         std::ostream& stream)
     : inherit_graph(ig), os(stream) 
 {
 
+}
+
+void AstNodeCodeGenerator::emit_addiu(const char* dst, const char* src1, int imm)
+{
+    os << "addiu\t$" << dst << ", $" << src1 << ", " << imm << "\n";
 }
 
 void AstNodeCodeGenerator::visit(const Program& prog)

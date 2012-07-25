@@ -195,6 +195,70 @@ private:
     std::map<std::string, std::string> inherit_graph;
     std::ostream& os;
 
+    //arithmetic instructions
+    void emit_addiu(const char*, const char*, int);
+    void emit_add(const char*, const char*, const char*);
+    void emit_div(const char*, const char*, const char*);
+    void emit_divu(const char*, const char*, const char*);
+    void emit_mul(const char*, const char*, const char*);
+    void emit_sub(const char*, const char*, const char*);
+    
+    //logical instructions
+    void emit_and(const char*, const char*, const char*);
+    void emit_neg(const char*, const char*);
+    void emit_nor(const char*, const char*, const char*);
+    void emit_not(const char*, const char*);
+    void emit_or(const char*, const char*, const char*);
+    void emit_xor(const char*, const char*, const char*);
+
+    //constant manipulating instructions
+    void emit_li(const char*, int);
+    void emit_lui(const char*, int);
+
+    //comparison instructions
+    void emit_seq(const char*, const char*, const char*);
+    void emit_seq(const char*, const char*, int);
+    void emit_sge(const char*, const char*, const char*);
+    void emit_sge(const char*, const char*, int);
+    void emit_sgt(const char*, const char*, const char*);
+    void emit_sgt(const char*, const char*, int);
+    void emit_sle(const char*, const char*, const char*);
+    void emit_sle(const char*, const char*, int);
+    void emit_slt(const char*, const char*, const char*);
+    void emit_slti(const char*, const char*, int);
+    void emit_sne(const char*, const char*, const char*);
+    void emit_sne(const char*, const char*, int);
+
+    //branch and jump instructions
+    void emit_b(const char*);
+    void emit_beq(const char*, const char*, const char*);
+    void emit_beq(const char*, int, const char*);
+    void emit_bge(const char*, const char*, const char*);
+    void emit_bge(const char*, int, const char*);
+    void emit_bne(const char*, const char*, const char*);
+    void emit_bne(const char*, int, const char*);
+    void emit_j(const char*);
+    void emit_jal(const char*);
+    void emit_jalr(const char*);
+    void emit_jr(const char*);
+
+    //load instructions
+    void emit_la(const char*, const char*);
+    void emit_lb(const char*, const char*);
+    void emit_ld(const char*, const char*);
+    void emit_lw(const char*, const char*);
+
+    //store instructions
+    void emit_sb(const char*, const char*);
+    void emit_sd(const char*, const char*);
+    void emit_sw(const char*, const char*);
+
+    //data movement instructions
+    void emit_move(const char*, const char*);
+
+    //exception and trap instructions
+    void emit_syscall();
+    void emit_nop();
 public:
     AstNodeCodeGenerator(const std::map<std::string, std::string>&, 
             std::ostream&);

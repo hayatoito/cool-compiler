@@ -73,8 +73,9 @@ int main(int argc, char **argv)
 
     //semant.type_check(ast_root);
 
-    //std::ofstream out("output.s");
-//    AstNodeCodeGenerator codegen(semant.get_inherit_graph(), out);
+    std::ofstream out("output.s");
+    AstNodeCodeGenerator codegen(semant.get_inherit_graph(), out);
+    ast_root->accept(codegen);
 
     return 0;
 }

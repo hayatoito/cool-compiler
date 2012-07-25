@@ -12,6 +12,7 @@ y.tab.h
 *.o
 *.out
 cooc
+output.s
 
 .depend
 test.cl
