@@ -5,33 +5,47 @@
 #include <string>
 #include <map>
 
-class IdentifierTable 
+class TokenTable
 {
 private:
     std::map<std::string, Symbol> tbl;
 
 public:
     Symbol add(const std::string&);
+
 };
 
-
-class IntTable
+class IdentifierTable : public TokenTable
 {
-private:
-    std::map<std::string, Symbol> tbl;
 
-public:
-    Symbol add(const std::string&);
 };
 
-
-class StringTable
+IdentifierTable& idtable()
 {
-private:
-    std::map<std::string, Symbol> tbl;
+    static IdentifierTable idtable;
+    return idtable;
+}
 
-public:
-    Symbol add(const std::string&);
+class IntTable : public TokenTable
+{
+
 };
+
+IntTable& inttable()
+{
+    static IntTable inttable;
+    return inttable;
+}
+
+class StringTable : public TokenTable
+{
+
+};
+
+StringTable& stringtable()
+{
+    static StringTable stringtable;
+    return stringtable;
+}
 
 #endif 
