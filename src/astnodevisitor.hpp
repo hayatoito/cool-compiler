@@ -145,14 +145,14 @@ public:
 };
 
 //Visitor that dumps (pretty prints) the AST
-class AstNodePrintVisitor : public AstNodeVisitor
+class AstNodePrint : public AstNodeVisitor
 {
 private:
     std::ostream& os; 
     size_t depth; //Used to keep track of the AST depth of the visitor for proper indentation
 
 public:
-    AstNodePrintVisitor(std::ostream&);
+    AstNodePrint(std::ostream&);
 
     void visit(const Program&);
     void visit(const Class&);
@@ -186,5 +186,7 @@ public:
     void visit(const Object&);
     void visit(const NoExpr&);
 };
+
+
 
 #endif
