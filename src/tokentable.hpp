@@ -20,7 +20,7 @@ class IdentifierTable : public TokenTable
 
 };
 
-IdentifierTable& idtable()
+inline IdentifierTable& idtable()
 {
     static IdentifierTable idtable;
     return idtable;
@@ -31,7 +31,7 @@ class IntTable : public TokenTable
 
 };
 
-IntTable& inttable()
+inline IntTable& inttable()
 {
     static IntTable inttable;
     return inttable;
@@ -42,7 +42,7 @@ class StringTable : public TokenTable
 
 };
 
-StringTable& stringtable()
+inline StringTable& stringtable()
 {
     static StringTable stringtable;
     return stringtable;

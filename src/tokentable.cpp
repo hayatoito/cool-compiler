@@ -7,5 +7,4 @@ Symbol TokenTable::add(const std::string& id)
 
    return tbl[id];
 }
- 
 
