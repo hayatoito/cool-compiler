@@ -3,8 +3,6 @@
 #include <iomanip>
 #include <iostream>
 
-extern IdentifierTable idtable;
-
 Program::Program(const std::vector<std::shared_ptr<Class>>& c)
     : classes(c)
 {
