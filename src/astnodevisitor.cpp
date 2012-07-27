@@ -564,6 +564,11 @@ void AstNodeCodeGenerator::emit_word(int val)
     os << "\t.word\t" << val << "\n";
 }
 
+void AstNodeCodeGenerator::emit_word(const std::string& val)
+{
+    os << "\t.word\t" << val << "\n";
+}
+
 void AstNodeCodeGenerator::emit_word(const char* val)
 {
     os << "\t.word\t" << val << "\n";
@@ -709,14 +714,15 @@ void AstNodeCodeGenerator::code_prototype_table()
 
     for (auto it = begin(inherit_graph); it != end(inherit_graph); ++it)
     {
-        std::ostringstream oss;
-        oss << it->first << "_prototype";
-        emit_word(oss.str().c_str());
-
-        oss.str("");
-        oss << it->first << "_init";
-        emit_word(oss.str().c_str());
+        emit_word(it->first + "_prototype");
+        emit_word(it->first + "_init");
     }
+}
+
+void AstNodeCodeGenerator::code_dispatch_table(const std::string& class_node)
+{
+    code_dispatch_table(inherit_graph[class_node]);
+
 }
 
 void AstNodeCodeGenerator::visit(const Program& prog)
@@ -742,6 +748,12 @@ void AstNodeCodeGenerator::visit(const Program& prog)
     code_constants();
     code_class_name_table();
     code_prototype_table();
+    
+    for (auto it = begin(inherit_graph); it != end(inherit_graph); ++it)
+    {
+        emit_label(it->first + "_disptable");
+        code_dispatch_table(it->first);
+    }
 
     for (auto& cs : prog.classes)
         cs->accept(*this);

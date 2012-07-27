@@ -241,6 +241,7 @@ private:
     void emit_globl(const char*);
     void emit_word(int);
     void emit_word(const char*);
+    void emit_word(const std::string&);
     void emit_label(const char*);
 
     //arithmetic instructions
@@ -310,7 +311,7 @@ private:
     void code_constants();
     void code_class_name_table();
     void code_prototype_table();
-    void code_dispatch_table();
+    void code_dispatch_table(const std::string&);
 
 public:
     AstNodeCodeGenerator(const std::map<std::string, std::string>&, 
