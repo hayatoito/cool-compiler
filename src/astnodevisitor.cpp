@@ -622,10 +622,30 @@ void AstNodeCodeGenerator::install_basic()
     };
 
     ast_root->classes.push_back(std::make_shared<Class>(string, object, idtable().add("filename"), string_features));
+
+    //Add basic classes to string table so a string constant 
+    //will be created for them
+    stringtable().add("Object");
+    stringtable().add("Bool");
+    stringtable().add("IO");
+    stringtable().add("Int");
+    stringtable().add("String");
+
+    //Add basic classes to inheritance graph
+    inherit_graph["Object"] = "NoClass";
+    inherit_graph["Bool"] = "Object";
+    inherit_graph["IO"] = "Object";
+    inherit_graph["Int"] = "Object";
+    inherit_graph["String"] = "Object";
 }
 
 void AstNodeCodeGenerator::code_constants() 
 {
+    //Add all class names to the string table so string constants 
+    //will be created for them
+    for (auto it = begin(inherit_graph); it != end(inherit_graph); ++it)
+        stringtable().add(it->first);
+
     //emit assembly for string constants
     auto str_consts = stringtable().get_elems();
 
@@ -671,6 +691,21 @@ void AstNodeCodeGenerator::code_constants()
     emit_word(1);
 }
 
+void AstNodeCodeGenerator::code_class_name_table()
+{
+    emit_label("class_name_table");
+
+    std::ostringstream oss;
+    for (auto it = begin(inherit_graph); it != end(inherit_graph); ++it)
+    {
+        oss << "str_const" << stringtable().get_idx(it->first);
+        emit_word(oss.str().c_str());
+        oss.str("");
+        oss.clear();
+    }
+        
+}
+
 void AstNodeCodeGenerator::visit(const Program& prog)
 {
     os << ".data\n" 
@@ -692,6 +727,7 @@ void AstNodeCodeGenerator::visit(const Program& prog)
        << "\t.word\t" << STR_CLASS_TAG << "\n";
 
     code_constants();
+    code_class_name_table();
 
     for (auto& cs : prog.classes)
         cs->accept(*this);

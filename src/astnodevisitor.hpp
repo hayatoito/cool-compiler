@@ -308,6 +308,7 @@ private:
 
     //helper functions for generating code for object layout, etc
     void code_constants();
+    void code_class_name_table();
 
 public:
     AstNodeCodeGenerator(const std::map<std::string, std::string>&, 
