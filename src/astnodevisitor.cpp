@@ -695,15 +695,12 @@ void AstNodeCodeGenerator::code_class_name_table()
 {
     emit_label("class_name_table");
 
-    std::ostringstream oss;
     for (auto it = begin(inherit_graph); it != end(inherit_graph); ++it)
     {
+        std::ostringstream oss;
         oss << "str_const" << stringtable().get_idx(it->first);
         emit_word(oss.str().c_str());
-        oss.str("");
-        oss.clear();
     }
-        
 }
 
 void AstNodeCodeGenerator::visit(const Program& prog)
