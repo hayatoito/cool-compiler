@@ -220,9 +220,28 @@ private:
     static const Symbol val;
     static const Symbol str_field;
 
+    //class tags for basic classes
+    static const int STR_CLASS_TAG = 5;
+    static const int INT_CLASS_TAG = 6;
+    static const int BOOL_CLASS_TAG = 7;
+
+    //default size of basic classes in # of 32-bit words
+    static const int STR_CONST_BASE = 4; // for string constants, the base size is 4 + length of string  / word size
+    static const int INT_CONST_SIZE = 4;
+    static const int BOOL_CONST_SIZE = 4;
 
     std::map<std::string, std::string> inherit_graph; //inheritance graph created from semantic analysis stage
     std::ostream& os; //output stream
+
+    //generic instructions
+    void emit_align(int);
+    void emit_ascii(const char*);
+    void emit_asciiz(const char*);
+    void emit_byte(int);
+    void emit_globl(const char*);
+    void emit_word(int);
+    void emit_word(const char*);
+    void emit_label(const char*);
 
     //arithmetic instructions
     void emit_addiu(const char*, const char*, int);
@@ -288,6 +307,7 @@ private:
     void emit_nop();
 
     //helper functions for generating code for object layout, etc
+    void code_constants();
 
 public:
     AstNodeCodeGenerator(const std::map<std::string, std::string>&, 

@@ -2,6 +2,8 @@
 #include "tokentable.hpp"
 #include <memory>
 #include <iomanip>
+#include <cmath>
+#include <sstream>
 
 extern std::shared_ptr<Program> ast_root;
 
@@ -309,227 +311,267 @@ const Symbol AstNodeCodeGenerator::str_field = idtable().add("str_field");
 
 void AstNodeCodeGenerator::emit_addiu(const char* dst, const char* src1, int imm)
 {
-    os << "addiu\t$" << dst << ", $" << src1 << ", " << imm << "\n";
+    os << "\taddiu\t$" << dst << ", $" << src1 << ", " << imm << "\n";
 }
 
 void AstNodeCodeGenerator::emit_add(const char* dst, const char* src1, const char* src2)
 {
-    os << "add\t$" << dst << ", $" << src1 << ", $" << src2 << "\n";
+    os << "\tadd\t$" << dst << ", $" << src1 << ", $" << src2 << "\n";
 }
 
 void AstNodeCodeGenerator::emit_div(const char* dst, const char* src1, const char* src2)
 {
-    os << "div\t$" << dst << ", $" << src1 << ", $" << src2 << "\n";
+    os << "\tdiv\t$" << dst << ", $" << src1 << ", $" << src2 << "\n";
 }
 
 void AstNodeCodeGenerator::emit_divu(const char* dst, const char* src1, const char* src2)
 {
-    os << "divu\t$" << dst << ", $" << src1 << ", $" << src2 << "\n";
+    os << "\tdivu\t$" << dst << ", $" << src1 << ", $" << src2 << "\n";
 }
 
 void AstNodeCodeGenerator::emit_mul(const char* dst, const char* src1, const char* src2)
 {
-    os << "mul\t$" << dst << ", $" << src1 << ", $" << src2 << "\n";
+    os << "\tmul\t$" << dst << ", $" << src1 << ", $" << src2 << "\n";
 }
 
 void AstNodeCodeGenerator::emit_sub(const char* dst, const char* src1, const char* src2)
 {
-    os << "sub\t$" << dst << ", $" << src1 << ", $" << src2 << "\n";
+    os << "\tsub\t$" << dst << ", $" << src1 << ", $" << src2 << "\n";
 }
 
 void AstNodeCodeGenerator::emit_and(const char* dst, const char* src1, const char* src2)
 {
-    os << "and\t$" << dst << ", $" << src1 << ", $" << src2 << "\n";
+    os << "\tand\t$" << dst << ", $" << src1 << ", $" << src2 << "\n";
 }
 
 void AstNodeCodeGenerator::emit_neg(const char* dst, const char* src)
 {
-    os << "neg\t$" << dst << ", $" << src << "\n";
+    os << "\tneg\t$" << dst << ", $" << src << "\n";
 }
 
 void AstNodeCodeGenerator::emit_nor(const char* dst, const char* src1, const char* src2)
 {
-    os << "nor\t$" << dst << ", $"  << src1 << ", $" << src2 << "\n";
+    os << "\tnor\t$" << dst << ", $"  << src1 << ", $" << src2 << "\n";
 }
 
 void AstNodeCodeGenerator::emit_not(const char* dst, const char* src)
 {
-    os << "not\t$" << dst << ", $" << src << "\n";
+    os << "\tnot\t$" << dst << ", $" << src << "\n";
 }
 
 void AstNodeCodeGenerator::emit_or(const char* dst, const char* src1, const char* src2)
 {
-    os << "or\t$" << dst << ", $"  << src1 << ", $" << src2 << "\n";
+    os << "\tor\t$" << dst << ", $"  << src1 << ", $" << src2 << "\n";
 }
 
 void AstNodeCodeGenerator::emit_xor(const char* dst, const char* src1, const char* src2)
 {
-    os << "xor\t$" << dst << ", $"  << src1 << ", $" << src2 << "\n";
+    os << "\txor\t$" << dst << ", $"  << src1 << ", $" << src2 << "\n";
 }
 
 void AstNodeCodeGenerator::emit_li(const char* dst, int imm)
 {
-    os << "li\t$" << dst << ", " << imm << "\n";
+    os << "\tli\t$" << dst << ", " << imm << "\n";
 }
 
 void AstNodeCodeGenerator::emit_lui(const char* dst, int imm)
 {
-    os << "lui\t$" << dst << ", " << imm << "\n";
+    os << "\tlui\t$" << dst << ", " << imm << "\n";
 }
 
 void AstNodeCodeGenerator::emit_seq(const char* dst, const char* src1, const char* src2)
 {
-    os << "seq\t$" << dst << ", $" << src1 << ", $" << src2 << "\n";
+    os << "\tseq\t$" << dst << ", $" << src1 << ", $" << src2 << "\n";
 }
 
 void AstNodeCodeGenerator::emit_seq(const char* dst, const char* src1, int imm)
 {
-    os << "seq\t$" << dst << ", $" << src1 << ", " << imm << "\n";
+    os << "\tseq\t$" << dst << ", $" << src1 << ", " << imm << "\n";
 }
 
 void AstNodeCodeGenerator::emit_sge(const char* dst, const char* src1, const char* src2)
 {
-    os << "sge\t$" << dst << ", $" << src1 << ", $" << src2 << "\n";
+    os << "\tsge\t$" << dst << ", $" << src1 << ", $" << src2 << "\n";
 }
 
 void AstNodeCodeGenerator::emit_sge(const char* dst, const char* src1, int imm)
 {
-    os << "sge\t$" << dst << ", $" << src1 << ", " << imm << "\n";
+    os << "\tsge\t$" << dst << ", $" << src1 << ", " << imm << "\n";
 }
 
 void AstNodeCodeGenerator::emit_sgt(const char* dst, const char* src1, const char* src2)
 {
-    os << "sgt\t$" << dst << ", $" << src1 << ", $" << src2 << "\n";
+    os << "\tsgt\t$" << dst << ", $" << src1 << ", $" << src2 << "\n";
 }
 
 void AstNodeCodeGenerator::emit_sgt(const char* dst, const char* src1, int imm)
 {
-    os << "sgt\t$" << dst << ", $" << src1 << ", " << imm << "\n";
+    os << "\tsgt\t$" << dst << ", $" << src1 << ", " << imm << "\n";
 }
 
 void AstNodeCodeGenerator::emit_sle(const char* dst, const char* src1, const char* src2)
 {
-    os << "sle\t$" << dst << ", $" << src1 << ", $" << src2 << "\n";
+    os << "\tsle\t$" << dst << ", $" << src1 << ", $" << src2 << "\n";
 }
 
 void AstNodeCodeGenerator::emit_sle(const char* dst, const char* src1, int imm)
 {
-    os << "sle\t$" << dst << ", $" << src1 << ", " << imm << "\n";
+    os << "\tsle\t$" << dst << ", $" << src1 << ", " << imm << "\n";
 }
 
 void AstNodeCodeGenerator::emit_sne(const char* dst, const char* src1, const char* src2)
 {
-    os << "sne\t$" << dst << ", $" << src1 << ", $" << src2 << "\n";
+    os << "\tsne\t$" << dst << ", $" << src1 << ", $" << src2 << "\n";
 }
 
 void AstNodeCodeGenerator::emit_sne(const char* dst, const char* src1, int imm)
 {
-    os << "sne\t$" << dst << ", $" << src1 << ", " << imm << "\n";
+    os << "\tsne\t$" << dst << ", $" << src1 << ", " << imm << "\n";
 }
 
 void AstNodeCodeGenerator::emit_b(const char* label)
 {
-    os << "b\t" << label << "\n";
+    os << "\tb\t" << label << "\n";
 }
 
 void AstNodeCodeGenerator::emit_beq(const char* src1, const char* src2, const char* label)
 {
-    os << "beq\t$" << src1 << ", $" << src2 << ", " << label;
+    os << "\tbeq\t$" << src1 << ", $" << src2 << ", " << label;
 }
 
 void AstNodeCodeGenerator::emit_beq(const char* src1, int imm, const char* label)
 {
-    os << "beq\t$" << src1 << ", " << imm << ", " << label;
+    os << "\tbeq\t$" << src1 << ", " << imm << ", " << label;
 }
 
 void AstNodeCodeGenerator::emit_bge(const char* src1, const char* src2, const char* label)
 {
-    os << "bge\t$" << src1 << ", $" << src2 << ", " << label;
+    os << "\tbge\t$" << src1 << ", $" << src2 << ", " << label;
 }
 
 void AstNodeCodeGenerator::emit_bge(const char* src1, int imm, const char* label)
 {
-    os << "bge\t$" << src1 << ", " << imm << ", " << label;
+    os << "\tbge\t$" << src1 << ", " << imm << ", " << label;
 }
 
 void AstNodeCodeGenerator::emit_bne(const char* src1, const char* src2, const char* label)
 {
-    os << "bne\t$" << src1 << ", $" << src2 << ", " << label;
+    os << "\tbne\t$" << src1 << ", $" << src2 << ", " << label;
 }
 
 void AstNodeCodeGenerator::emit_bne(const char* src1, int imm, const char* label)
 {
-    os << "bne\t$" << src1 << ", " << imm << ", " << label;
+    os << "\tbne\t$" << src1 << ", " << imm << ", " << label;
 }
 
 void AstNodeCodeGenerator::emit_j(const char* label)
 {
-    os << "j\t" << label << "\n";
+    os << "\tj\t" << label << "\n";
 }
 
 void AstNodeCodeGenerator::emit_jal(const char* label)
 {
-    os << "jal\t" << label << "\n";
+    os << "\tjal\t" << label << "\n";
 }
 
 void AstNodeCodeGenerator::emit_jalr(const char* src)
 {
-    os << "jalr\t$" << src << "\n";
+    os << "\tjalr\t$" << src << "\n";
 }
 
 void AstNodeCodeGenerator::emit_jr(const char* src)
 {
-    os << "jr\t$" << src << "\n";
+    os << "\tjr\t$" << src << "\n";
 }
 
 void AstNodeCodeGenerator::emit_la(const char* dst, const char* addr)
 {
-    os << "la\t$" << dst << ", " << addr << "\n";
+    os << "\tla\t$" << dst << ", " << addr << "\n";
 }
 
 void AstNodeCodeGenerator::emit_lb(const char* dst, const char* addr)
 {
-    os << "lb\t$" << dst << ", " << addr << "\n";
+    os << "\tlb\t$" << dst << ", " << addr << "\n";
 }
 
 void AstNodeCodeGenerator::emit_ld(const char* dst, const char* addr)
 {
-    os << "ld\t$" << dst << ", " << addr << "\n";
+    os << "\tld\t$" << dst << ", " << addr << "\n";
 }
 
 void AstNodeCodeGenerator::emit_lw(const char* dst, const char* addr)
 {
-    os << "lw\t$" << dst << ", " << addr << "\n";
+    os << "\tlw\t$" << dst << ", " << addr << "\n";
 }
 
 void AstNodeCodeGenerator::emit_sb(const char* dst, const char* addr)
 {
-    os << "sb\t$" << dst << ", " << addr << "\n";
+    os << "\tsb\t$" << dst << ", " << addr << "\n";
 }
 
 void AstNodeCodeGenerator::emit_sd(const char* dst, const char* addr)
 {
-    os << "sd\t$" << dst << ", " << addr << "\n";
+    os << "\tsd\t$" << dst << ", " << addr << "\n";
 }
 
 void AstNodeCodeGenerator::emit_sw(const char* dst, const char* addr)
 {
-    os << "sw\t$" << dst << ", " << addr << "\n";
+    os << "\tsw\t$" << dst << ", " << addr << "\n";
 }
 
 void AstNodeCodeGenerator::emit_move(const char* dst, const char* src)
 {
-    os << "move\t$" << dst << ", $" << src << "\n";
+    os << "\tmove\t$" << dst << ", $" << src << "\n";
 }
 
 void AstNodeCodeGenerator::emit_syscall()
 {
-    os << "syscall\n";
+    os << "\tsyscall\n";
 }
 
 void AstNodeCodeGenerator::emit_nop()
 {
-    os << "nop\n";
+    os << "\tnop\n";
+}
+
+void AstNodeCodeGenerator::emit_align(int boundary)
+{
+    os << "\t.align\t" << boundary << "\n";
+}
+
+void AstNodeCodeGenerator::emit_ascii(const char* str)
+{
+    os << "\t.ascii\t\"" << str << "\"\n";
+}
+
+void AstNodeCodeGenerator::emit_asciiz(const char* str)
+{
+    os << "\t.asciiz\t\"" << str << "\"\n";
+}
+
+void AstNodeCodeGenerator::emit_byte(int val)
+{
+    os << "\t.byte\t" << val << "\n";
+}
+
+void AstNodeCodeGenerator::emit_globl(const char* sym)
+{
+    os << "\t.globl\t" << sym << "\n";
+}
+
+void AstNodeCodeGenerator::emit_word(int val)
+{
+    os << "\t.word\t" << val << "\n";
+}
+
+void AstNodeCodeGenerator::emit_word(const char* val)
+{
+    os << "\t.word\t" << val << "\n";
+}
+
+void AstNodeCodeGenerator::emit_label(const char* label)
+{
+    os << label << ":" << "\n";
 }
 
 void AstNodeCodeGenerator::install_basic()
@@ -582,8 +624,75 @@ void AstNodeCodeGenerator::install_basic()
     ast_root->classes.push_back(std::make_shared<Class>(string, object, idtable().add("filename"), string_features));
 }
 
+void AstNodeCodeGenerator::code_constants() 
+{
+    //emit assembly for string constants
+    auto str_consts = stringtable().get_elems();
+
+    for (auto it = begin(str_consts); it != end(str_consts); ++it)
+    {
+        os << "str_const";
+        emit_label(std::to_string(stringtable().get_idx(it->first)).c_str());
+        emit_word(STR_CLASS_TAG);
+        emit_word(STR_CONST_BASE + ceil(it->first.size() / 4.0));
+        emit_word("String_disptable");
+        emit_word(it->first.size());
+        emit_asciiz(it->first.c_str());
+        emit_align(2); // align to word boundary (2^2)
+    }
+
+    //emit assembly for int constants
+    auto int_consts = inttable().get_elems();
+
+    for (auto it = begin(int_consts); it != end(int_consts); ++it)
+    {
+        os << "int_const";
+        emit_label(std::to_string(inttable().get_idx(it->first)).c_str());
+        emit_word(INT_CLASS_TAG);
+        emit_word(INT_CONST_SIZE);
+        emit_word("Int_disptable");
+
+        int repr;
+        std::stringstream(it->first) >> repr;
+        emit_word(repr);
+    }
+
+    //emit assembly for bool constants
+    emit_label("bool_const0"); // for false
+    emit_word(BOOL_CLASS_TAG);
+    emit_word(BOOL_CONST_SIZE);
+    emit_word("Bool_disptable");
+    emit_word(0);
+ 
+    emit_label("bool_const1"); // for true
+    emit_word(BOOL_CLASS_TAG);
+    emit_word(BOOL_CONST_SIZE);
+    emit_word("Bool_disptable");
+    emit_word(1);
+}
+
 void AstNodeCodeGenerator::visit(const Program& prog)
 {
+    os << ".data\n" 
+       << "\t.align\t2\n"
+       << "\t.globl\tclass_name_table\n"
+       << "\t.globl\tMain_prototype\n"
+       << "\t.globl\tInt_prototype\n"
+       << "\t.globl\tString_prototype\n"
+       << "\t.globl\tbool_const0\n"
+       << "\t.globl\tbool_const1\n"
+       << "\t.globl\t_int_tag\n"
+       << "\t.globl\t_bool_tag\n"
+       << "\t.globl\t_string_tag\n"
+       << "_int_tag:\n"
+       << "\t.word\t" << INT_CLASS_TAG << "\n"
+       << "_bool_tag:\n"
+       << "\t.word\t" << BOOL_CLASS_TAG << "\n"
+       << "_string_tag:\n"
+       << "\t.word\t" << STR_CLASS_TAG << "\n";
+
+    code_constants();
+
     for (auto& cs : prog.classes)
         cs->accept(*this);
 }
