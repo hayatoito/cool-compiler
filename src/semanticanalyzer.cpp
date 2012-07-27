@@ -3,7 +3,7 @@
 
 bool SemanticAnalyzer::invalid_parent(const std::string& parent)
 {
-    return parent == "String" || parent == "IO" || parent == "Bool" || parent == "Int"
+    return parent == "String" || parent == "Bool" || parent == "Int"
         || parent == "SELF_TYPE";
 }
 
@@ -33,7 +33,7 @@ bool SemanticAnalyzer::validate_inheritance(const Classes& classes)
     {
         std::string class_name = c->name.get_val();
 
-        if (invalid_parent(class_name) || class_name == "Object")
+        if (invalid_parent(class_name) || class_name == "Object" || class_name == "IO")
         {
             std::cerr << "Redefinition of a basic class not allowed.\n";
             return false;
