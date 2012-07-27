@@ -9,7 +9,7 @@ bool SemanticAnalyzer::invalid_parent(const std::string& parent)
 
 bool SemanticAnalyzer::cyclic_check(std::map<std::string, std::string>& graph, const std::string& node)
 {
-    if (node == "Object")
+    if (node == "Object" || node == "IO")
         return true;
 
     if (visited.count(node) == 1 && processed.count(node) == 0)
