@@ -59,8 +59,8 @@ class_list : class { $$ = std::vector<std::shared_ptr<Class>>(); $$.push_back($1
             | class_list class { $$.push_back($2); }
 ;
 
-class : CLASS TYPEID '{' feature_list '}' ';' { $$ = std::make_shared<Class>($2, idtable().add("Object"), stringtable().add("filename"), $4); }
-        | CLASS TYPEID INHERITS TYPEID '{' feature_list '}' ';' { $$ = std::make_shared<Class>($2, $4, stringtable().add("filename"), $6); }
+class : CLASS TYPEID '{' feature_list '}' ';' { $$ = std::make_shared<Class>($2, idtable().add("Object"), idtable().add("filename"), $4); }
+        | CLASS TYPEID INHERITS TYPEID '{' feature_list '}' ';' { $$ = std::make_shared<Class>($2, $4, idtable().add("filename"), $6); }
         | error ';' { yyerrok; } 
 ;
 
