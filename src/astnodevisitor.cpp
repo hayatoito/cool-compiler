@@ -703,6 +703,22 @@ void AstNodeCodeGenerator::code_class_name_table()
     }
 }
 
+void AstNodeCodeGenerator::code_prototype_table()
+{
+    emit_label("class_prototype_table");
+
+    for (auto it = begin(inherit_graph); it != end(inherit_graph); ++it)
+    {
+        std::ostringstream oss;
+        oss << it->first << "_prototype";
+        emit_word(oss.str().c_str());
+
+        oss.str("");
+        oss << it->first << "_init";
+        emit_word(oss.str().c_str());
+    }
+}
+
 void AstNodeCodeGenerator::visit(const Program& prog)
 {
     os << ".data\n" 
@@ -725,6 +741,7 @@ void AstNodeCodeGenerator::visit(const Program& prog)
 
     code_constants();
     code_class_name_table();
+    code_prototype_table();
 
     for (auto& cs : prog.classes)
         cs->accept(*this);
