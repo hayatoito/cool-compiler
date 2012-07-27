@@ -579,6 +579,11 @@ void AstNodeCodeGenerator::emit_label(const char* label)
     os << label << ":" << "\n";
 }
 
+void AstNodeCodeGenerator::emit_label(const std::string& label)
+{
+    os << label << ":" << "\n";
+}
+
 void AstNodeCodeGenerator::install_basic()
 {
     Features object_features = { 
@@ -721,8 +726,106 @@ void AstNodeCodeGenerator::code_prototype_table()
 
 void AstNodeCodeGenerator::code_dispatch_table(const std::string& class_node)
 {
+    if (class_node == "NoClass")
+        return;
+
     code_dispatch_table(inherit_graph[class_node]);
 
+    //ugly stuff here, have to fix this
+    //two issues: 1. inheritance graph only contains class names as strings
+    //            2. a dynamic cast has to be done to access method or attribute names
+    for (auto it = begin(ast_root->classes); it != end(ast_root->classes); ++it)
+    {
+        if ((*it)->name == class_node)
+        {
+            for (auto fit = begin((*it)->features); fit != end((*it)->features); ++fit)
+            {
+                if ((*fit)->get_type() == Feature::METHOD)
+                {
+                    std::shared_ptr<Method> mptr(std::dynamic_pointer_cast<Method>(*fit));
+                    emit_word(class_node + "_" + mptr->name.get_val());
+                }
+            }
+        }
+    }
+}
+
+std::map<std::string, int> AstNodeCodeGenerator::count_attrs()
+{
+    std::map<std::string, int> attr_count;
+
+    for (auto it = begin(ast_root->classes); it != end(ast_root->classes); ++it)
+    {
+        attr_count[(*it)->name.get_val()] = 0;
+        for (auto fit = begin((*it)->features); fit != end((*it)->features); ++fit)
+        {
+            if ((*fit)->get_type() == Feature::ATTRIBUTE)
+                attr_count[(*it)->name.get_val()]++;
+        }
+    }
+
+    return attr_count;
+}
+
+int AstNodeCodeGenerator::calc_obj_size(std::map<std::string, int>& attr_count, const std::string& class_name)
+{
+    int total = 0;
+    std::string curr_class = class_name;
+
+    while (curr_class != "NoClass")
+    {
+        total += attr_count[curr_class];
+        curr_class = inherit_graph[curr_class];
+    }
+
+    return total;
+}
+
+void AstNodeCodeGenerator::emit_obj_attribs(const std::string& class_name)
+{
+    if (class_name == "NoClass")
+        return;
+
+    emit_obj_attribs(inherit_graph[class_name]);
+
+    for (auto it = begin(ast_root->classes); it != end(ast_root->classes); ++it)
+    {
+        if ((*it)->name == class_name)
+        {
+            for (auto fit = begin((*it)->features); fit != end((*it)->features); ++fit)
+            {
+                if ((*fit)->get_type() == Feature::ATTRIBUTE)
+                {
+                    std::shared_ptr<Attribute> aptr(std::dynamic_pointer_cast<Attribute>(*fit));
+                    emit_word(0);
+                }
+            }
+        }
+    }
+}
+
+void AstNodeCodeGenerator::code_prototype_objects()
+{
+    int classtag = 1;
+    std::map<std::string, int> attr_count = count_attrs();
+
+    for (auto it = begin(inherit_graph); it != end(inherit_graph); ++it)
+    {
+        emit_label(it->first + "_prototype");
+
+        if (it->first == "String")
+            emit_word(STR_CLASS_TAG);
+        else if (it->first == "Int")
+            emit_word(INT_CLASS_TAG);
+        else if (it->first == "Bool")
+            emit_word(BOOL_CLASS_TAG);
+        else
+            emit_word(classtag++);
+
+        emit_word(OBJECT_HEADER_SIZE + calc_obj_size(attr_count, it->first));
+        emit_word(it->first + "_disptable");
+        emit_obj_attribs(it->first);
+    }
 }
 
 void AstNodeCodeGenerator::visit(const Program& prog)
@@ -754,6 +857,8 @@ void AstNodeCodeGenerator::visit(const Program& prog)
         emit_label(it->first + "_disptable");
         code_dispatch_table(it->first);
     }
+
+    code_prototype_objects();
 
     for (auto& cs : prog.classes)
         cs->accept(*this);

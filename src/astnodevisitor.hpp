@@ -230,6 +230,8 @@ private:
     static const int INT_CONST_SIZE = 4;
     static const int BOOL_CONST_SIZE = 4;
 
+    static const int OBJECT_HEADER_SIZE = 3;
+
     std::map<std::string, std::string> inherit_graph; //inheritance graph created from semantic analysis stage
     std::ostream& os; //output stream
 
@@ -243,6 +245,7 @@ private:
     void emit_word(const char*);
     void emit_word(const std::string&);
     void emit_label(const char*);
+    void emit_label(const std::string&);
 
     //arithmetic instructions
     void emit_addiu(const char*, const char*, int);
@@ -312,6 +315,10 @@ private:
     void code_class_name_table();
     void code_prototype_table();
     void code_dispatch_table(const std::string&);
+    std::map<std::string, int> count_attrs();
+    void code_prototype_objects();
+    int calc_obj_size(std::map<std::string, int>&, const std::string&);
+    void emit_obj_attribs(const std::string&);
 
 public:
     AstNodeCodeGenerator(const std::map<std::string, std::string>&, 
