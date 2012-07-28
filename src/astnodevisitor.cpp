@@ -314,6 +314,11 @@ void AstNodeCodeGenerator::emit_addiu(const char* dst, const char* src1, int imm
     os << "\taddiu\t$" << dst << ", $" << src1 << ", " << imm << "\n";
 }
 
+void AstNodeCodeGenerator::emit_addi(const char* dst, const char* src1, int imm)
+{
+    os << "\taddi\t$" << dst << ", $" << src1 << ", " << imm << "\n";
+}
+
 void AstNodeCodeGenerator::emit_add(const char* dst, const char* src1, const char* src2)
 {
     os << "\tadd\t$" << dst << ", $" << src1 << ", $" << src2 << "\n";
@@ -499,9 +504,9 @@ void AstNodeCodeGenerator::emit_ld(const char* dst, const char* addr)
     os << "\tld\t$" << dst << ", " << addr << "\n";
 }
 
-void AstNodeCodeGenerator::emit_lw(const char* dst, const char* addr)
+void AstNodeCodeGenerator::emit_lw(const char* dst, int offset, const char* src)
 {
-    os << "\tlw\t$" << dst << ", " << addr << "\n";
+    os << "\tlw\t$" << dst << ", " << offset << "($" << src << ")\n";
 }
 
 void AstNodeCodeGenerator::emit_sb(const char* dst, const char* addr)
@@ -514,9 +519,9 @@ void AstNodeCodeGenerator::emit_sd(const char* dst, const char* addr)
     os << "\tsd\t$" << dst << ", " << addr << "\n";
 }
 
-void AstNodeCodeGenerator::emit_sw(const char* dst, const char* addr)
+void AstNodeCodeGenerator::emit_sw(const char* dst, int offset, const char* src)
 {
-    os << "\tsw\t$" << dst << ", " << addr << "\n";
+    os << "\tsw\t$" << dst << ", " << offset << "($" << src << ")\n";
 }
 
 void AstNodeCodeGenerator::emit_move(const char* dst, const char* src)
@@ -582,6 +587,16 @@ void AstNodeCodeGenerator::emit_label(const char* label)
 void AstNodeCodeGenerator::emit_label(const std::string& label)
 {
     os << label << ":" << "\n";
+}
+
+void AstNodeCodeGenerator::emit_push(int num_bytes)
+{
+    emit_addiu("sp", "sp", num_bytes);
+}
+
+void AstNodeCodeGenerator::emit_pop(int num_bytes)
+{
+    emit_addi("sp", "sp", -num_bytes);
 }
 
 void AstNodeCodeGenerator::install_basic()

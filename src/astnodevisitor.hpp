@@ -230,7 +230,11 @@ private:
     static const int INT_CONST_SIZE = 4;
     static const int BOOL_CONST_SIZE = 4;
 
+    //object header size in # of 32-bit words
     static const int OBJECT_HEADER_SIZE = 3;
+
+    //stack frame size in # of bytes
+    static const int AR_BASE_SIZE = 12;
 
     std::map<std::string, std::string> inherit_graph; //inheritance graph created from semantic analysis stage
     std::ostream& os; //output stream
@@ -248,8 +252,9 @@ private:
     void emit_label(const std::string&);
 
     //arithmetic instructions
-    void emit_addiu(const char*, const char*, int);
     void emit_add(const char*, const char*, const char*);
+    void emit_addi(const char*, const char*, int);
+    void emit_addiu(const char*, const char*, int);
     void emit_div(const char*, const char*, const char*);
     void emit_divu(const char*, const char*, const char*);
     void emit_mul(const char*, const char*, const char*);
@@ -296,15 +301,19 @@ private:
     void emit_la(const char*, const char*);
     void emit_lb(const char*, const char*);
     void emit_ld(const char*, const char*);
-    void emit_lw(const char*, const char*);
+    void emit_lw(const char*, int, const char*);
 
     //store instructions
     void emit_sb(const char*, const char*);
     void emit_sd(const char*, const char*);
-    void emit_sw(const char*, const char*);
+    void emit_sw(const char*, int, const char*);
 
     //data movement instructions
     void emit_move(const char*, const char*);
+
+    //stack operations
+    void emit_push(int);
+    void emit_pop(int);
 
     //exception and trap instructions
     void emit_syscall();
@@ -315,8 +324,8 @@ private:
     void code_class_name_table();
     void code_prototype_table();
     void code_dispatch_table(const std::string&);
-    std::map<std::string, int> count_attrs();
     void code_prototype_objects();
+    std::map<std::string, int> count_attrs();
     int calc_obj_size(std::map<std::string, int>&, const std::string&);
     void emit_obj_attribs(const std::string&);
 
