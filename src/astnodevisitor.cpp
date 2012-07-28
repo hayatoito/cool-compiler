@@ -895,13 +895,18 @@ void AstNodeCodeGenerator::visit(const Class& cs)
     emit_jal(cs.parent.get_val() + "_init");
 
     for (auto& feature : cs.features)
-        feature->accept(*this);
+        if (feature->get_type() == Feature::ATTRIBUTE)
+            feature->accept(*this);
 
     emit_lw("fp", 12, "sp");
     emit_lw("s0", 8, "sp");
     emit_lw("ra", 4, "sp");
     emit_jr("ra");
     curr_attr_count = 0;
+
+    for (auto& feature : cs.features)
+        if (feature->get_type() == Feature::METHOD)
+            feature->accept(*this);
 }
 
 void AstNodeCodeGenerator::visit(const Attribute& attr)
