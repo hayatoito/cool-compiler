@@ -55,6 +55,12 @@ bool SemanticAnalyzer::validate_inheritance(const Classes& classes)
         inherit_graph[class_name] = c->parent.get_val(); 
     }
 
+    if (inherit_graph.count("Main") == 0)
+    {
+        std::cerr << "Main class missing.\n";
+        return false;
+    }
+
     for (auto it = begin(inherit_graph); it != end(inherit_graph); ++it)
         if (!cyclic_check(inherit_graph, it->first))
             return false;
