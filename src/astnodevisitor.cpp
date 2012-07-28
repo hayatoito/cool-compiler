@@ -278,7 +278,7 @@ void AstNodeDisplayer::visit(const NoExpr&)
 //Code generation implementation
 AstNodeCodeGenerator::AstNodeCodeGenerator(const std::map<std::string, std::string>& ig, 
         std::ostream& stream)
-    : inherit_graph(ig), os(stream) 
+    : inherit_graph(ig), os(stream), curr_attr_count(0), is_init(false)
 {
 
 }
@@ -475,6 +475,11 @@ void AstNodeCodeGenerator::emit_j(const char* label)
 }
 
 void AstNodeCodeGenerator::emit_jal(const char* label)
+{
+    os << "\tjal\t" << label << "\n";
+}
+
+void AstNodeCodeGenerator::emit_jal(const std::string& label)
 {
     os << "\tjal\t" << label << "\n";
 }
@@ -881,13 +886,30 @@ void AstNodeCodeGenerator::visit(const Program& prog)
 
 void AstNodeCodeGenerator::visit(const Class& cs)
 {
+    emit_label(cs.name.get_val() + "_init");
+    emit_push(AR_BASE_SIZE);
+    emit_sw("fp", 12, "sp");
+    emit_sw("s0", 8, "sp");
+    emit_sw("ra", 4, "sp");
+    emit_addiu("fp", "sp", 4);
+    emit_jal(cs.parent.get_val() + "_init");
+
     for (auto& feature : cs.features)
         feature->accept(*this);
+
+    emit_lw("fp", 12, "sp");
+    emit_lw("s0", 8, "sp");
+    emit_lw("ra", 4, "sp");
+    emit_jr("ra");
+    curr_attr_count = 0;
 }
 
 void AstNodeCodeGenerator::visit(const Attribute& attr)
 {
     attr.init->accept(*this);
+
+    ++curr_attr_count;
+    emit_sw("a0", 4 * (curr_attr_count + 2), "s0");
 }
 
 void AstNodeCodeGenerator::visit(const Feature& feature)
@@ -910,17 +932,20 @@ void AstNodeCodeGenerator::visit(const Method& method)
 
 void AstNodeCodeGenerator::visit(const StringConst& str) 
 { 
-
+    emit_la("a0", (std::string("str_const") + std::to_string(stringtable().get_idx(str.token.get_val()))).c_str());
 }
 
 void AstNodeCodeGenerator::visit(const IntConst& int_const) 
 {
-
+    emit_la("a0", (std::string("int_const") + std::to_string(inttable().get_idx(int_const.token.get_val()))).c_str());
 }
 
 void AstNodeCodeGenerator::visit(const BoolConst& bool_const) 
 { 
-    
+    if (bool_const.value)
+        emit_word("bool_const1");
+    else
+        emit_word("bool_const0");
 }
 
 void AstNodeCodeGenerator::visit(const New& new_node) 

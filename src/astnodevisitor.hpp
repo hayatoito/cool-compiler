@@ -238,6 +238,8 @@ private:
 
     std::map<std::string, std::string> inherit_graph; //inheritance graph created from semantic analysis stage
     std::ostream& os; //output stream
+    std::size_t curr_attr_count;
+    bool is_init;
 
     //generic instructions
     void emit_align(int);
@@ -294,6 +296,7 @@ private:
     void emit_bne(const char*, int, const char*);
     void emit_j(const char*);
     void emit_jal(const char*);
+    void emit_jal(const std::string&);
     void emit_jalr(const char*);
     void emit_jr(const char*);
 
