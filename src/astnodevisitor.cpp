@@ -594,14 +594,14 @@ void AstNodeCodeGenerator::emit_label(const std::string& label)
     os << label << ":" << "\n";
 }
 
-void AstNodeCodeGenerator::emit_push(int num_bytes)
+void AstNodeCodeGenerator::emit_push(int num_words)
 {
-    emit_addiu("sp", "sp", num_bytes);
+    emit_addiu("sp", "sp", 4 * -num_words);
 }
 
 void AstNodeCodeGenerator::emit_pop(int num_bytes)
 {
-    emit_addi("sp", "sp", -num_bytes);
+    emit_addi("sp", "sp", 4 * num_bytes);
 }
 
 void AstNodeCodeGenerator::install_basic()
@@ -848,7 +848,15 @@ void AstNodeCodeGenerator::code_prototype_objects()
     }
 }
 
-void AstNodeCodeGenerator::visit(const Program& prog)
+bool AstNodeCodeGenerator::is_basic_class(const Symbol& class_sym)
+{
+    std::string class_name(class_sym.get_val());
+
+    return class_name == "Object" || class_name == "IO" || class_name == "Int" ||
+        class_name == "Bool" || class_name == "String";
+}
+
+void AstNodeCodeGenerator::emit_initial_data()
 {
     os << ".data\n" 
        << "\t.align\t2\n"
@@ -867,7 +875,26 @@ void AstNodeCodeGenerator::visit(const Program& prog)
        << "\t.word\t" << BOOL_CLASS_TAG << "\n"
        << "_string_tag:\n"
        << "\t.word\t" << STR_CLASS_TAG << "\n";
+}
 
+void AstNodeCodeGenerator::emit_io_methods()
+{
+
+}
+
+void AstNodeCodeGenerator::emit_object_methods()
+{
+
+}
+
+void AstNodeCodeGenerator::emit_string_methods()
+{
+
+}
+
+void AstNodeCodeGenerator::visit(const Program& prog)
+{
+    emit_initial_data();
     code_constants();
     code_class_name_table();
     code_prototype_table();
@@ -879,6 +906,9 @@ void AstNodeCodeGenerator::visit(const Program& prog)
     }
 
     code_prototype_objects();
+    emit_io_methods();
+    emit_object_methods();
+    emit_string_methods();
 
     for (auto& cs : prog.classes)
         cs->accept(*this);
@@ -886,6 +916,7 @@ void AstNodeCodeGenerator::visit(const Program& prog)
 
 void AstNodeCodeGenerator::visit(const Class& cs)
 {
+    curr_class = cs.name;
     emit_label(cs.name.get_val() + "_init");
     emit_push(AR_BASE_SIZE);
     emit_sw("fp", 12, "sp");
@@ -902,6 +933,7 @@ void AstNodeCodeGenerator::visit(const Class& cs)
     emit_lw("s0", 8, "sp");
     emit_lw("ra", 4, "sp");
     emit_jr("ra");
+
     curr_attr_count = 0;
 
     for (auto& feature : cs.features)
@@ -929,10 +961,20 @@ void AstNodeCodeGenerator::visit(const Formal& formal)
 
 void AstNodeCodeGenerator::visit(const Method& method) 
 { 
+    if (is_basic_class(curr_class))
+        return;
+
+    emit_label(curr_class.get_val() + "." + method.name.get_val());
+
     for (auto& formal : method.params)
         formal->accept(*this); 
 
     method.body->accept(*this);
+
+    emit_lw("fp", 12, "sp");
+    emit_lw("s0", 8, "sp");
+    emit_lw("ra", 4, "sp");
+    emit_pop(AR_BASE_SIZE + method.params.size());
 }
 
 void AstNodeCodeGenerator::visit(const StringConst& str) 

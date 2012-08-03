@@ -233,13 +233,14 @@ private:
     //object header size in # of 32-bit words
     static const int OBJECT_HEADER_SIZE = 3;
 
-    //stack frame size in # of bytes
-    static const int AR_BASE_SIZE = 12;
+    //stack frame size in # of 32-bit words
+    static const int AR_BASE_SIZE = 3;
 
     std::map<std::string, std::string> inherit_graph; //inheritance graph created from semantic analysis stage
     std::ostream& os; //output stream
     std::size_t curr_attr_count;
     bool is_init;
+    Symbol curr_class;
 
     //generic instructions
     void emit_align(int);
@@ -322,6 +323,11 @@ private:
     void emit_syscall();
     void emit_nop();
 
+    void emit_initial_data();
+    void emit_io_methods();
+    void emit_object_methods();
+    void emit_string_methods();
+
     //helper functions for generating code for object layout, etc
     void code_constants();
     void code_class_name_table();
@@ -331,6 +337,7 @@ private:
     std::map<std::string, int> count_attrs();
     int calc_obj_size(std::map<std::string, int>&, const std::string&);
     void emit_obj_attribs(const std::string&);
+    bool is_basic_class(const Symbol&);
 
 public:
     AstNodeCodeGenerator(const std::map<std::string, std::string>&, 
