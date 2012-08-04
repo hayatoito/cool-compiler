@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <boost/optional.hpp>
 
 class Symbol 
 {
@@ -58,7 +59,7 @@ public:
         tbl.back()[key] = val;
     }
 
-    V probe(K key)
+    boost::optional<V> probe(K key)
     {
         auto last = tbl.back();
         if (last.count(key) > 0)
@@ -67,7 +68,7 @@ public:
             throw("key does not exist");
     }
 
-    V lookup(K key)
+    boost::optional<V> lookup(K key)
     {
         for (auto it = tbl.rbegin(); it != tbl.rend(); ++it)
             if (it->count(key) > 0)
