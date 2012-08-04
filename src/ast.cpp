@@ -500,7 +500,7 @@ Symbol Case::type_check(SemanticAnalyzer& sa, Environment& env) const
 
 Symbol Object::type_check(SemanticAnalyzer& sa, Environment& env) const
 {
-    Symbol obj_type = env.symtbl.lookup(name);
+    //Symbol obj_type = env.symtbl.lookup(name);
 
     /*
     if (obj_type == NULL)
