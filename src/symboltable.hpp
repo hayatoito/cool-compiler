@@ -59,6 +59,11 @@ public:
         tbl.back()[key] = val;
     }
 
+    int size()
+    {
+        return tbl.back().size();
+    }
+
     boost::optional<V> probe(K key)
     {
         auto last = tbl.back();
