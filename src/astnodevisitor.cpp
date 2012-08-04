@@ -601,7 +601,7 @@ void AstNodeCodeGenerator::emit_push(int num_words)
 
 void AstNodeCodeGenerator::emit_pop(int num_bytes)
 {
-    emit_addi("sp", "sp", 4 * num_bytes);
+    emit_addiu("sp", "sp", 4 * num_bytes);
 }
 
 void AstNodeCodeGenerator::install_basic()
@@ -869,6 +869,7 @@ void AstNodeCodeGenerator::emit_initial_data()
        << "\t.globl\t_int_tag\n"
        << "\t.globl\t_bool_tag\n"
        << "\t.globl\t_string_tag\n"
+       << ".globl\tmain\n"
        << "_int_tag:\n"
        << "\t.word\t" << INT_CLASS_TAG << "\n"
        << "_bool_tag:\n"
@@ -906,6 +907,8 @@ void AstNodeCodeGenerator::visit(const Program& prog)
     }
 
     code_prototype_objects();
+
+    os << ".text\n";
     emit_io_methods();
     emit_object_methods();
     emit_string_methods();
@@ -969,7 +972,11 @@ void AstNodeCodeGenerator::visit(const Method& method)
         return;
 
     var_env.enter_scope();
-    emit_label(curr_class.get_val() + "." + method.name.get_val());
+
+    if (curr_class.get_val() == "Main" && method.name == main)
+        emit_label("main");
+    else
+        emit_label(curr_class.get_val() + "." + method.name.get_val());
     
     int curr_offset = 1;
 
@@ -980,8 +987,19 @@ void AstNodeCodeGenerator::visit(const Method& method)
 
     emit_lw("fp", 12, "sp");
     emit_lw("s0", 8, "sp");
-    emit_lw("ra", 4, "sp");
+    //emit_lw("ra", 4, "sp");
     emit_pop(AR_BASE_SIZE + method.params.size());
+
+    if (curr_class.get_val() == "Main" && method.name == main)
+    {
+        //////////////////////////////////
+        emit_li("v0", 1);
+        emit_syscall();
+        //////////////////////////////////
+    }
+
+    emit_jr("ra");
+
     var_env.exit_scope();
 }
 
@@ -1076,25 +1094,57 @@ void AstNodeCodeGenerator::visit(const LessThanEqualTo& lteq)
 void AstNodeCodeGenerator::visit(const Plus& plus) 
 {
     plus.lhs->accept(*this);
+    emit_sw("a0", 0, "sp");
+    emit_push(1); 
+
     plus.rhs->accept(*this);
+    emit_lw("t1", 4, "sp");
+    emit_lw("t1", 12, "t1");
+    emit_lw("t2", 12, "a0");
+    emit_add("a0", "t1", "t2");
+    emit_pop(1);
 }
 
 void AstNodeCodeGenerator::visit(const Sub& sub) 
 { 
     sub.lhs->accept(*this);
+    emit_sw("a0", 0, "sp");
+    emit_push(1); 
+
     sub.rhs->accept(*this);
+    emit_lw("t1", 4, "sp");
+    emit_lw("t1", 12, "t1");
+    emit_lw("t2", 12, "a0");
+    emit_sub("a0", "t1", "t2");
+    emit_pop(1);
 }
 
 void AstNodeCodeGenerator::visit(const Mul& mul) 
 { 
     mul.lhs->accept(*this);
+    emit_sw("a0", 0, "sp");
+    emit_push(1); 
+
     mul.rhs->accept(*this);
+    emit_lw("t1", 4, "sp");
+    emit_lw("t1", 12, "t1");
+    emit_lw("t2", 12, "a0");
+    emit_mul("a0", "t1", "t2");
+    emit_pop(1);
 }
 
 void AstNodeCodeGenerator::visit(const Div& div) 
 { 
     div.lhs->accept(*this);
+    emit_sw("a0", 0, "sp");
+    emit_push(1); 
+
     div.rhs->accept(*this);
+    emit_lw("t1", 4, "sp");
+    emit_lw("t1", 12, "t1");
+    emit_lw("t2", 12, "a0");
+    emit_div("a0", "t1", "t2");
+    emit_pop(1);
 }
 
 void AstNodeCodeGenerator::visit(const Not& nt) 
@@ -1136,7 +1186,7 @@ void AstNodeCodeGenerator::visit(const Object& obj)
         //if object is self, store the saved self object
         //to a0. the self object is stored just above
         //the formal parameters in the AR
-        emit_move("a0", 4 * (var_env.size() + 1), "fp");
+        emit_lw("a0", 4 * (var_env.size() + 1), "fp");
     }
     else
     {
