@@ -1,6 +1,6 @@
 FFLAGS=
 BFLAGS=-d -v -y 
-CFLAGS=-g -Wall -Wextra -std=c++11 -Wno-write-strings
+CFLAGS=-g -Wall -Wextra -std=c++11 -Wno-write-strings -I /usr/local/boost_1_50_0
 
 FLEX=flex
 BISON=bison
