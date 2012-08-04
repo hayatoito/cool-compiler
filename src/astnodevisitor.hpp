@@ -237,10 +237,15 @@ private:
     static const int AR_BASE_SIZE = 3;
 
     std::map<std::string, std::string> inherit_graph; //inheritance graph created from semantic analysis stage
-    std::ostream& os; //output stream
-    std::size_t curr_attr_count;
-    bool is_init;
-    Symbol curr_class;
+    std::ostream& os; //code generation output
+
+    std::size_t curr_attr_count; //used to keep track of current attribute count for a specific class when 
+                                 //generating code for class_init methods
+
+    Symbol curr_class; //current class where code is being generated for
+
+    SymbolTable<Symbol, int> var_env; //the variable environment mapping that maps variable names
+                                         //to offsets in the current AR
 
     //generic instructions
     void emit_align(int);

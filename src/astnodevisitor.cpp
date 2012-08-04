@@ -278,7 +278,7 @@ void AstNodeDisplayer::visit(const NoExpr&)
 //Code generation implementation
 AstNodeCodeGenerator::AstNodeCodeGenerator(const std::map<std::string, std::string>& ig, 
         std::ostream& stream)
-    : inherit_graph(ig), os(stream), curr_attr_count(0), is_init(false)
+    : inherit_graph(ig), os(stream), curr_attr_count(0)
 {
 
 }
@@ -916,6 +916,7 @@ void AstNodeCodeGenerator::visit(const Program& prog)
 
 void AstNodeCodeGenerator::visit(const Class& cs)
 {
+    var_env.enter_scope();
     curr_class = cs.name;
     emit_label(cs.name.get_val() + "_init");
     emit_push(AR_BASE_SIZE);
@@ -932,6 +933,7 @@ void AstNodeCodeGenerator::visit(const Class& cs)
     emit_lw("fp", 12, "sp");
     emit_lw("s0", 8, "sp");
     emit_lw("ra", 4, "sp");
+    emit_pop(AR_BASE_SIZE);
     emit_jr("ra");
 
     curr_attr_count = 0;
@@ -939,6 +941,8 @@ void AstNodeCodeGenerator::visit(const Class& cs)
     for (auto& feature : cs.features)
         if (feature->get_type() == Feature::METHOD)
             feature->accept(*this);
+
+    var_env.exit_scope();
 }
 
 void AstNodeCodeGenerator::visit(const Attribute& attr)
@@ -964,10 +968,13 @@ void AstNodeCodeGenerator::visit(const Method& method)
     if (is_basic_class(curr_class))
         return;
 
+    var_env.enter_scope();
     emit_label(curr_class.get_val() + "." + method.name.get_val());
+    
+    int curr_offset = 1;
 
     for (auto& formal : method.params)
-        formal->accept(*this); 
+        var_env.add(formal->name, curr_offset++);
 
     method.body->accept(*this);
 
@@ -975,6 +982,7 @@ void AstNodeCodeGenerator::visit(const Method& method)
     emit_lw("s0", 8, "sp");
     emit_lw("ra", 4, "sp");
     emit_pop(AR_BASE_SIZE + method.params.size());
+    var_env.exit_scope();
 }
 
 void AstNodeCodeGenerator::visit(const StringConst& str) 
@@ -1012,7 +1020,17 @@ void AstNodeCodeGenerator::visit(const CaseBranch& branch)
 
 void AstNodeCodeGenerator::visit(const Assign& assign) 
 { 
+    std::cerr << "assign called\n";
     assign.rhs->accept(*this);
+
+    boost::optional<int> offset(var_env.lookup(assign.name));
+
+    //result of evaluating rhs of assignment
+    //is expected to be in register $a0
+    //also note that offset is not checked for null
+    //because the semantic analyzer should've caught
+    //any variable misuse by this point
+    emit_sw("a0", *offset, "fp");
 }
 
 void AstNodeCodeGenerator::visit(const Block& block) 
@@ -1115,7 +1133,9 @@ void AstNodeCodeGenerator::visit(const Case& caze)
 
 void AstNodeCodeGenerator::visit(const Object& obj) 
 { 
-    
+    std::cerr << "in object node: " << obj.name << "\n";
+    boost::optional<int> offset(var_env.lookup(obj.name));
+    emit_lw("a0", *offset, "fp"); 
 }
 
 void AstNodeCodeGenerator::visit(const NoExpr&) 
