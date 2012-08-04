@@ -998,9 +998,9 @@ void AstNodeCodeGenerator::visit(const IntConst& int_const)
 void AstNodeCodeGenerator::visit(const BoolConst& bool_const) 
 { 
     if (bool_const.value)
-        emit_word("bool_const1");
+        emit_la("a0", "bool_const1");
     else
-        emit_word("bool_const0");
+        emit_la("a0", "bool_const0");
 }
 
 void AstNodeCodeGenerator::visit(const New& new_node) 
@@ -1020,9 +1020,7 @@ void AstNodeCodeGenerator::visit(const CaseBranch& branch)
 
 void AstNodeCodeGenerator::visit(const Assign& assign) 
 { 
-    std::cerr << "assign called\n";
     assign.rhs->accept(*this);
-
     boost::optional<int> offset(var_env.lookup(assign.name));
 
     //result of evaluating rhs of assignment
@@ -1133,9 +1131,18 @@ void AstNodeCodeGenerator::visit(const Case& caze)
 
 void AstNodeCodeGenerator::visit(const Object& obj) 
 { 
-    std::cerr << "in object node: " << obj.name << "\n";
-    boost::optional<int> offset(var_env.lookup(obj.name));
-    emit_lw("a0", *offset, "fp"); 
+    if (obj.name == self)
+    {
+        //if object is self, store the saved self object
+        //to a0. the self object is stored just above
+        //the formal parameters in the AR
+        emit_move("a0", 4 * (var_env.size() + 1), "fp");
+    }
+    else
+    {
+        boost::optional<int> offset(var_env.lookup(obj.name));
+        emit_lw("a0", *offset, "fp"); 
+    }
 }
 
 void AstNodeCodeGenerator::visit(const NoExpr&) 
