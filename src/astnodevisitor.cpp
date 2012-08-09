@@ -972,8 +972,12 @@ void AstNodeCodeGenerator::visit(const Method& method)
         return;
 
     var_env.enter_scope();
-
     emit_label(curr_class.get_val() + "." + method.name.get_val());
+
+    emit_push(AR_BASE_SIZE);
+    emit_sw("fp", 12, "sp");
+    emit_sw("s0", 8, "sp");
+    emit_sw("ra", 4, "sp");
     
     int curr_offset = 1;
 
@@ -984,7 +988,7 @@ void AstNodeCodeGenerator::visit(const Method& method)
 
     emit_lw("fp", 12, "sp");
     emit_lw("s0", 8, "sp");
-    //emit_lw("ra", 4, "sp");
+    emit_lw("ra", 4, "sp");
     emit_pop(AR_BASE_SIZE + method.params.size());
     emit_jr("ra");
 
@@ -1086,10 +1090,13 @@ void AstNodeCodeGenerator::visit(const Plus& plus)
     emit_push(1); 
 
     plus.rhs->accept(*this);
+    emit_jal("Object.copy");
     emit_lw("t1", 4, "sp");
     emit_lw("t1", 12, "t1");
-    emit_lw("t2", 12, "a0");
-    emit_add("a0", "t1", "t2");
+    emit_lw("t2", 12, "v0");
+    emit_add("t1", "t1", "t2");
+    emit_sw("t1", 12, "v0");
+    emit_move("a0", "v0");
     emit_pop(1);
 }
 
@@ -1100,10 +1107,13 @@ void AstNodeCodeGenerator::visit(const Sub& sub)
     emit_push(1); 
 
     sub.rhs->accept(*this);
+    emit_jal("Object.copy");
     emit_lw("t1", 4, "sp");
     emit_lw("t1", 12, "t1");
-    emit_lw("t2", 12, "a0");
-    emit_sub("a0", "t1", "t2");
+    emit_lw("t2", 12, "v0");
+    emit_sub("t1", "t1", "t2");
+    emit_sw("t1", 12, "v0");
+    emit_move("a0", "v0");
     emit_pop(1);
 }
 
@@ -1114,10 +1124,13 @@ void AstNodeCodeGenerator::visit(const Mul& mul)
     emit_push(1); 
 
     mul.rhs->accept(*this);
+    emit_jal("Object.copy");
     emit_lw("t1", 4, "sp");
     emit_lw("t1", 12, "t1");
-    emit_lw("t2", 12, "a0");
-    emit_mul("a0", "t1", "t2");
+    emit_lw("t2", 12, "v0");
+    emit_mul("t1", "t1", "t2");
+    emit_sw("t1", 12, "v0");
+    emit_move("a0", "v0");
     emit_pop(1);
 }
 
@@ -1128,10 +1141,13 @@ void AstNodeCodeGenerator::visit(const Div& div)
     emit_push(1); 
 
     div.rhs->accept(*this);
+    emit_jal("Object.copy");
     emit_lw("t1", 4, "sp");
     emit_lw("t1", 12, "t1");
-    emit_lw("t2", 12, "a0");
-    emit_div("a0", "t1", "t2");
+    emit_lw("t2", 12, "v0");
+    emit_div("t1", "t1", "t2");
+    emit_sw("t1", 12, "v0");
+    emit_move("a0", "v0");
     emit_pop(1);
 }
 
