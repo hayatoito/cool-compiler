@@ -69,6 +69,25 @@ ret:	lw $v0 s1
 
 
     .data
+
+# heap memory block constants
+MEM_META_COUNT=2
+MEM_HDR_AVAILABLE=1
+MEM_HDR_UNAVAILABLE=0
+MEM_HDR_AVAILABILITY=0
+MEM_HDR_SIZE=4
+MEM_RAW_START=8
+
+# misc constants
+WORD_SIZE=4
+
+# object layout constants
+OBJ_HDR_TAG=0
+OBJ_HDR_SIZE=4
+OBJ_HDR_DISP=8
+OBJ_HDR_COUNT=3
+OBJ_ATTRIB_START=12
+
 # variable that holds address of start of heap (dynamically allocated portion)
 heap_start:
     .word 0
@@ -78,16 +97,6 @@ heap_start:
 heap_break:
     .word 0
 
-#constants
-MEM_AVAILABLE=1
-MEM_UNAVAILABLE=0
-MEM_HDR_AVAILABLE=0
-MEM_HDR_SIZE=4
-MEM_META_COUNT=2
-MEM_RAW_START=8
-WORD_SIZE=4
-
-# Standard startup code.  Invoke the routine main with no arguments.
 	.text
 	.globl __start
 __start:
@@ -96,11 +105,11 @@ __start:
 	addiu $a2, $a1, 4 # envp
 	sll $v0, $a0, 2
 	addu $a2, $a2, $v0
+    jal memmgr_init
 	jal Main.main
 	li $v0 10
 	syscall		# syscall 10 (exit)
 
-    .globl memmgr_init
 memmgr_init:
     move $a0, $zero
     li $v0, 9
@@ -108,14 +117,12 @@ memmgr_init:
     sw $v0, heap_start
     sw $v0, heap_break
     jr $ra
-
-    .globl memmgr_alloc
 memmgr_alloc:
     lw $t1, heap_start               
-    lw $t2, heap_break
+    lw $t4, heap_break
 memmgr_get_chunk:
-    beq $t1, $t2, memmgr_req_mem     # if current heap pointer is equal to current break, we need to ask kernel for more
-    lw $t2, MEM_HDR_AVAILABLE($t1)   # store availability value to $t2
+    beq $t1, $t4, memmgr_req_mem     # if current heap pointer is equal to current break, we need to ask kernel for more
+    lw $t2, MEM_HDR_AVAILABILITY($t1)   # store availability value to $t2
     seq $t2, $t2, 1        
     lw $t3, MEM_HDR_SIZE($t1)         
     sge $t3, $t3, $a0                # checks that the current chunk's size >= requested size
@@ -137,6 +144,29 @@ memmgr_req_mem:
     sw $t2, heap_break               # increment break to point to one past valid dynamically allocated memory
     sw $t1, MEM_HDR_SIZE($v0)        # store block size (not including metadata) to newly allocated memory
 memmgr_allocated:
-    sw $zero, MEM_HDR_AVAILABLE($v0) # mark the newly allocated chunk of memory as unavailable
-    la $a0, MEM_RAW_START($v0)       # store pointer to new memory to $a0
+    sw $zero, MEM_HDR_AVAILABILITY($v0) # mark the newly allocated chunk of memory as unavailable
+    la $v0, MEM_RAW_START($v0)       # store pointer to new memory to $a0
+    jr $ra
+
+    .globl Object.copy
+Object.copy:
+    addiu $sp, $sp, -8
+    sw $a0, 4($sp)
+    sw $ra, 8($sp)
+    lw $a0, OBJ_HDR_SIZE($a0)        # get size of object and store to acc
+    jal memmgr_alloc                 # allocate memory
+    lw $t1, 4($sp)
+    lw $t2, OBJ_HDR_SIZE($t1)
+    move $t4, $zero
+__copy_attrib:
+    lw $t3, 0($t1)
+    sw $t3, 0($v0) 
+    addiu $t1, $t1, WORD_SIZE
+    addiu $v0, $v0, WORD_SIZE
+    addiu $t4, $t4, 1
+    bne $t4, $t2, __copy_attrib
+    mul $t2, $t2, WORD_SIZE
+    sub $v0, $v0, $t2 
+    lw $ra, 8($sp)
+    addiu $sp, $sp, 8
     jr $ra
