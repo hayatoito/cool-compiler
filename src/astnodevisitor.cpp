@@ -869,7 +869,7 @@ void AstNodeCodeGenerator::emit_initial_data()
        << "\t.globl\t_int_tag\n"
        << "\t.globl\t_bool_tag\n"
        << "\t.globl\t_string_tag\n"
-       << ".globl\tmain\n"
+       << "\t.globl\tMain.main\n"
        << "_int_tag:\n"
        << "\t.word\t" << INT_CLASS_TAG << "\n"
        << "_bool_tag:\n"
@@ -973,10 +973,7 @@ void AstNodeCodeGenerator::visit(const Method& method)
 
     var_env.enter_scope();
 
-    if (curr_class.get_val() == "Main" && method.name == main)
-        emit_label("main");
-    else
-        emit_label(curr_class.get_val() + "." + method.name.get_val());
+    emit_label(curr_class.get_val() + "." + method.name.get_val());
     
     int curr_offset = 1;
 
@@ -989,15 +986,6 @@ void AstNodeCodeGenerator::visit(const Method& method)
     emit_lw("s0", 8, "sp");
     //emit_lw("ra", 4, "sp");
     emit_pop(AR_BASE_SIZE + method.params.size());
-
-    if (curr_class.get_val() == "Main" && method.name == main)
-    {
-        //////////////////////////////////
-        emit_li("v0", 1);
-        emit_syscall();
-        //////////////////////////////////
-    }
-
     emit_jr("ra");
 
     var_env.exit_scope();
