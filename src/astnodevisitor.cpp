@@ -278,7 +278,7 @@ void AstNodeDisplayer::visit(const NoExpr&)
 //Code generation implementation
 AstNodeCodeGenerator::AstNodeCodeGenerator(const std::map<std::string, std::string>& ig, 
         std::ostream& stream)
-    : inherit_graph(ig), os(stream), curr_attr_count(0) 
+    : inherit_graph(ig), os(stream), curr_attr_count(0), while_count(0) 
 {
 
 }
@@ -434,49 +434,44 @@ void AstNodeCodeGenerator::emit_sne(const char* dst, const char* src1, int imm)
     os << "\tsne\t$" << dst << ", $" << src1 << ", " << imm << "\n";
 }
 
-void AstNodeCodeGenerator::emit_b(const char* label)
+void AstNodeCodeGenerator::emit_b(const std::string& label)
 {
     os << "\tb\t" << label << "\n";
 }
 
-void AstNodeCodeGenerator::emit_beq(const char* src1, const char* src2, const char* label)
+void AstNodeCodeGenerator::emit_beq(const char* src1, const char* src2, const std::string& label)
 {
     os << "\tbeq\t$" << src1 << ", $" << src2 << ", " << label;
 }
 
-void AstNodeCodeGenerator::emit_beq(const char* src1, int imm, const char* label)
+void AstNodeCodeGenerator::emit_beq(const char* src1, int imm, const std::string& label)
 {
     os << "\tbeq\t$" << src1 << ", " << imm << ", " << label;
 }
 
-void AstNodeCodeGenerator::emit_bge(const char* src1, const char* src2, const char* label)
+void AstNodeCodeGenerator::emit_bge(const char* src1, const char* src2, const std::string& label)
 {
     os << "\tbge\t$" << src1 << ", $" << src2 << ", " << label;
 }
 
-void AstNodeCodeGenerator::emit_bge(const char* src1, int imm, const char* label)
+void AstNodeCodeGenerator::emit_bge(const char* src1, int imm, const std::string& label)
 {
     os << "\tbge\t$" << src1 << ", " << imm << ", " << label;
 }
 
-void AstNodeCodeGenerator::emit_bne(const char* src1, const char* src2, const char* label)
+void AstNodeCodeGenerator::emit_bne(const char* src1, const char* src2, const std::string& label)
 {
     os << "\tbne\t$" << src1 << ", $" << src2 << ", " << label;
 }
 
-void AstNodeCodeGenerator::emit_bne(const char* src1, int imm, const char* label)
+void AstNodeCodeGenerator::emit_bne(const char* src1, int imm, const std::string& label)
 {
     os << "\tbne\t$" << src1 << ", " << imm << ", " << label;
 }
 
-void AstNodeCodeGenerator::emit_j(const char* label)
+void AstNodeCodeGenerator::emit_j(const std::string& label)
 {
     os << "\tj\t" << label << "\n";
-}
-
-void AstNodeCodeGenerator::emit_jal(const char* label)
-{
-    os << "\tjal\t" << label << "\n";
 }
 
 void AstNodeCodeGenerator::emit_jal(const std::string& label)
@@ -494,7 +489,7 @@ void AstNodeCodeGenerator::emit_jr(const char* src)
     os << "\tjr\t$" << src << "\n";
 }
 
-void AstNodeCodeGenerator::emit_la(const char* dst, const char* addr)
+void AstNodeCodeGenerator::emit_la(const char* dst, const std::string& addr)
 {
     os << "\tla\t$" << dst << ", " << addr << "\n";
 }
@@ -549,12 +544,12 @@ void AstNodeCodeGenerator::emit_align(int boundary)
     os << "\t.align\t" << boundary << "\n";
 }
 
-void AstNodeCodeGenerator::emit_ascii(const char* str)
+void AstNodeCodeGenerator::emit_ascii(const std::string& str)
 {
     os << "\t.ascii\t\"" << str << "\"\n";
 }
 
-void AstNodeCodeGenerator::emit_asciiz(const char* str)
+void AstNodeCodeGenerator::emit_asciiz(const std::string& str)
 {
     os << "\t.asciiz\t\"" << str << "\"\n";
 }
@@ -564,7 +559,7 @@ void AstNodeCodeGenerator::emit_byte(int val)
     os << "\t.byte\t" << val << "\n";
 }
 
-void AstNodeCodeGenerator::emit_globl(const char* sym)
+void AstNodeCodeGenerator::emit_globl(const std::string& sym)
 {
     os << "\t.globl\t" << sym << "\n";
 }
@@ -577,16 +572,6 @@ void AstNodeCodeGenerator::emit_word(int val)
 void AstNodeCodeGenerator::emit_word(const std::string& val)
 {
     os << "\t.word\t" << val << "\n";
-}
-
-void AstNodeCodeGenerator::emit_word(const char* val)
-{
-    os << "\t.word\t" << val << "\n";
-}
-
-void AstNodeCodeGenerator::emit_label(const char* label)
-{
-    os << label << ":" << "\n";
 }
 
 void AstNodeCodeGenerator::emit_label(const std::string& label)
@@ -1021,6 +1006,7 @@ void AstNodeCodeGenerator::visit(const New& new_node)
 void AstNodeCodeGenerator::visit(const IsVoid& isvoid) 
 { 
     isvoid.expr->accept(*this); 
+    emit_jal("isvoid");
 }
 
 void AstNodeCodeGenerator::visit(const CaseBranch& branch) 
@@ -1056,8 +1042,18 @@ void AstNodeCodeGenerator::visit(const If& ifstmt)
 
 void AstNodeCodeGenerator::visit(const While& whilestmt) 
 { 
+    ++while_count;
     whilestmt.predicate->accept(*this);
+
+    emit_la("t1", "bool_const1");
+    emit_label("while-loop" + std::to_string(while_count));
+    emit_bne("a0", "t1", "while-end");
+
     whilestmt.body->accept(*this);
+
+    emit_b("while-loop");
+    emit_label("while-end");
+    emit_li("a0", 0);
 }
 
 void AstNodeCodeGenerator::visit(const Complement& comp) 
@@ -1166,7 +1162,7 @@ void AstNodeCodeGenerator::visit(const Div& div)
 void AstNodeCodeGenerator::visit(const Not& nt) 
 { 
     nt.expr->accept(*this);
-    emit_jal("not") 
+    emit_jal("not");
 }
 
 void AstNodeCodeGenerator::visit(const StaticDispatch& sdisp) 

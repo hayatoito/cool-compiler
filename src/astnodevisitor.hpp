@@ -247,16 +247,16 @@ private:
     SymbolTable<Symbol, int> var_env; //the variable environment mapping that maps variable names
                                       //to offsets in the current AR
 
+    std::size_t while_count;
+
     //generic instructions
     void emit_align(int);
-    void emit_ascii(const char*);
-    void emit_asciiz(const char*);
+    void emit_ascii(const std::string&);
+    void emit_asciiz(const std::string&);
     void emit_byte(int);
-    void emit_globl(const char*);
+    void emit_globl(const std::string&);
     void emit_word(int);
-    void emit_word(const char*);
     void emit_word(const std::string&);
-    void emit_label(const char*);
     void emit_label(const std::string&);
 
     //arithmetic instructions
@@ -293,21 +293,20 @@ private:
     void emit_sne(const char*, const char*, int);
 
     //branch and jump instructions
-    void emit_b(const char*);
-    void emit_beq(const char*, const char*, const char*);
-    void emit_beq(const char*, int, const char*);
-    void emit_bge(const char*, const char*, const char*);
-    void emit_bge(const char*, int, const char*);
-    void emit_bne(const char*, const char*, const char*);
-    void emit_bne(const char*, int, const char*);
-    void emit_j(const char*);
-    void emit_jal(const char*);
+    void emit_b(const std::string&);
+    void emit_beq(const char*, const char*, const std::string&);
+    void emit_beq(const char*, int, const std::string&);
+    void emit_bge(const char*, const char*, const std::string&);
+    void emit_bge(const char*, int, const std::string&);
+    void emit_bne(const char*, const char*, const std::string&);
+    void emit_bne(const char*, int, const std::string&);
+    void emit_j(const std::string&);
     void emit_jal(const std::string&);
     void emit_jalr(const char*);
     void emit_jr(const char*);
 
     //load instructions
-    void emit_la(const char*, const char*);
+    void emit_la(const char*, const std::string&);
     void emit_lb(const char*, const char*);
     void emit_ld(const char*, const char*);
     void emit_lw(const char*, int, const char*);
