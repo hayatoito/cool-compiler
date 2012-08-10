@@ -278,7 +278,7 @@ void AstNodeDisplayer::visit(const NoExpr&)
 //Code generation implementation
 AstNodeCodeGenerator::AstNodeCodeGenerator(const std::map<std::string, std::string>& ig, 
         std::ostream& stream)
-    : inherit_graph(ig), os(stream), curr_attr_count(0)
+    : inherit_graph(ig), os(stream), curr_attr_count(0) 
 {
 
 }
@@ -1063,24 +1063,33 @@ void AstNodeCodeGenerator::visit(const While& whilestmt)
 void AstNodeCodeGenerator::visit(const Complement& comp) 
 { 
     comp.expr->accept(*this);
+    emit_lw("t1", 12, "a0");
+    emit_not("t1", "t1");
+    emit_sw("t1", 12, "a0");
 }
 
 void AstNodeCodeGenerator::visit(const LessThan& lt) 
 { 
     lt.lhs->accept(*this);
+    emit_move("a1", "a0");
+
     lt.rhs->accept(*this);
+    emit_jal("less");
+}
+
+void AstNodeCodeGenerator::visit(const LessThanEqualTo& lteq) 
+{ 
+    lteq.lhs->accept(*this);
+    emit_move("a1", "a0");
+
+    lteq.rhs->accept(*this);
+    emit_jal("less_eq");
 }
 
 void AstNodeCodeGenerator::visit(const EqualTo& eq) 
 { 
     eq.lhs->accept(*this);
     eq.rhs->accept(*this);
-}
-
-void AstNodeCodeGenerator::visit(const LessThanEqualTo& lteq) 
-{ 
-    lteq.lhs->accept(*this);
-    lteq.rhs->accept(*this);
 }
 
 void AstNodeCodeGenerator::visit(const Plus& plus) 
@@ -1154,6 +1163,7 @@ void AstNodeCodeGenerator::visit(const Div& div)
 void AstNodeCodeGenerator::visit(const Not& nt) 
 { 
     nt.expr->accept(*this);
+    emit_jal("not") 
 }
 
 void AstNodeCodeGenerator::visit(const StaticDispatch& sdisp) 

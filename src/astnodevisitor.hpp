@@ -245,7 +245,7 @@ private:
     Symbol curr_class; //current class where code is being generated for
 
     SymbolTable<Symbol, int> var_env; //the variable environment mapping that maps variable names
-                                         //to offsets in the current AR
+                                      //to offsets in the current AR
 
     //generic instructions
     void emit_align(int);
