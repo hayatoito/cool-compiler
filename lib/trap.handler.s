@@ -87,6 +87,7 @@ OBJ_HDR_SIZE=4
 OBJ_HDR_DISP=8
 OBJ_HDR_COUNT=3
 OBJ_ATTRIB_START=12
+STR_CONST_OFFSET=16
 
 # variable that holds address of start of heap (dynamically allocated portion)
 heap_start:
@@ -201,6 +202,30 @@ not:
     jr $ra
 __false:
     la $a0, bool_const1
+    jr $ra
+
+    .global eq
+eq:
+    beq $a0, $a1, __eq
+    lw $t1, OBJ_HDR_TAG($a0)
+    lw $t2, __int_tag
+    beq $t1, $t2, __int_bool_eq
+    lw $t2, __bool_tag
+    beq $t1, $t2, __int_bool_eq
+__str_eq:
+    la $t1, STR_CONST_OFFSET($a0)
+    la $t2, STR_CONST_OFFSET($a1)
+    beq $t1, $t2, __eq
+    b __not_eq
+__int_bool_eq:
+    lw $t1, OBJ_ATTRIB_START($a0)
+    lw $t2, OBJ_ATTRIB_START($a1)
+    bne $t1, $t2, __not_eq
+__eq:
+    la $a0, bool_const1
+    jr $ra
+__not_eq:
+    la $a0, bool_const0
     jr $ra
 
 

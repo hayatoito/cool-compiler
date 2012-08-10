@@ -866,15 +866,15 @@ void AstNodeCodeGenerator::emit_initial_data()
        << "\t.globl\tString_prototype\n"
        << "\t.globl\tbool_const0\n"
        << "\t.globl\tbool_const1\n"
-       << "\t.globl\t_int_tag\n"
-       << "\t.globl\t_bool_tag\n"
-       << "\t.globl\t_string_tag\n"
+       << "\t.globl\t__int_tag\n"
+       << "\t.globl\t__bool_tag\n"
+       << "\t.globl\t__string_tag\n"
        << "\t.globl\tMain.main\n"
-       << "_int_tag:\n"
+       << "__int_tag:\n"
        << "\t.word\t" << INT_CLASS_TAG << "\n"
-       << "_bool_tag:\n"
+       << "__bool_tag:\n"
        << "\t.word\t" << BOOL_CLASS_TAG << "\n"
-       << "_string_tag:\n"
+       << "__string_tag:\n"
        << "\t.word\t" << STR_CLASS_TAG << "\n";
 }
 
@@ -1089,7 +1089,10 @@ void AstNodeCodeGenerator::visit(const LessThanEqualTo& lteq)
 void AstNodeCodeGenerator::visit(const EqualTo& eq) 
 { 
     eq.lhs->accept(*this);
+    emit_move("a1", "a0");
+
     eq.rhs->accept(*this);
+    emit_jal("eq");
 }
 
 void AstNodeCodeGenerator::visit(const Plus& plus) 
