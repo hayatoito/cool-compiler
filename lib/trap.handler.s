@@ -228,4 +228,13 @@ __not_eq:
     la $a0, bool_const0
     jr $ra
 
+    .globl isvoid
+isvoid:
+    beq $a0, $zero, __isvoid
+    la $a0, bool_const0
+    jr $ra
+__isvoid:
+    la $a0, bool_const1
+    jr $ra
+
 
