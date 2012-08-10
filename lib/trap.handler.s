@@ -70,7 +70,7 @@ ret:	lw $v0 s1
 
     .data
 
-# heap memory block constants
+# heap (dynamic) block constants
 MEM_META_COUNT=2
 MEM_HDR_AVAILABLE=1
 MEM_HDR_UNAVAILABLE=0
@@ -105,36 +105,36 @@ __start:
 	addiu $a2, $a1, 4 # envp
 	sll $v0, $a0, 2
 	addu $a2, $a2, $v0
-    jal memmgr_init
+    jal __memmgr_init
 	jal Main.main
 	li $v0 10
 	syscall		# syscall 10 (exit)
 
-memmgr_init:
+__memmgr_init:
     move $a0, $zero
     li $v0, 9
     syscall
     sw $v0, heap_start
     sw $v0, heap_break
     jr $ra
-memmgr_alloc:
+__memmgr_alloc:
     lw $t1, heap_start               
     lw $t4, heap_break
-memmgr_get_chunk:
-    beq $t1, $t4, memmgr_req_mem     # if current heap pointer is equal to current break, we need to ask kernel for more
+__memmgr_get_chunk:
+    beq $t1, $t4, __memmgr_req_mem     # if current heap pointer is equal to current break, we need to ask kernel for more
     lw $t2, MEM_HDR_AVAILABILITY($t1)   # store availability value to $t2
     seq $t2, $t2, 1        
     lw $t3, MEM_HDR_SIZE($t1)         
     sge $t3, $t3, $a0                # checks that the current chunk's size >= requested size
     and $t2, $t2, $t3
     move $v0, $t1
-    beq $t2, 1, memmgr_allocated     # if chunk is available && size >= requested size, return chunk
+    beq $t2, 1, __memmgr_allocated     # if chunk is available && size >= requested size, return chunk
     lw $t2, MEM_HDR_SIZE($t1)
     addiu $t2, $t2, MEM_META_COUNT   
     mul $t2, $t2, WORD_SIZE
     add $t1, $t1, $t2                # if none of the conditions satisfied, move current heap position to next chunk
-    b memmgr_get_chunk
-memmgr_req_mem:
+    b __memmgr_get_chunk
+__memmgr_req_mem:
     move $t1, $a0                    # store requested # of words to $t1  
     addiu $a0, $a0, MEM_META_COUNT   # add 2 extra words to account for metadata (availability & allocation size)
     mul $a0, $a0, WORD_SIZE          # multiply by word size to get total number of bytes needed 
@@ -143,7 +143,7 @@ memmgr_req_mem:
     add $t2, $v0, $a0                
     sw $t2, heap_break               # increment break to point to one past valid dynamically allocated memory
     sw $t1, MEM_HDR_SIZE($v0)        # store block size (not including metadata) to newly allocated memory
-memmgr_allocated:
+__memmgr_allocated:
     sw $zero, MEM_HDR_AVAILABILITY($v0) # mark the newly allocated chunk of memory as unavailable
     la $v0, MEM_RAW_START($v0)       # store pointer to new memory to $a0
     jr $ra
@@ -154,7 +154,7 @@ Object.copy:
     sw $a0, 4($sp)
     sw $ra, 8($sp)
     lw $a0, OBJ_HDR_SIZE($a0)        # get size of object and store to acc
-    jal memmgr_alloc                 # allocate memory
+    jal __memmgr_alloc                 # allocate memory
     lw $t1, 4($sp)
     lw $t2, OBJ_HDR_SIZE($t1)
     move $t4, $zero
@@ -170,3 +170,37 @@ __copy_attrib:
     lw $ra, 8($sp)
     addiu $sp, $sp, 8
     jr $ra
+
+    .globl less
+less:
+    lw $t1, OBJ_ATTRIB_START($a0)
+    lw $t2, OBJ_ATTRIB_START($a1)
+    blt $a1, $a0, __less            # the args here are switched since a1 is lhs and a0 is rhs
+    la $a0, bool_const0
+    jr $ra
+__less:
+    la $a0, bool_const1
+    jr $ra
+
+    .globl less_eq
+less_eq:
+    lw $t1, OBJ_ATTRIB_START($a0)
+    lw $t2, OBJ_ATTRIB_START($a1)
+    ble $a1, $a0, __less_eq         # the args here are switched since a1 is lhs and a0 is rhs
+    la $a0, bool_const0
+    jr $ra
+__less_eq:
+    la $a0, bool_const1
+    jr $ra
+
+    .globl not
+not:
+    la $t1, bool_const0
+    beq $a0, $t1, __false
+    la $a0, bool_const0
+    jr $ra
+__false:
+    la $a0, bool_const1
+    jr $ra
+
+
