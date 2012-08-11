@@ -73,14 +73,14 @@ public:
     boost::optional<V> probe(const K& key) 
     {
         auto last = tbl.back();
-        return last.count(key) > 0 ? last[key] : boost::optional<V>();
+        return last.count(key) > 0 ? boost::optional<V>(last[key]) : boost::optional<V>();
     }
 
     boost::optional<V> lookup(const K& key)
     {
         for (auto it = tbl.rbegin(), end = tbl.rend(); it != end; ++it)
             if (it->count(key) > 0)
-                return (*it)[key];
+                return boost::optional<V>((*it)[key]);
 
         return boost::optional<V>();
     }
