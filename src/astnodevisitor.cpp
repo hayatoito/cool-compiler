@@ -9,7 +9,7 @@
 
 using namespace constants;
 
-extern std::shared_ptr<Program> ast_root;
+extern ProgramPtr ast_root;
 
 AstNodeDisplayer::AstNodeDisplayer(std::ostream& stream)
     : os(stream), depth(0)
@@ -728,7 +728,7 @@ void AstNodeCodeGenerator::code_dispatch_table(const std::string& class_node)
             {
                 if ((*fit)->get_type() == Feature::METHOD)
                 {
-                    std::shared_ptr<Method> mptr(std::dynamic_pointer_cast<Method>(*fit));
+                    MethodPtr mptr(std::dynamic_pointer_cast<Method>(*fit));
                     emit_word(class_node + "." + mptr->name.get_val());
                 }
             }
@@ -782,7 +782,7 @@ void AstNodeCodeGenerator::emit_obj_attribs(const std::string& class_name)
             {
                 if ((*fit)->get_type() == Feature::ATTRIBUTE)
                 {
-                    std::shared_ptr<Attribute> aptr(std::dynamic_pointer_cast<Attribute>(*fit));
+                    AttributePtr aptr(std::dynamic_pointer_cast<Attribute>(*fit));
                     emit_word(0);
                 }
             }
