@@ -34,7 +34,7 @@ void Class::accept(AstNodeVisitor& visitor) const
 
 
 Attribute::Attribute(const Symbol& aname, const Symbol& type, 
-        const std::shared_ptr<Expression>& initexpr)
+        const ExpressionPtr& initexpr)
     : name(aname), type_decl(type), init(initexpr)
 {
 
@@ -56,7 +56,7 @@ void Feature::accept(AstNodeVisitor& visitor) const
 }
 
 Method::Method(const Symbol& mname, const Symbol& ret, 
-        const Formals& formals, const std::shared_ptr<Expression>& expr)
+        const Formals& formals, const ExpressionPtr& expr)
     : name(mname), return_type(ret), params(formals), body(expr)
 {
 
@@ -127,7 +127,7 @@ void New::accept(AstNodeVisitor& visitor) const
     visitor.visit(*this);
 }
 
-IsVoid::IsVoid(const std::shared_ptr<Expression>& pred)
+IsVoid::IsVoid(const ExpressionPtr& pred)
     : expr(pred)
 {
 
@@ -139,7 +139,7 @@ void IsVoid::accept(AstNodeVisitor& visitor) const
 }
 
 CaseBranch::CaseBranch(const Symbol& cname, const Symbol& type, 
-        const std::shared_ptr<Expression>& exp)
+        const ExpressionPtr& exp)
     : name(cname), type_decl(type), expr(exp)
 {
 
@@ -150,7 +150,7 @@ void CaseBranch::accept(AstNodeVisitor& visitor) const
     visitor.visit(*this);
 }
 
-Assign::Assign(const Symbol& aname, const std::shared_ptr<Expression>& init)
+Assign::Assign(const Symbol& aname, const ExpressionPtr& init)
     : name(aname), rhs(init)
 {
 
@@ -172,8 +172,8 @@ void Block::accept(AstNodeVisitor& visitor) const
     visitor.visit(*this);
 }
 
-If::If(const std::shared_ptr<Expression>& pred, const std::shared_ptr<Expression>& truebr, 
-        const std::shared_ptr<Expression>& falsebr)
+If::If(const ExpressionPtr& pred, const ExpressionPtr& truebr, 
+        const ExpressionPtr& falsebr)
     : predicate(pred), iftrue(truebr), iffalse(falsebr)
 {
 
@@ -184,7 +184,7 @@ void If::accept(AstNodeVisitor& visitor) const
     visitor.visit(*this);
 }
 
-While::While(const std::shared_ptr<Expression>& pred, const std::shared_ptr<Expression>& bod)
+While::While(const ExpressionPtr& pred, const ExpressionPtr& bod)
     : predicate(pred), body(bod)
 {
 
@@ -195,7 +195,7 @@ void While::accept(AstNodeVisitor& visitor) const
     visitor.visit(*this);
 }
 
-Complement::Complement(const std::shared_ptr<Expression>& e)
+Complement::Complement(const ExpressionPtr& e)
     : expr(e)
 {
 
@@ -206,7 +206,7 @@ void Complement::accept(AstNodeVisitor& visitor) const
     visitor.visit(*this);
 }
 
-LessThan::LessThan(const std::shared_ptr<Expression>& l, const std::shared_ptr<Expression>& r)
+LessThan::LessThan(const ExpressionPtr& l, const ExpressionPtr& r)
     : lhs(l), rhs(r)
 {
 
@@ -217,7 +217,7 @@ void LessThan::accept(AstNodeVisitor& visitor) const
     visitor.visit(*this);
 }
 
-EqualTo::EqualTo(const std::shared_ptr<Expression>& l, const std::shared_ptr<Expression>& r)
+EqualTo::EqualTo(const ExpressionPtr& l, const ExpressionPtr& r)
     : lhs(l), rhs(r)
 {
 
@@ -228,8 +228,8 @@ void EqualTo::accept(AstNodeVisitor& visitor) const
     visitor.visit(*this);
 }
 
-LessThanEqualTo::LessThanEqualTo(const std::shared_ptr<Expression>& l, 
-        const std::shared_ptr<Expression>& r)
+LessThanEqualTo::LessThanEqualTo(const ExpressionPtr& l, 
+        const ExpressionPtr& r)
     : lhs(l), rhs(r)
 {
 
@@ -240,7 +240,7 @@ void LessThanEqualTo::accept(AstNodeVisitor& visitor) const
     visitor.visit(*this);
 }
 
-Plus::Plus(const std::shared_ptr<Expression>& l, const std::shared_ptr<Expression>& r)
+Plus::Plus(const ExpressionPtr& l, const ExpressionPtr& r)
     : lhs(l), rhs(r)
 {
 
@@ -251,7 +251,7 @@ void Plus::accept(AstNodeVisitor& visitor) const
     visitor.visit(*this);
 }
 
-Sub::Sub(const std::shared_ptr<Expression>& l, const std::shared_ptr<Expression>& r)
+Sub::Sub(const ExpressionPtr& l, const ExpressionPtr& r)
     : lhs(l), rhs(r)
 {
 
@@ -262,7 +262,7 @@ void Sub::accept(AstNodeVisitor& visitor) const
     visitor.visit(*this);
 }
 
-Mul::Mul(const std::shared_ptr<Expression>& l, const std::shared_ptr<Expression>& r)
+Mul::Mul(const ExpressionPtr& l, const ExpressionPtr& r)
     : lhs(l), rhs(r)
 {
 
@@ -273,7 +273,7 @@ void Mul::accept(AstNodeVisitor& visitor) const
     visitor.visit(*this);
 }
 
-Div::Div(const std::shared_ptr<Expression>& l, const std::shared_ptr<Expression>& r)
+Div::Div(const ExpressionPtr& l, const ExpressionPtr& r)
     : lhs(l), rhs(r)
 {
 
@@ -284,7 +284,7 @@ void Div::accept(AstNodeVisitor& visitor) const
     visitor.visit(*this);
 }
 
-Not::Not(const std::shared_ptr<Expression>& rhs)
+Not::Not(const ExpressionPtr& rhs)
     : expr(rhs)
 {
 
@@ -295,7 +295,7 @@ void Not::accept(AstNodeVisitor& visitor) const
     visitor.visit(*this);
 }
 
-StaticDispatch::StaticDispatch(const std::shared_ptr<Expression>& objexpr, const Symbol& stype, 
+StaticDispatch::StaticDispatch(const ExpressionPtr& objexpr, const Symbol& stype, 
         const Symbol& func, const Expressions& act)
    : obj(objexpr), type(stype), method(func), actual(act)
 {
@@ -307,7 +307,7 @@ void StaticDispatch::accept(AstNodeVisitor& visitor) const
     visitor.visit(*this);
 }
 
-DynamicDispatch::DynamicDispatch(const std::shared_ptr<Expression>& objexpr, 
+DynamicDispatch::DynamicDispatch(const ExpressionPtr& objexpr, 
         const Symbol& func, const Expressions& act)
     : obj(objexpr), method(func), actual(act)
 {
@@ -319,8 +319,8 @@ void DynamicDispatch::accept(AstNodeVisitor& visitor) const
     visitor.visit(*this);
 }
 
-Let::Let(const Symbol& lname, const Symbol& type, const std::shared_ptr<Expression>& initexpr, 
-        const std::shared_ptr<Expression>& bodyexpr)
+Let::Let(const Symbol& lname, const Symbol& type, const ExpressionPtr& initexpr, 
+        const ExpressionPtr& bodyexpr)
     : name(lname), type_decl(type), init(initexpr), body(bodyexpr)
 {
 
@@ -331,7 +331,7 @@ void Let::accept(AstNodeVisitor& visitor) const
     visitor.visit(*this);
 }
 
-Case::Case(const std::shared_ptr<Expression>& exp, const Cases& cb)
+Case::Case(const ExpressionPtr& exp, const Cases& cb)
     : expr(exp), branches(cb)
 {
 

@@ -31,6 +31,8 @@ public:
     virtual void accept(AstNodeVisitor&) const = 0;
     virtual Symbol type_check(Environment&) const = 0;
 };
+typedef std::shared_ptr<Expression> ExpressionPtr;
+typedef std::vector<ExpressionPtr> Expressions;
 
 class Feature : public AstNode
 {
@@ -45,19 +47,22 @@ public:
     virtual void accept(AstNodeVisitor&) const = 0;
     virtual Symbol type_check(Environment&) const = 0;
 };
+typedef std::shared_ptr<Feature> FeaturePtr;
+typedef std::vector<FeaturePtr> Features;
 
 class Attribute : public Feature
 {
 public:
     Symbol name;
     Symbol type_decl;
-    std::shared_ptr<Expression> init;
+    ExpressionPtr init;
 
-    Attribute(const Symbol&, const Symbol&, const std::shared_ptr<Expression>&);
+    Attribute(const Symbol&, const Symbol&, const ExpressionPtr&);
     feature_type get_type() const;
     void accept(AstNodeVisitor&) const;
     virtual Symbol type_check(Environment&) const;
 };
+typedef std::shared_ptr<Attribute> AttributePtr;
 
 class Formal : public AstNode
 {
@@ -69,22 +74,24 @@ public:
     void accept(AstNodeVisitor&) const;
     virtual Symbol type_check(Environment&) const;
 };
-
+typedef std::shared_ptr<Formal> FormalPtr;
+typedef std::vector<FormalPtr> Formals;
 
 class Method : public Feature
 {
 public:
     Symbol name;
     Symbol return_type;
-    std::vector<std::shared_ptr<Formal>> params;
-    std::shared_ptr<Expression> body;
+    Formals params;
+    ExpressionPtr body;
 
-    Method(const Symbol&, const Symbol&, const std::vector<std::shared_ptr<Formal>>&,
-            const std::shared_ptr<Expression>&);
+    Method(const Symbol&, const Symbol&, const Formals&,
+            const ExpressionPtr&);
     feature_type get_type() const;
     void accept(AstNodeVisitor&) const;
     virtual Symbol type_check(Environment&) const;
 };
+typedef std::shared_ptr<Method> MethodPtr;
 
 class Class : public AstNode
 {
@@ -92,23 +99,26 @@ public:
     Symbol name;
     Symbol parent;
     Symbol filename;
-    std::vector<std::shared_ptr<Feature>> features;
+    Features features;
 
     Class(const Symbol&, const Symbol&, const Symbol&, 
-           const std::vector<std::shared_ptr<Feature>>&); 
+           const Features&); 
     void accept(AstNodeVisitor&) const;
     virtual Symbol type_check(Environment&) const;
 };
+typedef std::shared_ptr<Class> ClassPtr;
+typedef std::vector<ClassPtr> Classes;
 
 class Program : public AstNode
 {
 public:
-    std::vector<std::shared_ptr<Class>> classes;
+    Classes classes;
 
-    Program(const std::vector<std::shared_ptr<Class>>&);
+    Program(const Classes&);
     void accept(AstNodeVisitor&) const;
     virtual Symbol type_check(Environment&) const;
 };
+typedef std::shared_ptr<Program> ProgramPtr;
 
 class StringConst : public Expression
 {
@@ -153,9 +163,9 @@ public:
 class IsVoid : public Expression
 {
 public:
-    std::shared_ptr<Expression> expr;
+    ExpressionPtr expr;
 
-    IsVoid(const std::shared_ptr<Expression>&);
+    IsVoid(const ExpressionPtr&);
     void accept(AstNodeVisitor&) const;
     virtual Symbol type_check(Environment&) const;
 };
@@ -165,20 +175,22 @@ class CaseBranch : public Expression
 public:
     Symbol name;
     Symbol type_decl;
-    std::shared_ptr<Expression> expr;
+    ExpressionPtr expr;
 
-    CaseBranch(const Symbol&, const Symbol&, const std::shared_ptr<Expression>&);
+    CaseBranch(const Symbol&, const Symbol&, const ExpressionPtr&);
     void accept(AstNodeVisitor&) const;
     virtual Symbol type_check(Environment&) const;
 };
+typedef std::shared_ptr<CaseBranch> CaseBranchPtr;
+typedef std::vector<CaseBranchPtr> Cases;
 
 class Assign : public Expression
 {
 public:
     Symbol name;
-    std::shared_ptr<Expression> rhs;
+    ExpressionPtr rhs;
 
-    Assign(const Symbol&, const std::shared_ptr<Expression>&);
+    Assign(const Symbol&, const ExpressionPtr&);
     void accept(AstNodeVisitor&) const;
     virtual Symbol type_check(Environment&) const;
 };
@@ -186,9 +198,9 @@ public:
 class Block : public Expression
 {
 public:
-    std::vector<std::shared_ptr<Expression>> body;
+    std::vector<ExpressionPtr> body;
 
-    Block(const std::vector<std::shared_ptr<Expression>>&);
+    Block(const std::vector<ExpressionPtr>&);
     void accept(AstNodeVisitor&) const;
     virtual Symbol type_check(Environment&) const;
 };
@@ -196,12 +208,12 @@ public:
 class If : public Expression
 {
 public:
-    std::shared_ptr<Expression> predicate;
-    std::shared_ptr<Expression> iftrue;
-    std::shared_ptr<Expression> iffalse;
+    ExpressionPtr predicate;
+    ExpressionPtr iftrue;
+    ExpressionPtr iffalse;
 
-    If(const std::shared_ptr<Expression>&, const std::shared_ptr<Expression>&, 
-            const std::shared_ptr<Expression>&);
+    If(const ExpressionPtr&, const ExpressionPtr&, 
+            const ExpressionPtr&);
     void accept(AstNodeVisitor&) const;
     virtual Symbol type_check(Environment&) const;
 };
@@ -209,10 +221,10 @@ public:
 class While : public Expression
 {
 public:
-    std::shared_ptr<Expression> predicate;
-    std::shared_ptr<Expression> body;
+    ExpressionPtr predicate;
+    ExpressionPtr body;
 
-    While(const std::shared_ptr<Expression>&, const std::shared_ptr<Expression>&);
+    While(const ExpressionPtr&, const ExpressionPtr&);
     void accept(AstNodeVisitor&) const;
     virtual Symbol type_check(Environment&) const;
 };
@@ -220,9 +232,9 @@ public:
 class Complement : public Expression
 {
 public:
-    std::shared_ptr<Expression> expr;
+    ExpressionPtr expr;
 
-    Complement(const std::shared_ptr<Expression>&);
+    Complement(const ExpressionPtr&);
     void accept(AstNodeVisitor&) const;
     virtual Symbol type_check(Environment&) const;
 };
@@ -230,10 +242,10 @@ public:
 class LessThan : public Expression
 {
 public:
-    std::shared_ptr<Expression> lhs;
-    std::shared_ptr<Expression> rhs;
+    ExpressionPtr lhs;
+    ExpressionPtr rhs;
 
-    LessThan(const std::shared_ptr<Expression>&, const std::shared_ptr<Expression>&);
+    LessThan(const ExpressionPtr&, const ExpressionPtr&);
     void accept(AstNodeVisitor&) const;
     virtual Symbol type_check(Environment&) const;
 };
@@ -241,10 +253,10 @@ public:
 class EqualTo : public Expression
 {
 public:
-    std::shared_ptr<Expression> lhs;
-    std::shared_ptr<Expression> rhs;
+    ExpressionPtr lhs;
+    ExpressionPtr rhs;
 
-    EqualTo(const std::shared_ptr<Expression>&, const std::shared_ptr<Expression>&);
+    EqualTo(const ExpressionPtr&, const ExpressionPtr&);
     void accept(AstNodeVisitor&) const;
     virtual Symbol type_check(Environment&) const;
 };
@@ -252,11 +264,11 @@ public:
 class LessThanEqualTo : public Expression
 {
 public:
-    std::shared_ptr<Expression> lhs;
-    std::shared_ptr<Expression> rhs;
+    ExpressionPtr lhs;
+    ExpressionPtr rhs;
 
-    LessThanEqualTo(const std::shared_ptr<Expression>&, 
-            const std::shared_ptr<Expression>&);
+    LessThanEqualTo(const ExpressionPtr&, 
+            const ExpressionPtr&);
     void accept(AstNodeVisitor&) const;
     virtual Symbol type_check(Environment&) const;
 };
@@ -264,10 +276,10 @@ public:
 class Plus : public Expression
 {
 public:
-    std::shared_ptr<Expression> lhs;
-    std::shared_ptr<Expression> rhs;
+    ExpressionPtr lhs;
+    ExpressionPtr rhs;
 
-    Plus(const std::shared_ptr<Expression>&, const std::shared_ptr<Expression>&);
+    Plus(const ExpressionPtr&, const ExpressionPtr&);
     void accept(AstNodeVisitor&) const;
     virtual Symbol type_check(Environment&) const;
 };
@@ -275,10 +287,10 @@ public:
 class Sub : public Expression
 {
 public:
-    std::shared_ptr<Expression> lhs;
-    std::shared_ptr<Expression> rhs;
+    ExpressionPtr lhs;
+    ExpressionPtr rhs;
 
-    Sub(const std::shared_ptr<Expression>&, const std::shared_ptr<Expression>&);
+    Sub(const ExpressionPtr&, const ExpressionPtr&);
     void accept(AstNodeVisitor&) const;
     virtual Symbol type_check(Environment&) const;
 };
@@ -286,10 +298,10 @@ public:
 class Mul : public Expression
 {
 public:
-    std::shared_ptr<Expression> lhs;
-    std::shared_ptr<Expression> rhs;
+    ExpressionPtr lhs;
+    ExpressionPtr rhs;
 
-    Mul(const std::shared_ptr<Expression>&, const std::shared_ptr<Expression>&);
+    Mul(const ExpressionPtr&, const ExpressionPtr&);
     void accept(AstNodeVisitor&) const;
     virtual Symbol type_check(Environment&) const;
 };
@@ -297,11 +309,11 @@ public:
 class Div : public Expression
 {
 public:
-    std::shared_ptr<Expression> lhs;
-    std::shared_ptr<Expression> rhs;
+    ExpressionPtr lhs;
+    ExpressionPtr rhs;
 
-    Div(const std::shared_ptr<Expression>&, 
-            const std::shared_ptr<Expression>&);
+    Div(const ExpressionPtr&, 
+            const ExpressionPtr&);
     void accept(AstNodeVisitor&) const;
     virtual Symbol type_check(Environment&) const;
 };
@@ -309,9 +321,9 @@ public:
 class Not : public Expression
 {
 public:
-    std::shared_ptr<Expression> expr;
+    ExpressionPtr expr;
 
-    Not(const std::shared_ptr<Expression>&);
+    Not(const ExpressionPtr&);
     void accept(AstNodeVisitor&) const;
     virtual Symbol type_check(Environment&) const;
 };
@@ -319,13 +331,13 @@ public:
 class StaticDispatch : public Expression
 {
 public:
-    std::shared_ptr<Expression> obj;
+    ExpressionPtr obj;
     Symbol type;
     Symbol method;
-    std::vector<std::shared_ptr<Expression>> actual;
+    std::vector<ExpressionPtr> actual;
 
-    StaticDispatch(const std::shared_ptr<Expression>&, const Symbol&, const Symbol&,
-           const std::vector<std::shared_ptr<Expression>>&); 
+    StaticDispatch(const ExpressionPtr&, const Symbol&, const Symbol&,
+           const std::vector<ExpressionPtr>&); 
     void accept(AstNodeVisitor&) const;
     virtual Symbol type_check(Environment&) const;
 };
@@ -333,12 +345,12 @@ public:
 class DynamicDispatch : public Expression
 {
 public:
-    std::shared_ptr<Expression> obj;
+    ExpressionPtr obj;
     Symbol method;
-    std::vector<std::shared_ptr<Expression>> actual;
+    std::vector<ExpressionPtr> actual;
 
-    DynamicDispatch(const std::shared_ptr<Expression>&, const Symbol&, 
-            const std::vector<std::shared_ptr<Expression>>&);
+    DynamicDispatch(const ExpressionPtr&, const Symbol&, 
+            const std::vector<ExpressionPtr>&);
     void accept(AstNodeVisitor&) const;
     virtual Symbol type_check(Environment&) const;
 };
@@ -348,11 +360,11 @@ class Let : public Expression
 public:
     Symbol name;
     Symbol type_decl;
-    std::shared_ptr<Expression> init;
-    std::shared_ptr<Expression> body;
+    ExpressionPtr init;
+    ExpressionPtr body;
 
-    Let(const Symbol&, const Symbol&, const std::shared_ptr<Expression>&,
-            const std::shared_ptr<Expression>&);
+    Let(const Symbol&, const Symbol&, const ExpressionPtr&,
+            const ExpressionPtr&);
     void accept(AstNodeVisitor&) const;
     virtual Symbol type_check(Environment&) const;
 };
@@ -360,10 +372,10 @@ public:
 class Case : public Expression
 {
 public:
-    std::shared_ptr<Expression> expr;
-    std::vector<std::shared_ptr<CaseBranch>> branches;
+    ExpressionPtr expr;
+    Cases branches;
 
-    Case(const std::shared_ptr<Expression>&, const std::vector<std::shared_ptr<CaseBranch>>&);
+    Case(const ExpressionPtr&, const Cases&);
     void accept(AstNodeVisitor&) const;
     virtual Symbol type_check(Environment&) const;
 };
@@ -386,10 +398,5 @@ public:
     virtual Symbol type_check(Environment&) const;
 };
 
-typedef std::vector<std::shared_ptr<Class>> Classes;
-typedef std::vector<std::shared_ptr<Formal>> Formals;
-typedef std::vector<std::shared_ptr<CaseBranch>> Cases;
-typedef std::vector<std::shared_ptr<Feature>> Features;
-typedef std::vector<std::shared_ptr<Expression>> Expressions;
 
 #endif
