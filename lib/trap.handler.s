@@ -198,8 +198,8 @@ __less_eq:
     la $a0, bool_const1
     jr $ra
 
-    .globl not
-not:
+    .globl lnot
+lnot:
     la $t1, bool_const0
     beq $a0, $t1, __false
     la $a0, bool_const0
@@ -208,7 +208,7 @@ __false:
     la $a0, bool_const1
     jr $ra
 
-    .global eq
+    .globl eq
 eq:
     beq $a0, $a1, __eq
     lw $t1, OBJ_HDR_TAG($a0)
