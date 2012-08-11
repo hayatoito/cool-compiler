@@ -329,9 +329,6 @@ private:
     void emit_nop();
 
     void emit_initial_data();
-    void emit_io_methods();
-    void emit_object_methods();
-    void emit_string_methods();
 
     //helper functions for generating code for object layout, etc
     void code_constants();

@@ -664,6 +664,9 @@ void AstNodeCodeGenerator::code_constants()
     //emit assembly for string constants
     auto str_consts = stringtable().get_elems();
 
+    stringtable().add(""); //add empty string to string const table as this is the
+                           //default value of a newly allocated string object
+
     for (auto it = begin(str_consts); it != end(str_consts); ++it)
     {
         os << "str_const";
@@ -847,8 +850,6 @@ void AstNodeCodeGenerator::emit_initial_data()
        << "\t.align\t2\n"
        << "\t.globl\tclass_name_table\n"
        << "\t.globl\tMain_prototype\n"
-       << "\t.globl\tInt_prototype\n"
-       << "\t.globl\tString_prototype\n"
        << "\t.globl\tbool_const0\n"
        << "\t.globl\tbool_const1\n"
        << "\t.globl\t__int_tag\n"
@@ -863,20 +864,6 @@ void AstNodeCodeGenerator::emit_initial_data()
        << "\t.word\t" << STR_CLASS_TAG << "\n";
 }
 
-void AstNodeCodeGenerator::emit_io_methods()
-{
-
-}
-
-void AstNodeCodeGenerator::emit_object_methods()
-{
-
-}
-
-void AstNodeCodeGenerator::emit_string_methods()
-{
-
-}
 
 void AstNodeCodeGenerator::visit(const Program& prog)
 {
@@ -894,9 +881,6 @@ void AstNodeCodeGenerator::visit(const Program& prog)
     code_prototype_objects();
 
     os << ".text\n";
-    emit_io_methods();
-    emit_object_methods();
-    emit_string_methods();
 
     for (auto& cs : prog.classes)
         cs->accept(*this);
@@ -1000,9 +984,9 @@ void AstNodeCodeGenerator::visit(const BoolConst& bool_const)
 
 void AstNodeCodeGenerator::visit(const New& new_node) 
 {
-    emit_la("a0", new_node.get_val() + "_prototype");
+    emit_la("a0", new_node.type.get_val() + "_prototype");
     emit_jal("Object.copy");
-    emit_jal(new_node.get_val() + "_init");
+    emit_jal(new_node.type.get_val() + "_init");
 }
 
 void AstNodeCodeGenerator::visit(const IsVoid& isvoid) 
