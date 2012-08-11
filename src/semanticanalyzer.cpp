@@ -1,5 +1,6 @@
 #include "semanticanalyzer.hpp"
 #include "constants.hpp"
+#include "astnodetypechecker.hpp"
 
 #include <iostream>
 #include <algorithm>
@@ -91,8 +92,8 @@ bool SemanticAnalyzer::validate_inheritance(const Classes& classes)
 
 bool SemanticAnalyzer::type_check(const ProgramPtr& root)
 {
-    Environment env;
-    root->type_check(env);
+    AstNodeTypeChecker typechecker;
+    root->accept(typechecker);
 }
 
 bool SemanticAnalyzer::is_subtype(const Symbol& child, const Symbol& parent)

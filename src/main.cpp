@@ -14,7 +14,7 @@ extern FILE* yyin;
 
 // Root of AST used by the parser. This should be populated
 // after parsing phase
-std::shared_ptr<Program> ast_root;
+ProgramPtr ast_root;
 
 // Used by the error handling routines in both lexer and
 // parser to provide a more informative error message
@@ -63,12 +63,12 @@ int main(int argc, char **argv)
         exit(1);
     }
 
-    //semant.type_check(ast_root);
+    semant.type_check(ast_root);
 
-    std::ofstream out("output.s");
-    AstNodeCodeGenerator codegen(semant.get_inherit_graph(), out);
-    codegen.install_basic();
-    ast_root->accept(codegen);
+    //std::ofstream out("output.s");
+    //AstNodeCodeGenerator codegen(semant.get_inherit_graph(), out);
+    //codegen.install_basic();
+    //ast_root->accept(codegen);
 
     return 0;
 }
