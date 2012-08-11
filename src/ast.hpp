@@ -135,7 +135,7 @@ public:
 class New : public Expression
 {
 public:
-    Symbol type;
+    Symbol type_decl;
 
     New(const Symbol&);
     void accept(AstNodeVisitor&) const;
@@ -298,7 +298,7 @@ class StaticDispatch : public Expression
 {
 public:
     ExpressionPtr obj;
-    Symbol type;
+    Symbol type_decl;
     Symbol method;
     std::vector<ExpressionPtr> actual;
 

@@ -117,7 +117,7 @@ void BoolConst::accept(AstNodeVisitor& visitor) const
 }
 
 New::New(const Symbol& typ)
-    : type(typ)
+    : type_decl(typ)
 {
 
 }
@@ -297,7 +297,7 @@ void Not::accept(AstNodeVisitor& visitor) const
 
 StaticDispatch::StaticDispatch(const ExpressionPtr& objexpr, const Symbol& stype, 
         const Symbol& func, const Expressions& act)
-   : obj(objexpr), type(stype), method(func), actual(act)
+   : obj(objexpr), type_decl(stype), method(func), actual(act)
 {
 
 }
