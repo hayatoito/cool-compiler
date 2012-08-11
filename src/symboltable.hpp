@@ -6,6 +6,8 @@
 #include <map>
 #include <boost/optional.hpp>
 
+// Symbol type used to represent symbols in the language
+// including, but not limited to class and method names, and types
 class Symbol 
 {
 private:
@@ -37,6 +39,10 @@ inline bool operator<(const Symbol& s1, const Symbol& s2)
 }
 
 
+// Generic symbol table that supports scopes
+// Used by the semantic analyzer to enforce scoping rules
+// and is used by the code generator to store variable name
+// to activation record offset
 template<typename K, typename V>
 class SymbolTable
 {
@@ -54,32 +60,29 @@ public:
         tbl.pop_back();
     }
 
-    void add(K key, V val)
+    void add(const K& key, const V& val)
     {
         tbl.back()[key] = val;
     }
 
-    int size()
+    std::size_t size() const
     {
         return tbl.back().size();
     }
 
-    boost::optional<V> probe(K key)
+    boost::optional<V> probe(const K& key) 
     {
         auto last = tbl.back();
-        if (last.count(key) > 0)
-            return last[key];
-        else
-            throw("key does not exist");
+        return last.count(key) > 0 ? last[key] : boost::optional<V>();
     }
 
-    boost::optional<V> lookup(K key)
+    boost::optional<V> lookup(const K& key)
     {
         for (auto it = tbl.rbegin(); it != tbl.rend(); ++it)
             if (it->count(key) > 0)
                 return (*it)[key];
 
-        throw("key does not exist");
+        return boost::optional<V>();
     }
 };
 
