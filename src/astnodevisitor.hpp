@@ -193,33 +193,6 @@ public:
 class AstNodeCodeGenerator : public AstNodeVisitor
 {
 private:
-    //symbol constants for convinience
-    static const Symbol object;
-    static const Symbol integer;
-    static const Symbol boolean;
-    static const Symbol string;
-    static const Symbol io;
-    static const Symbol self;
-    static const Symbol SELF_TYPE;
-    static const Symbol noclass;
-    static const Symbol notype;
-    static const Symbol prim_slot;
-    static const Symbol abort;
-    static const Symbol type_name;
-    static const Symbol copy;
-    static const Symbol main;
-    static const Symbol out_int;
-    static const Symbol in_int;
-    static const Symbol in_string;
-    static const Symbol out_string;
-    static const Symbol substr;
-    static const Symbol length;
-    static const Symbol concat;
-    static const Symbol arg;
-    static const Symbol arg2;
-    static const Symbol val;
-    static const Symbol str_field;
-
     //class tags for basic classes
     static const int STR_CLASS_TAG = 5;
     static const int INT_CLASS_TAG = 6;

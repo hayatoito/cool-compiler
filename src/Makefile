@@ -6,8 +6,8 @@ FLEX=flex
 BISON=bison
 CC=g++
 
-SRCS=y.tab.c ast.cpp tokentable.cpp symboltable.cpp main.cpp lex.yy.c semanticanalyzer.cpp astnodevisitor.cpp
-OBJS=y.tab.o ast.o tokentable.o symboltable.o main.o lex.yy.o semanticanalyzer.o astnodevisitor.o
+SRCS=y.tab.c ast.cpp tokentable.cpp symboltable.cpp main.cpp lex.yy.c semanticanalyzer.cpp astnodevisitor.cpp constants.cpp
+OBJS=y.tab.o ast.o tokentable.o symboltable.o main.o lex.yy.o semanticanalyzer.o astnodevisitor.o constants.o
 
 cooc : ${OBJS} 
 	${CC} ${CFLAGS} -o $@ ${OBJS}
