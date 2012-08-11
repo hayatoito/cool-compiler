@@ -1,20 +1,24 @@
 #include "semanticanalyzer.hpp"
-#include <iostream>
+#include "constants.hpp"
 
-bool SemanticAnalyzer::invalid_parent(const std::string& parent)
+#include <iostream>
+#include <algorithm>
+
+using namespace constants;
+
+bool SemanticAnalyzer::invalid_parent(const Symbol& parent)
 {
-    return parent == "String" || parent == "Bool" || parent == "Int"
-        || parent == "SELF_TYPE";
+    return parent == STRING || parent == BOOLEAN || parent == INTEGER;
 }
 
-bool SemanticAnalyzer::cyclic_check(std::map<std::string, std::string>& graph, const std::string& node)
+bool SemanticAnalyzer::cyclic_check(ClassPtrMap& graph, const ClassPtr& node)
 {
-    if (node == "Object" || node == "IO")
+    if (node->name == OBJECT || node->name == IO)
         return true;
 
     if (visited.count(node) == 1 && processed.count(node) == 0)
     {
-        std::cerr << "Cyclic dependency found in class " << node << "\n";
+        std::cerr << "Cyclic dependency found in class " << node->name << "\n";
         return false;
     }
 
@@ -29,52 +33,87 @@ bool SemanticAnalyzer::cyclic_check(std::map<std::string, std::string>& graph, c
 
 bool SemanticAnalyzer::validate_inheritance(const Classes& classes)
 {
+    bool status = true;
+
     for (auto& c : classes)
     {
-        std::string class_name = c->name.get_val();
-
-        if (invalid_parent(class_name) || class_name == "Object" || class_name == "IO")
+        if (invalid_parent(c->name) || c->name == OBJECT || c->name == IO)
         {
-            std::cerr << "Redefinition of a basic class not allowed.\n";
-            return false;
+            std::cerr << "error:Redefinition of basic class " << c->name << " not allowed.\n";
+            status = false;
         }
 
-        if (invalid_parent(c->parent.get_val()))
+        if (invalid_parent(c->parent))
         {
-            std::cerr << "Cannot inherit from any of the basic classes - IO, String, Bool, Int\n";
-            return false;
+            std::cerr << "error:Cannot inherit from any of the basic classes - IO, String, Bool, Int\n";
+            status = false;
         }
 
-
-        if (inherit_graph.count(class_name) > 0)
+        if (inherit_graph.count(c) > 0)
         {
-            std::cerr << "Class " << class_name << " has multiple definitions.\n";
-            return false;
+            std::cerr << "error:Class " << c->name << " has multiple definitions.\n";
+            status = false;
         }
 
-        inherit_graph[class_name] = c->parent.get_val(); 
+        auto parent = std::find_if(begin(classes), end(classes), 
+                [&](const ClassPtr& p) { 
+                    return c->parent == p->name;
+                });
+
+        if (parent == end(classes))
+        {
+            std::cerr << "error:" << c->name << " inherits from a class that doesn't exist.\n";
+            status = false;
+        }
+        else
+        {
+            inherit_graph[c] = *parent;
+        }
     }
 
-    if (inherit_graph.count("Main") == 0)
+    auto main_class = std::find_if(begin(classes), end(classes),
+                [&](const ClassPtr& p) {
+                    return p->name == MAIN;
+                }); 
+
+    if (main_class == end(classes))
     {
-        std::cerr << "Main class missing.\n";
-        return false;
+        std::cerr << "error:Main class not found.\n";
+        status = false;
     }
 
-    for (auto it = begin(inherit_graph); it != end(inherit_graph); ++it)
-        if (!cyclic_check(inherit_graph, it->first))
-            return false;
+    for (auto& elem : inherit_graph)
+        if (!cyclic_check(inherit_graph, elem.first))
+            status = false;
 
-    return true;
+    return status;
 }
 
-bool SemanticAnalyzer::type_check(const std::shared_ptr<Program>& root)
+bool SemanticAnalyzer::type_check(const ProgramPtr& root)
 {
     Environment env;
-    root->type_check(*this, env);
+    root->type_check(env);
 }
 
-std::map<std::string, std::string> SemanticAnalyzer::get_inherit_graph() const
+bool SemanticAnalyzer::is_subtype(const Symbol& child, const Symbol& parent)
+{
+    /*
+    if (schild == sparent) return true;
+
+    Symbol curr(inherit_graph[schild]
+    while(curr != "Object") 
+    {
+        if (curr == sparent)
+            return true;
+
+        curr = adjacencylist_[curr].parent;
+    }
+
+    return false;
+    */
+}
+
+ClassPtrMap SemanticAnalyzer::get_inherit_graph() const
 {
     return inherit_graph;
 }

@@ -2,25 +2,14 @@
 #define SEMANTICANALYZER_H
 
 #include "ast.hpp"
+
 #include <map>
 #include <set>
 #include <vector>
 #include <memory>
+#include <functional>
 
-class Program;
-class Class;
-typedef std::vector<std::shared_ptr<Class>> Classes;
-
-//Environment used for bulk of semantic analysis - type check & scope
-struct Environment
-{
-    SymbolTable<Symbol, Symbol> symtbl; //Table that keep tracks of variables, their scopes, and 
-                                        //and their types. Key = variable name, Value = type
-                                        
-    Symbol curr_class; //Keeps track of the enclosing class while type checking expressions.
-                       //This is used to handle SELF_TYPE
-
-};
+typedef std::map<ClassPtr, ClassPtr> ClassPtrMap;
 
 //Class that contains methods to perform semantic analysis, as well as 
 //data structures that are built along the way 
@@ -29,16 +18,18 @@ class SemanticAnalyzer
 private:
     //The following instance variables are used by the cyclic check function
     //to keep track of visited & processed inheritance graph nodes
-    std::set<std::string> visited;   
-    std::set<std::string> processed;
+    std::set<ClassPtr> visited;   
+    std::set<ClassPtr> processed;
 
-    std::map<std::string, std::string> inherit_graph;
+    ClassPtrMap inherit_graph;
 
-    bool invalid_parent(const std::string&); 
+    bool invalid_parent(const Symbol&); 
 
     //Performs a DFS traversal of the inheritance graph created from the list
     //of classes. It checks for cyclic dependencies between classes in the source code.
-    bool cyclic_check(std::map<std::string, std::string>&, const std::string&);
+    bool cyclic_check(ClassPtrMap&, const ClassPtr&);
+
+    ClassPtr get_parent(const ClassPtr&, const Classes&);
 
 public:
     //Performs a variety of checks to ensure that the class structure, including
@@ -46,10 +37,10 @@ public:
     bool validate_inheritance(const Classes&); 
 
     //Calls on the AST to type check and scope check its nodes
-    bool type_check(const std::shared_ptr<Program>&);
+    bool type_check(const ProgramPtr&);
 
-    std::map<std::string, std::string> get_inherit_graph() const;
+    ClassPtrMap get_inherit_graph() const;
+    bool is_subtype(const Symbol&, const Symbol&);
 };
-
 
 #endif
