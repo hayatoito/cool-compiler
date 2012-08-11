@@ -850,12 +850,13 @@ void AstNodeCodeGenerator::emit_initial_data()
        << "\t.align\t2\n"
        << "\t.globl\tclass_name_table\n"
        << "\t.globl\tMain_prototype\n"
+       << "\t.globl\tMain_init\n"
+       << "\t.globl\tMain.main\n"
        << "\t.globl\tbool_const0\n"
        << "\t.globl\tbool_const1\n"
        << "\t.globl\t__int_tag\n"
        << "\t.globl\t__bool_tag\n"
        << "\t.globl\t__string_tag\n"
-       << "\t.globl\tMain.main\n"
        << "__int_tag:\n"
        << "\t.word\t" << INT_CLASS_TAG << "\n"
        << "__bool_tag:\n"
@@ -896,12 +897,17 @@ void AstNodeCodeGenerator::visit(const Class& cs)
     emit_sw("s0", 8, "sp");
     emit_sw("ra", 4, "sp");
     emit_addiu("fp", "sp", 4);
-    emit_jal(cs.parent.get_val() + "_init");
+
+    if (cs.name != object) 
+        emit_jal(cs.parent.get_val() + "_init");
+
+    emit_move("s0", "a0");
 
     for (auto& feature : cs.features)
         if (feature->get_type() == Feature::ATTRIBUTE)
             feature->accept(*this);
 
+    emit_move("a0", "s0");
     emit_lw("fp", 12, "sp");
     emit_lw("s0", 8, "sp");
     emit_lw("ra", 4, "sp");
@@ -1100,8 +1106,7 @@ void AstNodeCodeGenerator::visit(const Plus& plus)
     emit_lw("t1", 12, "t1");
     emit_lw("t2", 12, "v0");
     emit_add("t1", "t1", "t2");
-    emit_sw("t1", 12, "v0");
-    emit_move("a0", "v0");
+    emit_sw("t1", 12, "a0");
     emit_pop(1);
 }
 
@@ -1117,8 +1122,7 @@ void AstNodeCodeGenerator::visit(const Sub& sub)
     emit_lw("t1", 12, "t1");
     emit_lw("t2", 12, "v0");
     emit_sub("t1", "t1", "t2");
-    emit_sw("t1", 12, "v0");
-    emit_move("a0", "v0");
+    emit_sw("t1", 12, "a0");
     emit_pop(1);
 }
 
@@ -1134,8 +1138,7 @@ void AstNodeCodeGenerator::visit(const Mul& mul)
     emit_lw("t1", 12, "t1");
     emit_lw("t2", 12, "v0");
     emit_mul("t1", "t1", "t2");
-    emit_sw("t1", 12, "v0");
-    emit_move("a0", "v0");
+    emit_sw("t1", 12, "a0");
     emit_pop(1);
 }
 
@@ -1151,8 +1154,7 @@ void AstNodeCodeGenerator::visit(const Div& div)
     emit_lw("t1", 12, "t1");
     emit_lw("t2", 12, "v0");
     emit_div("t1", "t1", "t2");
-    emit_sw("t1", 12, "v0");
-    emit_move("a0", "v0");
+    emit_sw("t1", 12, "a0");
     emit_pop(1);
 }
 
