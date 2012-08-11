@@ -107,6 +107,9 @@ __start:
 	sll $v0, $a0, 2
 	addu $a2, $a2, $v0
     jal __memmgr_init
+    la $a0, Main_prototype
+    jal Object.copy
+    jal Main_init
 	jal Main.main
 	li $v0 10
 	syscall		# syscall 10 (exit)
@@ -168,6 +171,7 @@ __copy_attrib:
     bne $t4, $t2, __copy_attrib
     mul $t2, $t2, WORD_SIZE
     sub $v0, $v0, $t2 
+    move $a0, $v0
     lw $ra, 8($sp)
     addiu $sp, $sp, 8
     jr $ra
