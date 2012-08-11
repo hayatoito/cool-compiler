@@ -7,6 +7,7 @@ namespace constants
     const Symbol INTEGER = idtable().add("Int");
     const Symbol BOOLEAN = idtable().add("Bool");
     const Symbol STRING = idtable().add("String");
+    const Symbol MAIN = idtable().add("Main");
     const Symbol IO = idtable().add("IO");
     const Symbol SELF = idtable().add("self");
     const Symbol SELF_TYPE = idtable().add("SELF_TYPE");
@@ -16,7 +17,6 @@ namespace constants
     const Symbol ABORT = idtable().add("abort");
     const Symbol TYPE_NAME = idtable().add("type_name");
     const Symbol COPY = idtable().add("copy");
-    const Symbol MAIN = idtable().add("main");
     const Symbol OUT_INT = idtable().add("out_int");
     const Symbol IN_INT = idtable().add("in_int");
     const Symbol IN_STRING = idtable().add("in_string");
