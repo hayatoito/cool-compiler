@@ -78,7 +78,7 @@ public:
 
     boost::optional<V> lookup(const K& key)
     {
-        for (auto it = tbl.rbegin(); it != tbl.rend(); ++it)
+        for (auto it = tbl.rbegin(), end = tbl.rend(); it != end; ++it)
             if (it->count(key) > 0)
                 return (*it)[key];
 
