@@ -1,7 +1,13 @@
 #include "ast.hpp"
 #include "tokentable.hpp"
+#include "constants.hpp"
+
 #include <iomanip>
 #include <iostream>
+#include <algorithm>
+#include <functional>
+
+using namespace constants;
 
 Program::Program(const Classes& c)
     : classes(c)
@@ -359,12 +365,18 @@ void NoExpr::accept(AstNodeVisitor& visitor) const
 
 Symbol Program::type_check(SemanticAnalyzer& sa, Environment& env) const
 {
-
+    for (auto& c : classes)
+        c->type_check(sa, env);
 }
 
 Symbol Class::type_check(SemanticAnalyzer& sa, Environment& env) const 
 {
+    env.symtbl.enter_scope();
 
+    for (auto& f : features)
+        f->type_check(sa, env);
+
+    env.symtbl.exit_scope();
 }
 
 Symbol Attribute::type_check(SemanticAnalyzer& sa, Environment& env) const
@@ -374,7 +386,9 @@ Symbol Attribute::type_check(SemanticAnalyzer& sa, Environment& env) const
 
 Symbol Method::type_check(SemanticAnalyzer& sa, Environment& env) const
 {
+    env.symtbl.enter_scope();
 
+    env.symtbl.exit_scope();
 }
 
 Symbol Formal::type_check(SemanticAnalyzer& sa, Environment& env) const
@@ -500,17 +514,8 @@ Symbol Case::type_check(SemanticAnalyzer& sa, Environment& env) const
 
 Symbol Object::type_check(SemanticAnalyzer& sa, Environment& env) const
 {
-    //Symbol obj_type = env.symtbl.lookup(name);
-
-    /*
-    if (obj_type == NULL)
-    {
-        std::cerr << "Identifier not found!\n";
-        obj_type = object;
-    }
-    */
-
-    
+    boost::optional<Symbol> obj_type = env.symtbl.lookup(name);
+    return obj_type ? *obj_type : OBJECT;
 }
 
 Symbol NoExpr::type_check(SemanticAnalyzer& sa, Environment& env) const
