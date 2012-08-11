@@ -278,7 +278,7 @@ void AstNodeDisplayer::visit(const NoExpr&)
 //Code generation implementation
 AstNodeCodeGenerator::AstNodeCodeGenerator(const std::map<std::string, std::string>& ig, 
         std::ostream& stream)
-    : inherit_graph(ig), os(stream), curr_attr_count(0), while_count(0) 
+    : inherit_graph(ig), os(stream), curr_attr_count(0), while_count(0), if_count(0)
 {
 
 }
@@ -441,32 +441,32 @@ void AstNodeCodeGenerator::emit_b(const std::string& label)
 
 void AstNodeCodeGenerator::emit_beq(const char* src1, const char* src2, const std::string& label)
 {
-    os << "\tbeq\t$" << src1 << ", $" << src2 << ", " << label;
+    os << "\tbeq\t$" << src1 << ", $" << src2 << ", " << label << "\n";
 }
 
 void AstNodeCodeGenerator::emit_beq(const char* src1, int imm, const std::string& label)
 {
-    os << "\tbeq\t$" << src1 << ", " << imm << ", " << label;
+    os << "\tbeq\t$" << src1 << ", " << imm << ", " << label << "\n";
 }
 
 void AstNodeCodeGenerator::emit_bge(const char* src1, const char* src2, const std::string& label)
 {
-    os << "\tbge\t$" << src1 << ", $" << src2 << ", " << label;
+    os << "\tbge\t$" << src1 << ", $" << src2 << ", " << label << "\n";
 }
 
 void AstNodeCodeGenerator::emit_bge(const char* src1, int imm, const std::string& label)
 {
-    os << "\tbge\t$" << src1 << ", " << imm << ", " << label;
+    os << "\tbge\t$" << src1 << ", " << imm << ", " << label << "\n";
 }
 
 void AstNodeCodeGenerator::emit_bne(const char* src1, const char* src2, const std::string& label)
 {
-    os << "\tbne\t$" << src1 << ", $" << src2 << ", " << label;
+    os << "\tbne\t$" << src1 << ", $" << src2 << ", " << label << "\n";
 }
 
 void AstNodeCodeGenerator::emit_bne(const char* src1, int imm, const std::string& label)
 {
-    os << "\tbne\t$" << src1 << ", " << imm << ", " << label;
+    os << "\tbne\t$" << src1 << ", " << imm << ", " << label << "\n";
 }
 
 void AstNodeCodeGenerator::emit_j(const std::string& label)
@@ -748,7 +748,7 @@ void AstNodeCodeGenerator::code_dispatch_table(const std::string& class_node)
                 if ((*fit)->get_type() == Feature::METHOD)
                 {
                     std::shared_ptr<Method> mptr(std::dynamic_pointer_cast<Method>(*fit));
-                    emit_word(class_node + "_" + mptr->name.get_val());
+                    emit_word(class_node + "." + mptr->name.get_val());
                 }
             }
         }
@@ -1000,7 +1000,9 @@ void AstNodeCodeGenerator::visit(const BoolConst& bool_const)
 
 void AstNodeCodeGenerator::visit(const New& new_node) 
 {
-
+    emit_la("a0", new_node.get_val() + "_prototype");
+    emit_jal("Object.copy");
+    emit_jal(new_node.get_val() + "_init");
 }
 
 void AstNodeCodeGenerator::visit(const IsVoid& isvoid) 
@@ -1035,24 +1037,35 @@ void AstNodeCodeGenerator::visit(const Block& block)
 
 void AstNodeCodeGenerator::visit(const If& ifstmt) 
 { 
+    ++if_count;
+    std::string ifcnt(std::to_string(if_count));
+
     ifstmt.predicate->accept(*this);
-    ifstmt.iftrue->accept(*this);
+    
+    emit_la("t1", "bool_const1");
+    emit_beq("a0", "t1", "if-true" + ifcnt);
     ifstmt.iffalse->accept(*this);
+    emit_b("if-end" + ifcnt);
+
+    emit_label("if-true" + ifcnt);
+    ifstmt.iftrue->accept(*this);
+
+    emit_label("if-end" + ifcnt);
 }
 
 void AstNodeCodeGenerator::visit(const While& whilestmt) 
 { 
     ++while_count;
-    whilestmt.predicate->accept(*this);
 
-    emit_la("t1", "bool_const1");
     emit_label("while-loop" + std::to_string(while_count));
-    emit_bne("a0", "t1", "while-end");
+    whilestmt.predicate->accept(*this);
+    emit_la("t1", "bool_const1");
+    emit_bne("a0", "t1", "while-end" + std::to_string(while_count));
 
     whilestmt.body->accept(*this);
 
-    emit_b("while-loop");
-    emit_label("while-end");
+    emit_b("while-loop" + std::to_string(while_count));
+    emit_label("while-end" + std::to_string(while_count));
     emit_li("a0", 0);
 }
 

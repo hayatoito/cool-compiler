@@ -248,6 +248,7 @@ private:
                                       //to offsets in the current AR
 
     std::size_t while_count;
+    std::size_t if_count;
 
     //generic instructions
     void emit_align(int);
