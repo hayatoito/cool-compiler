@@ -17,6 +17,8 @@ public:
 class Expression : public AstNode
 {
 public:
+    Symbol type;
+
     Expression() {}
     virtual void accept(AstNodeVisitor&) const = 0;
 };
