@@ -629,7 +629,7 @@ void AstNodeCodeGenerator::install_basic()
     };
 
     Features string_features = {
-        std::make_shared<Attribute>(val, integer, std::make_shared<NoExpr>()),
+        std::make_shared<Attribute>(val, prim_slot, std::make_shared<NoExpr>()),
         std::make_shared<Attribute>(str_field, prim_slot, std::make_shared<NoExpr>()),    
         std::make_shared<Method>(length, integer, Formals(), std::make_shared<NoExpr>()),
         std::make_shared<Method>(concat, string, string_formal1, std::make_shared<NoExpr>()),
@@ -897,11 +897,10 @@ void AstNodeCodeGenerator::visit(const Class& cs)
     emit_sw("s0", 8, "sp");
     emit_sw("ra", 4, "sp");
     emit_addiu("fp", "sp", 4);
+    emit_move("s0", "a0");
 
     if (cs.name != object) 
         emit_jal(cs.parent.get_val() + "_init");
-
-    emit_move("s0", "a0");
 
     for (auto& feature : cs.features)
         if (feature->get_type() == Feature::ATTRIBUTE)
@@ -928,7 +927,9 @@ void AstNodeCodeGenerator::visit(const Attribute& attr)
     attr.init->accept(*this);
 
     ++curr_attr_count;
-    emit_sw("a0", 4 * (curr_attr_count + 2), "s0");
+
+    if (attr.type_decl != prim_slot)
+        emit_sw("a0", 4 * (curr_attr_count + 2), "s0");
 }
 
 void AstNodeCodeGenerator::visit(const Feature& feature)
@@ -1161,7 +1162,7 @@ void AstNodeCodeGenerator::visit(const Div& div)
 void AstNodeCodeGenerator::visit(const Not& nt) 
 { 
     nt.expr->accept(*this);
-    emit_jal("not");
+    emit_jal("lnot");
 }
 
 void AstNodeCodeGenerator::visit(const StaticDispatch& sdisp) 
