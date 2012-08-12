@@ -152,26 +152,8 @@ bool SemanticAnalyzer::validate_inheritance(const Classes& classes)
 
 bool SemanticAnalyzer::type_check(const ProgramPtr& root)
 {
-    AstNodeTypeChecker typechecker;
+    AstNodeTypeChecker typechecker(inherit_graph);
     root->accept(typechecker);
-}
-
-bool SemanticAnalyzer::is_subtype(const Symbol& child, const Symbol& parent)
-{
-    /*
-    if (schild == sparent) return true;
-
-    Symbol curr(inherit_graph[schild]
-    while(curr != "Object") 
-    {
-        if (curr == sparent)
-            return true;
-
-        curr = adjacencylist_[curr].parent;
-    }
-
-    return false;
-    */
 }
 
 ClassPtrMap SemanticAnalyzer::get_inherit_graph() const

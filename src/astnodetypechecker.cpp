@@ -3,6 +3,33 @@
 
 using namespace constants;
 
+AstNodeTypeChecker::AstNodeTypeChecker(const std::map<ClassPtr, ClassPtr>& ig)
+    : inherit_graph(ig)
+{
+
+}
+
+bool AstNodeTypeChecker::is_subtype(const Symbol& child, const Symbol& parent)
+{
+    if (child == parent) return true;
+
+    auto child_cptr = std::find_if(begin(inherit_graph), end(inherit_graph),
+            [&](const std::pair<ClassPtr, ClassPtr>& p) {
+                return p.first->name == child;
+            }); 
+
+    ClassPtr curr = child_cptr->first;
+    while(curr->name != OBJECT) 
+    {
+        if (curr->name == parent)
+            return true;
+
+        curr = inherit_graph[curr];
+    }
+
+    return false;
+}
+
 void AstNodeTypeChecker::visit(Program& prog)
 {
     for (auto& cs : prog.classes)

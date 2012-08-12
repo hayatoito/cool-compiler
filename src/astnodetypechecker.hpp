@@ -7,8 +7,12 @@ class AstNodeTypeChecker : public AstNodeVisitor
 {
 private:
     SymbolTable<Symbol, Symbol> env;  
+    std::map<ClassPtr, ClassPtr> inherit_graph;
+
+    bool is_subtype(const Symbol& child, const Symbol& parent);
 
 public:
+    AstNodeTypeChecker(const std::map<ClassPtr, ClassPtr>&);
     void visit(Program&);
     void visit(Class&);
     void visit(Feature&);
