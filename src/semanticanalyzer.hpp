@@ -41,6 +41,7 @@ public:
 
     ClassPtrMap get_inherit_graph() const;
     bool is_subtype(const Symbol&, const Symbol&);
+    void install_basic(ProgramPtr&);
 };
 
 #endif

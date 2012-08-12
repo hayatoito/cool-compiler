@@ -57,6 +57,7 @@ int main(int argc, char **argv)
     ast_root->accept(print);
 
     SemanticAnalyzer semant;
+    semant.install_basic(ast_root);
     if (!semant.validate_inheritance(ast_root->classes))
     {
         std:: cerr << argv[0] << ": **compilation halted due to inheritance errors.**\n";
@@ -67,7 +68,6 @@ int main(int argc, char **argv)
 
     //std::ofstream out("output.s");
     //AstNodeCodeGenerator codegen(semant.get_inherit_graph(), out);
-    //codegen.install_basic();
     //ast_root->accept(codegen);
 
     return 0;

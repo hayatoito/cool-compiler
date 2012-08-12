@@ -7,6 +7,64 @@
 
 using namespace constants;
 
+void SemanticAnalyzer::install_basic(ProgramPtr& ast_root)
+{
+    Features object_features = { 
+        std::make_shared<Method>(ABORT, OBJECT, Formals(), std::make_shared<NoExpr>()),
+        std::make_shared<Method>(TYPE_NAME, STRING, Formals(), std::make_shared<NoExpr>()),
+        std::make_shared<Method>(COPY, SELF_TYPE, Formals(), std::make_shared<NoExpr>())
+    };
+
+    ast_root->classes.push_back(std::make_shared<Class>(OBJECT, NOCLASS, idtable().add("filename"), object_features));
+
+    Formals io_formal1 = { std::make_shared<Formal>(ARG, STRING) };
+    Formals io_formal2 = { std::make_shared<Formal>(ARG, INTEGER) };
+    Features io_features = {
+        std::make_shared<Method>(OUT_STRING, SELF_TYPE, io_formal1, std::make_shared<NoExpr>()),
+        std::make_shared<Method>(OUT_INT, SELF_TYPE, io_formal2, std::make_shared<NoExpr>()),
+        std::make_shared<Method>(IN_STRING, STRING, Formals(), std::make_shared<NoExpr>()),
+        std::make_shared<Method>(IN_INT, INTEGER, Formals(), std::make_shared<NoExpr>())
+    };
+
+    ast_root->classes.push_back(std::make_shared<Class>(IO, OBJECT, idtable().add("filename"), io_features));
+
+    Features int_features = {
+        std::make_shared<Attribute>(VAL, PRIM_SLOT, std::make_shared<NoExpr>())
+    };
+
+    ast_root->classes.push_back(std::make_shared<Class>(INTEGER, OBJECT, idtable().add("filename"), int_features));
+
+    Features bool_features = {
+        std::make_shared<Attribute>(VAL, PRIM_SLOT, std::make_shared<NoExpr>())
+    };
+
+    ast_root->classes.push_back(std::make_shared<Class>(BOOLEAN, OBJECT, idtable().add("filename"), bool_features));
+
+    Formals string_formal1 = { std::make_shared<Formal>(ARG, STRING) };
+    Formals string_formal2 = { 
+        std::make_shared<Formal>(ARG, INTEGER),
+        std::make_shared<Formal>(ARG2, INTEGER)
+    };
+
+    Features string_features = {
+        std::make_shared<Attribute>(VAL, PRIM_SLOT, std::make_shared<NoExpr>()),
+        std::make_shared<Attribute>(STR_FIELD, PRIM_SLOT, std::make_shared<NoExpr>()),    
+        std::make_shared<Method>(LENGTH, INTEGER, Formals(), std::make_shared<NoExpr>()),
+        std::make_shared<Method>(CONCAT, STRING, string_formal1, std::make_shared<NoExpr>()),
+        std::make_shared<Method>(SUBSTR, STRING, string_formal2, std::make_shared<NoExpr>())
+    };
+
+    ast_root->classes.push_back(std::make_shared<Class>(STRING, OBJECT, idtable().add("filename"), string_features));
+
+    //Add basic classes to string table so a string constant (codegen)
+    //will be created for them
+    stringtable().add("Object");
+    stringtable().add("Bool");
+    stringtable().add("IO");
+    stringtable().add("Int");
+    stringtable().add("String");
+}
+
 bool SemanticAnalyzer::invalid_parent(const Symbol& parent)
 {
     return parent == STRING || parent == BOOLEAN || parent == INTEGER;

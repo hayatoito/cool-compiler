@@ -285,7 +285,6 @@ public:
     AstNodeCodeGenerator(const std::map<std::string, std::string>&, 
             std::ostream&);
 
-    void install_basic();
     void visit(const Program&);
     void visit(const Class&);
     void visit(const Feature&);
