@@ -176,9 +176,9 @@ public:
 class Block : public Expression
 {
 public:
-    std::vector<ExpressionPtr> body;
+    Expressions body;
 
-    Block(const std::vector<ExpressionPtr>&);
+    Block(const Expressions&);
     void accept(AstNodeVisitor&) const;
 };
 
@@ -300,10 +300,10 @@ public:
     ExpressionPtr obj;
     Symbol type_decl;
     Symbol method;
-    std::vector<ExpressionPtr> actual;
+    Expressions actual;
 
     StaticDispatch(const ExpressionPtr&, const Symbol&, const Symbol&,
-           const std::vector<ExpressionPtr>&); 
+           const Expressions&); 
     void accept(AstNodeVisitor&) const;
 };
 
@@ -312,10 +312,10 @@ class DynamicDispatch : public Expression
 public:
     ExpressionPtr obj;
     Symbol method;
-    std::vector<ExpressionPtr> actual;
+    Expressions actual;
 
     DynamicDispatch(const ExpressionPtr&, const Symbol&, 
-            const std::vector<ExpressionPtr>&);
+            const Expressions&);
     void accept(AstNodeVisitor&) const;
 };
 
