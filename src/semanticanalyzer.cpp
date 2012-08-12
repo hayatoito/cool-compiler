@@ -93,11 +93,13 @@ bool SemanticAnalyzer::cyclic_check(ClassPtrMap& graph, const ClassPtr& node)
 bool SemanticAnalyzer::validate_inheritance(const Classes& classes)
 {
     bool status = true;
+    std::size_t basic_count = 0;
 
     for (auto& c : classes)
     {
         if (invalid_parent(c->name) || c->name == OBJECT || c->name == IO)
         {
+            ++basic_count;
             std::cerr << "error:Redefinition of basic class " << c->name << " not allowed.\n";
             status = false;
         }
