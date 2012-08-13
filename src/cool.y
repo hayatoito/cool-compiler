@@ -139,7 +139,7 @@ expression : OBJECTID ASSIGN expression { $$ = std::make_shared<Assign>($1, $3);
 
 %%
 
-void yyerror(char *s)
+void yyerror(char *)
 {
     if (yylval.error_msg.length() <= 0)
         std::cerr << curr_filename << ":error:" << yylineno << ": " << "syntax error near or at character '" << (char) yychar << "'\n";

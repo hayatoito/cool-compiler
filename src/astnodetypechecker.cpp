@@ -123,7 +123,7 @@ void AstNodeTypeChecker::visit(Method& method)
     env.exit_scope();
 }
 
-void AstNodeTypeChecker::visit(Formal& formal)
+void AstNodeTypeChecker::visit(Formal&)
 {
 
 }
