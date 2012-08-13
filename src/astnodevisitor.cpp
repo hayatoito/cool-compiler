@@ -1,15 +1,8 @@
 #include "astnodevisitor.hpp"
 #include "tokentable.hpp"
-#include "constants.hpp"
 
 #include <memory>
 #include <iomanip>
-#include <cmath>
-#include <sstream>
-
-using namespace constants;
-
-extern ProgramPtr ast_root;
 
 AstNodeDisplayer::AstNodeDisplayer(std::ostream& stream)
     : os(stream), depth(0)
@@ -83,7 +76,7 @@ void AstNodeDisplayer::visit(const BoolConst& bool_const)
     os << "-bool_const (" << bool_const.value << ")\n";
 }
 
-void AstNodeDisplayer::visit(const New& new_node) 
+void AstNodeDisplayer::visit(const New&) 
 {
     os << std::setw(depth) << "";
     os << "-new\n";
@@ -266,7 +259,7 @@ void AstNodeDisplayer::visit(const Case& caze)
     --depth;
 }
 
-void AstNodeDisplayer::visit(const Object& obj) 
+void AstNodeDisplayer::visit(const Object&) 
 { 
     os << std::setw(depth) << "";
     os << "-object\n";

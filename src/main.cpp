@@ -57,13 +57,12 @@ int main(int argc, char **argv)
     ast_root->accept(print);
 
     SemanticAnalyzer semant;
-    semant.install_basic(ast_root);
     if (!semant.validate_inheritance(ast_root->classes))
     {
         std:: cerr << argv[0] << ": **compilation halted due to inheritance errors.**\n";
         exit(1);
     }
-
+    semant.install_basic(ast_root);
     semant.type_check(ast_root);
 
     //std::ofstream out("output.s");

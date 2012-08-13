@@ -1,4 +1,13 @@
 #include "astnodecodegenerator.hpp"
+#include "utility.hpp"
+#include "constants.hpp"
+
+#include <cmath>
+#include <sstream>
+
+extern ProgramPtr ast_root;
+
+using namespace constants;
 
 //Code generation implementation
 AstNodeCodeGenerator::AstNodeCodeGenerator(const std::map<std::string, std::string>& ig, 
@@ -470,14 +479,6 @@ void AstNodeCodeGenerator::code_prototype_objects()
     }
 }
 
-bool AstNodeCodeGenerator::is_basic_class(const Symbol& class_sym)
-{
-    std::string class_name(class_sym.get_val());
-
-    return class_name == "Object" || class_name == "IO" || class_name == "Int" ||
-        class_name == "Bool" || class_name == "String";
-}
-
 void AstNodeCodeGenerator::emit_initial_data()
 {
     os << ".data\n" 
@@ -571,14 +572,14 @@ void AstNodeCodeGenerator::visit(const Feature& feature)
     feature.accept(*this);
 }
 
-void AstNodeCodeGenerator::visit(const Formal& formal) 
+void AstNodeCodeGenerator::visit(const Formal&) 
 { 
 
 }
 
 void AstNodeCodeGenerator::visit(const Method& method) 
 { 
-    if (is_basic_class(curr_class))
+    if (utility::is_basic_class(curr_class))
         return;
 
     var_env.enter_scope();

@@ -1,6 +1,8 @@
 #ifndef ASTNODECODEGENERATOR_H
 #define ASTNODECODEGENERATOR_H
 
+#include "astnodevisitor.hpp"
+
 //Visitor that performs code generation for each AST node
 class AstNodeCodeGenerator : public AstNodeVisitor
 {
@@ -124,7 +126,6 @@ private:
     std::map<std::string, int> count_attrs();
     int calc_obj_size(std::map<std::string, int>&, const std::string&);
     void emit_obj_attribs(const std::string&);
-    bool is_basic_class(const Symbol&);
 
 public:
     AstNodeCodeGenerator(const std::map<std::string, std::string>&, 
