@@ -30,6 +30,33 @@ bool AstNodeTypeChecker::is_subtype(const Symbol& child, const Symbol& parent)
     return false;
 }
 
+Symbol AstNodeTypeChecker::lub(const std::vector<Symbol>& types)
+{
+    Symbol base = types.front(); 
+
+    auto base_ptr = std::find_if(begin(inherit_graph), end(inherit_graph),
+            [&](const std::pair<ClassPtr, ClassPtr>& p) {
+                return p.first->name == base;
+            }); 
+
+    ClassPtr curr = base_ptr->first;
+
+    while (curr->parent != OBJECT)
+    {
+        auto result = std::find_if(begin(types), end(types), 
+                [&](const Symbol& s) {
+                    return !is_subtype(s, curr->parent);
+                });
+
+        if (result == end(types))
+            return *result;
+
+        curr = inherit_graph[curr];
+    }
+
+    return OBJECT;
+}
+
 void AstNodeTypeChecker::visit(Program& prog)
 {
     // populate method table with [class][method] -> argument types, return type
@@ -96,7 +123,7 @@ void AstNodeTypeChecker::visit(Method& method)
     env.exit_scope();
 }
 
-void AstNodeTypeChecker::visit(Formal&)
+void AstNodeTypeChecker::visit(Formal& formal)
 {
 
 }
@@ -127,9 +154,10 @@ void AstNodeTypeChecker::visit(IsVoid& isvoid)
     isvoid.type = BOOLEAN;
 }
 
-void AstNodeTypeChecker::visit(CaseBranch&)
+void AstNodeTypeChecker::visit(CaseBranch& br)
 {
-
+    br.expr->accept(*this);
+    br.type = br.expr->type;
 }
 
 void AstNodeTypeChecker::visit(Assign& assign)
@@ -163,7 +191,14 @@ void AstNodeTypeChecker::visit(Block& block)
 
 void AstNodeTypeChecker::visit(If& ifstmt)
 {
+    ifstmt.predicate->accept(*this);
 
+    if (ifstmt.predicate->type != BOOLEAN)
+        std::cerr << "Predicate of IF conditional must be of type Bool\n";
+
+    ifstmt.iftrue->accept(*this);
+    ifstmt.iffalse->accept(*this);
+    ifstmt.type = lub(std::vector<Symbol> {ifstmt.iftrue->type, ifstmt.iffalse->type});
 }
 
 void AstNodeTypeChecker::visit(While& wstmt)
@@ -397,11 +432,22 @@ void AstNodeTypeChecker::visit(Let& let)
     env.exit_scope();
 }
 
-void AstNodeTypeChecker::visit(Case&)
+void AstNodeTypeChecker::visit(Case& cs)
 {
-    env.enter_scope();
+    cs.expr->accept(*this);
 
-    env.exit_scope();
+    std::vector<Symbol> types;
+
+    for (auto& br : cs.branches)
+    {
+        env.enter_scope();
+        env.add(br->name, br->type_decl);
+        br->accept(*this);
+        types.push_back(br->type);
+        env.exit_scope();
+    }
+
+    cs.type = lub(types);
 }
 
 void AstNodeTypeChecker::visit(Object& var)

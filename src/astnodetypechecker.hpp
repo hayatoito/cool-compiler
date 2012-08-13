@@ -13,7 +13,8 @@ private:
     MethodTypeTable mtbl;
     std::map<ClassPtr, ClassPtr> inherit_graph;
 
-    bool is_subtype(const Symbol& child, const Symbol& parent);
+    bool is_subtype(const Symbol&, const Symbol&);
+    Symbol lub(const std::vector<Symbol>&);
 
 public:
     AstNodeTypeChecker(const std::map<ClassPtr, ClassPtr>&);
