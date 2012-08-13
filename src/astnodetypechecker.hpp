@@ -3,10 +3,14 @@
 
 #include "astnodevisitor.hpp"
 
+typedef std::map<Symbol, std::map<Symbol, std::vector<Symbol>>> MethodTypeTable;
+
 class AstNodeTypeChecker : public AstNodeVisitor
 {
 private:
     SymbolTable<Symbol, Symbol> env;  
+    Symbol curr_class;
+    MethodTypeTable mtbl;
     std::map<ClassPtr, ClassPtr> inherit_graph;
 
     bool is_subtype(const Symbol& child, const Symbol& parent);

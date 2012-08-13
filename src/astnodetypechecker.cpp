@@ -32,6 +32,25 @@ bool AstNodeTypeChecker::is_subtype(const Symbol& child, const Symbol& parent)
 
 void AstNodeTypeChecker::visit(Program& prog)
 {
+    // populate method table with [class][method] -> argument types, return type
+    for (auto& cs : prog.classes)
+    {
+        Symbol cl = cs->name;
+
+        for (auto& feature : cs->features)
+        {
+            if (feature->get_type() == Feature::METHOD)
+            {
+                MethodPtr mptr = std::dynamic_pointer_cast<Method>(feature);
+                
+                for (auto& formal : mptr->params) 
+                    mtbl[cl][mptr->name].push_back(formal->type_decl);
+
+                mtbl[cl][mptr->name].push_back(mptr->return_type);
+            }
+        }
+    }
+
     for (auto& cs : prog.classes)
         cs->accept(*this);
 }
@@ -46,19 +65,35 @@ void AstNodeTypeChecker::visit(Class& cs)
     env.exit_scope();
 }
 
-void AstNodeTypeChecker::visit(Feature&)
+void AstNodeTypeChecker::visit(Feature& f)
 {
-
+    f.accept(*this);
 }
 
-void AstNodeTypeChecker::visit(Attribute&)
+void AstNodeTypeChecker::visit(Attribute& attr)
 {
+    env.add(attr.name, attr.type_decl);
+    env.add(SELF, curr_class);
+    attr.init->accept(*this);
 
+    if (attr.init->type != NOTYPE)
+        if (!is_subtype(attr.init->type, attr.type_decl))
+            std::cerr << "Attribute initialization type mismatch.\n";
 }
 
-void AstNodeTypeChecker::visit(Method&)
+void AstNodeTypeChecker::visit(Method& method)
 {
+    env.enter_scope();
 
+    for (auto& formals : method.params)
+        env.add(formals->name, formals->type_decl);
+
+    method.body->accept(*this);
+
+    if (!is_subtype(method.body->type, method.return_type))
+        std::cerr << "Method body type not a subtype of return type.\n";
+
+    env.exit_scope();
 }
 
 void AstNodeTypeChecker::visit(Formal&)
@@ -97,9 +132,25 @@ void AstNodeTypeChecker::visit(CaseBranch&)
 
 }
 
-void AstNodeTypeChecker::visit(Assign&)
+void AstNodeTypeChecker::visit(Assign& assign)
 {
+    boost::optional<Symbol> obj_type = env.lookup(assign.name);
+    assign.type = OBJECT;
 
+    if (!obj_type)
+        std::cerr << "Variable " << assign.name << " not in scope.\n";
+
+    assign.rhs->accept(*this);
+
+    if (is_subtype(assign.rhs->type, *obj_type))
+    {
+        if (obj_type)
+            assign.type = assign.rhs->type;
+    }
+    else
+    {
+        std::cerr << "Type of RHS not a subtype of variable being assigned to.\n";
+    }
 }
 
 void AstNodeTypeChecker::visit(Block& block)
@@ -245,24 +296,112 @@ void AstNodeTypeChecker::visit(Not& nt)
     }
 }
 
-void AstNodeTypeChecker::visit(StaticDispatch&)
+void AstNodeTypeChecker::visit(StaticDispatch& stat)
 {
+    std::vector<Symbol> disptypes;
+
+    // get type of object that dispatches
+    stat.obj->accept(*this);
+    Symbol obj_type = stat.obj->type;
+
+    // get types of all arguments to dispatch
+    for (auto& expr : stat.actual)
+    { 
+        expr->accept(*this);
+        disptypes.push_back(expr->type);
+    }
+
+    bool statsub = is_subtype(obj_type, stat.type_decl);
+    
+    if (!statsub)
+    {
+        std::cerr << obj_type << " is not a subtype of static dispatch type " << stat.type_decl << "\n";
+        stat.type = OBJECT;
+    }
+    
+    // check if each dispatch argument's type is a subtype of declared type for method
+    bool result = std::equal(begin(disptypes), end(disptypes), begin(mtbl[curr_class][stat.method]),
+            [&](const Symbol& t1, const Symbol& t2) {
+                return is_subtype(t1, t2);
+            });
+
+    if (result)
+    {
+        if (statsub)
+            stat.type = mtbl[curr_class][stat.method].back();
+    }
+    else
+    {
+        std::cerr << "Type mismatch for dispatch to method " << stat.method << "\n";
+        stat.type = OBJECT;
+    }
 
 }
 
-void AstNodeTypeChecker::visit(DynamicDispatch&)
+void AstNodeTypeChecker::visit(DynamicDispatch& dyn)
 {
+    std::vector<Symbol> disptypes;
 
+    // get type of object that dispatches
+    dyn.obj->accept(*this);
+    Symbol obj_type = dyn.obj->type;
+
+    // get types of all arguments to dispatch
+    for (auto& expr : dyn.actual)
+    { 
+        expr->accept(*this);
+        disptypes.push_back(expr->type);
+    }
+
+    if (obj_type == curr_class)
+        obj_type = curr_class;
+
+    // check if each dispatch argument's type is a subtype of declared type for method
+    bool result = std::equal(begin(disptypes), end(disptypes), begin(mtbl[curr_class][dyn.method]),
+            [&](const Symbol& t1, const Symbol& t2) {
+                return is_subtype(t1, t2);
+            });
+
+    if (result)
+    {
+        dyn.type = mtbl[curr_class][dyn.method].back();
+    }
+    else
+    {
+        std::cerr << "Type mismatch for dispatch to method " << dyn.method << "\n";
+        dyn.type = OBJECT;
+    }
 }
 
-void AstNodeTypeChecker::visit(Let&)
+void AstNodeTypeChecker::visit(Let& let)
 {
+    let.type = OBJECT;
+    let.init->accept(*this);
 
+    bool type_status = true;
+
+    if (let.init->type != NOTYPE)
+    {
+        type_status = is_subtype(let.init->type, let.type_decl);
+        if (!type_status)
+            std::cerr << "Let init type mismatch\n";
+    }
+
+    env.enter_scope();
+    env.add(let.name, let.type_decl);
+    let.body->accept(*this);
+
+    if (type_status)
+        let.type = let.body->type;
+
+    env.exit_scope();
 }
 
 void AstNodeTypeChecker::visit(Case&)
 {
+    env.enter_scope();
 
+    env.exit_scope();
 }
 
 void AstNodeTypeChecker::visit(Object& var)
@@ -271,8 +410,8 @@ void AstNodeTypeChecker::visit(Object& var)
     var.type = obj_type ? *obj_type : OBJECT;
 }
 
-void AstNodeTypeChecker::visit(NoExpr&)
+void AstNodeTypeChecker::visit(NoExpr& ne)
 {
-
+    ne.type = NOTYPE;
 }
 
