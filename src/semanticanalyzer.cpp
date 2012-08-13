@@ -97,21 +97,20 @@ bool SemanticAnalyzer::validate_inheritance(const Classes& classes)
 
     for (auto& c : classes)
     {
-        if (utility::is_basic_class(c->name))
-        {
-            std::cerr << "error:Redefinition of basic class " << c->name << " not allowed.\n";
-            status = false;
-        }
 
         if (invalid_parent(c->parent))
         {
-            std::cerr << "error:Cannot inherit from any of the basic classes - IO, String, Bool, Int\n";
+            std::cerr << "error:Cannot inherit from any of the basic classes - String, Bool, Int\n";
             status = false;
         }
 
         if (inherit_graph.count(c) > 0)
         {
-            std::cerr << "error:Class " << c->name << " has multiple definitions.\n";
+            if (utility::is_basic_class(c->name))
+                std::cerr << "error:Redefinition of any basic class - IO, String, Bool, Int not allowed.\n";
+            else
+                std::cerr << "error:Class " << c->name << " has multiple definitions.\n";
+
             status = false;
         }
 
@@ -122,8 +121,11 @@ bool SemanticAnalyzer::validate_inheritance(const Classes& classes)
 
         if (parent == end(classes))
         {
-            std::cerr << "error:" << c->name << " inherits from a class that doesn't exist.\n";
-            status = false;
+            if (c->name != OBJECT)
+            {
+                std::cerr << "error:" << c->name << " inherits from a class that doesn't exist.\n";
+                status = false;
+            }
         }
         else
         {
