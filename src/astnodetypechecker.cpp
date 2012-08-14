@@ -374,7 +374,7 @@ void AstNodeTypeChecker::visit(StaticDispatch& stat)
     }
     
     // check if each dispatch argument's type is a subtype of declared type for method
-    bool result = std::equal(begin(disptypes), end(disptypes), begin(mtbl[curr_class][stat.method]),
+    bool result = std::equal(begin(disptypes), end(disptypes), begin(mtbl[stat.obj->type][stat.method]),
             [&](const Symbol& t1, const Symbol& t2) {
                 return is_subtype(t1, t2);
             });
