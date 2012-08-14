@@ -69,18 +69,28 @@ void AstNodeTypeChecker::visit(Program& prog)
     for (auto& cs : prog.classes)
     {
         Symbol cl = cs->name;
+        ClassPtr curr = cs;
 
-        for (auto& feature : cs->features)
+        while (curr->parent != NOCLASS)
         {
-            if (feature->get_type() == Feature::METHOD)
+            for (auto& feature : curr->features)
             {
-                MethodPtr mptr = std::dynamic_pointer_cast<Method>(feature);
-                
-                for (auto& formal : mptr->params) 
-                    mtbl[cl][mptr->name].push_back(formal->type_decl);
+                if (feature->get_type() == Feature::METHOD)
+                {
+                    MethodPtr mptr = std::dynamic_pointer_cast<Method>(feature);
 
-                mtbl[cl][mptr->name].push_back(mptr->return_type);
+                    // if an overriden method already exists, don't add anymore
+                    if (mtbl[cl].find(mptr->name) == end(mtbl[cl]))
+                    {
+                        for (auto& formal : mptr->params) 
+                            mtbl[cl][mptr->name].push_back(formal->type_decl);
+
+                        mtbl[cl][mptr->name].push_back(mptr->return_type);
+                    }
+                }
             }
+
+            curr = inherit_graph[curr];
         }
     }
 
