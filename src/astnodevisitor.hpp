@@ -85,12 +85,14 @@ public:
 //Visitor that dumps (pretty prints) the AST
 class AstNodeDisplayer : public AstNodeVisitor
 {
-private:
-    std::ostream& os; 
-    size_t depth; //Used to keep track of the AST depth of the visitor for proper indentation
-
 public:
-    AstNodeDisplayer(std::ostream&);
+    enum display_option {
+        DISPLAYALL,
+        DISPLAYBASIC,
+        DISPLAYNONBASIC
+    };
+
+    AstNodeDisplayer(std::ostream&, display_option = DISPLAYALL);
 
     void visit(Program&);
     void visit(Class&);
@@ -123,6 +125,11 @@ public:
     void visit(Case&);
     void visit(Object&);
     void visit(NoExpr&);
+
+private:
+    std::ostream& os; 
+    size_t depth; //Used to keep track of the AST depth of the visitor for proper indentation
+    display_option opt;
 };
 
 #endif

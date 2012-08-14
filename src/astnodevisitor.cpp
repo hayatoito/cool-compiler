@@ -1,11 +1,12 @@
 #include "astnodevisitor.hpp"
 #include "tokentable.hpp"
+#include "utility.hpp"
 
 #include <memory>
 #include <iomanip>
 
-AstNodeDisplayer::AstNodeDisplayer(std::ostream& stream)
-    : os(stream), depth(0)
+AstNodeDisplayer::AstNodeDisplayer(std::ostream& stream, display_option option)
+    : os(stream), depth(0), opt(option)
 {
 
 }
@@ -13,7 +14,22 @@ AstNodeDisplayer::AstNodeDisplayer(std::ostream& stream)
 void AstNodeDisplayer::visit(Program& prog)
 {
     for (auto& cs : prog.classes)
-        cs->accept(*this);
+    {
+        switch (opt)
+        {
+            case DISPLAYALL:
+                cs->accept(*this);
+                break;
+            case DISPLAYBASIC:
+                if (utility::is_basic_class(cs->name))
+                    cs->accept(*this);
+                break;
+            case DISPLAYNONBASIC:
+                if (!utility::is_basic_class(cs->name))
+                    cs->accept(*this);
+                break;
+        }
+    }
 }
 
 void AstNodeDisplayer::visit(Class& cs)

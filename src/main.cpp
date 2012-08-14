@@ -62,7 +62,7 @@ int main(int argc, char **argv)
     }
     semant.type_check(ast_root);
 
-    AstNodeDisplayer print(std::cout);
+    AstNodeDisplayer print(std::cout, AstNodeDisplayer::DISPLAYNONBASIC);
     ast_root->accept(print);
 
     //std::ofstream out("output.s");
