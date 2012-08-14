@@ -121,7 +121,13 @@ bool SemanticAnalyzer::validate_inheritance(const Classes& classes)
 
         if (parent == end(classes))
         {
-            if (c->name != OBJECT)
+            if (c->name == OBJECT)
+            {
+                // The Object class' parent is not included in the classes list so we explicitly add a parent NoClass
+                // to signal that the end of the class hierarchy is reached.
+                inherit_graph[c] = std::make_shared<Class>(NOCLASS, NOCLASS, idtable().add("filename"), Features());
+            }
+            else
             {
                 std::cerr << "error:" << c->name << " inherits from a class that doesn't exist.\n";
                 status = false;
