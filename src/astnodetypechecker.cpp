@@ -37,7 +37,7 @@ Symbol AstNodeTypeChecker::lub(const std::vector<Symbol>& types)
 {
     Symbol base = types.front(); 
 
-    if (std::all_of(begin(types), end(types), std::bind2nd(std::equal_to<Symbol>(), base)))
+    if (std::all_of(begin(types) + 1, end(types), std::bind2nd(std::equal_to<Symbol>(), base)))
         return base;
 
     auto base_ptr = std::find_if(begin(inherit_graph), end(inherit_graph),
