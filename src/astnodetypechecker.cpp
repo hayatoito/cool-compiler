@@ -73,10 +73,10 @@ void AstNodeTypeChecker::visit(Program& prog)
                 
                 for (auto& formal : mptr->params) 
                 {
-                    std::cerr << "Adding [" << cl << "][" << mptr->name << "] -> \n";
                     mtbl[cl][mptr->name].push_back(formal->type_decl);
                 }
 
+                std::cerr << "Adding [" << cl << "][" << mptr->name << "] -> " << mptr->return_type << "\n";
                 mtbl[cl][mptr->name].push_back(mptr->return_type);
             }
         }
@@ -91,6 +91,7 @@ void AstNodeTypeChecker::visit(Class& cs)
 {
     std::cerr << "entering class : " << cs.name << "\n";
     env.enter_scope();
+    curr_class = cs.name;
 
     for (auto& f : cs.features)
         f->accept(*this);
@@ -371,7 +372,7 @@ void AstNodeTypeChecker::visit(StaticDispatch& stat)
     if (result)
     {
         if (statsub)
-            stat.type = mtbl[curr_class][stat.method].back();
+            stat.type = mtbl[stat.type][stat.method].back();
     }
     else
     {
@@ -409,12 +410,10 @@ void AstNodeTypeChecker::visit(DynamicDispatch& dyn)
 
     std::cerr << "after equal\n";
 
-    std::cerr << mtbl[curr_class][dyn.method].empty();
-
     if (result)
     {
-        std::cerr << "cp1\n";
-        dyn.type = (mtbl[curr_class][dyn.method]).back();
+        std::cerr << "Trying to access back() of [" << curr_class << "][" << dyn.method << "]\n";
+        dyn.type = mtbl[obj_type][dyn.method].back();
     }
     else
     {

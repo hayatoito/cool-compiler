@@ -61,19 +61,19 @@ void AstNodeDisplayer::visit(Method& method)
 void AstNodeDisplayer::visit(StringConst& str) 
 { 
     os << std::setw(depth * 2) << "";
-    os << "_str_(" << str.token << ") : " << str.type << "\n";
+    os << "_stringconst(" << str.token << ") : " << str.type << "\n";
 }
 
 void AstNodeDisplayer::visit(IntConst& int_const) 
 {
     os << std::setw(depth * 2) << "";
-    os << "_int_(" << int_const.token << ") : " << int_const.type << "\n";
+    os << "_intconst(" << int_const.token << ") : " << int_const.type << "\n";
 }
 
 void AstNodeDisplayer::visit(BoolConst& bool_const) 
 { 
     os << std::setw(depth * 2) << "";
-    os << "_bool_(" << bool_const.value << ") : " << bool_const.type << "\n";
+    os << "_boolconst(" << bool_const.value << ") : " << bool_const.type << "\n";
 }
 
 void AstNodeDisplayer::visit(New& new_node) 
