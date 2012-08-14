@@ -10,16 +10,16 @@ AstNodeDisplayer::AstNodeDisplayer(std::ostream& stream)
 
 }
 
-void AstNodeDisplayer::visit(const Program& prog)
+void AstNodeDisplayer::visit(Program& prog)
 {
     for (auto& cs : prog.classes)
         cs->accept(*this);
 }
 
-void AstNodeDisplayer::visit(const Class& cs)
+void AstNodeDisplayer::visit(Class& cs)
 {
-    os << std::setw(depth++) << "";
-    os << "-class (" << cs.name << ")\n";  
+    os << std::setw(depth++ * 2) << "";
+    os << "_class (" << cs.name << ")\n";  
     
     for (auto& feature : cs.features)
         feature->accept(*this);
@@ -27,29 +27,29 @@ void AstNodeDisplayer::visit(const Class& cs)
     --depth;
 }
 
-void AstNodeDisplayer::visit(const Attribute& attr)
+void AstNodeDisplayer::visit(Attribute& attr)
 {
-    os << std::setw(depth++) << "";
-    os << "-attribute (" << attr.name << ")\n";
+    os << std::setw(depth++ * 2) << "";
+    os << "_attribute (" << attr.name << ")\n";
     attr.init->accept(*this);
     --depth;
 }
 
-void AstNodeDisplayer::visit(const Feature& feature)
+void AstNodeDisplayer::visit(Feature& feature)
 {
     feature.accept(*this);
 }
 
-void AstNodeDisplayer::visit(const Formal& formal) 
+void AstNodeDisplayer::visit(Formal& formal) 
 { 
-    os << std::setw(depth) << "";
-    os << "-formal (" << formal.name << ")\n";
+    os << std::setw(depth * 2) << "";
+    os << "_formal (" << formal.name << ")\n";
 }
 
-void AstNodeDisplayer::visit(const Method& method) 
+void AstNodeDisplayer::visit(Method& method) 
 { 
-    os << std::setw(depth++) << "";
-    os << "-method (" << method.name << ")\n";
+    os << std::setw(depth++ * 2) << "";
+    os << "_method (" << method.name << ")\n";
 
     for (auto& formal : method.params)
         formal->accept(*this); 
@@ -58,68 +58,68 @@ void AstNodeDisplayer::visit(const Method& method)
     --depth;
 }
 
-void AstNodeDisplayer::visit(const StringConst& str) 
+void AstNodeDisplayer::visit(StringConst& str) 
 { 
-    os << std::setw(depth) << "";
-    os << "-str_const (" << str.token << ")\n";
+    os << std::setw(depth * 2) << "";
+    os << "_str_(" << str.token << ") : " << str.type << "\n";
 }
 
-void AstNodeDisplayer::visit(const IntConst& int_const) 
+void AstNodeDisplayer::visit(IntConst& int_const) 
 {
-    os << std::setw(depth) << "";
-    os << "-int_const (" << int_const.token << ")\n";
+    os << std::setw(depth * 2) << "";
+    os << "_int_(" << int_const.token << ") : " << int_const.type << "\n";
 }
 
-void AstNodeDisplayer::visit(const BoolConst& bool_const) 
+void AstNodeDisplayer::visit(BoolConst& bool_const) 
 { 
-    os << std::setw(depth) << "";
-    os << "-bool_const (" << bool_const.value << ")\n";
+    os << std::setw(depth * 2) << "";
+    os << "_bool_(" << bool_const.value << ") : " << bool_const.type << "\n";
 }
 
-void AstNodeDisplayer::visit(const New&) 
+void AstNodeDisplayer::visit(New& new_node) 
 {
-    os << std::setw(depth) << "";
-    os << "-new\n";
+    os << std::setw(depth * 2) << "";
+    os << "_new (" << new_node.type_decl << ") : " << new_node.type << "\n";
 }
 
-void AstNodeDisplayer::visit(const IsVoid& isvoid) 
+void AstNodeDisplayer::visit(IsVoid& isvoid) 
 { 
-    os << std::setw(depth++) << "";
-    os << "-isvoid\n";
+    os << std::setw(depth++ * 2) << "";
+    os << "_isvoid : " << isvoid.type << "\n";
     isvoid.expr->accept(*this); 
     --depth;
 }
 
-void AstNodeDisplayer::visit(const CaseBranch& branch) 
+void AstNodeDisplayer::visit(CaseBranch& branch) 
 { 
-    os << std::setw(depth++) << "";
-    os << "-casebranch\n";
+    os << std::setw(depth++ * 2) << "";
+    os << "_casebranch (" << branch.name << ") : " << branch.type << "\n";
     branch.expr->accept(*this);
     --depth;
 }
 
-void AstNodeDisplayer::visit(const Assign& assign) 
+void AstNodeDisplayer::visit(Assign& assign) 
 { 
-    os << std::setw(depth++) << "";
-    os << "-assign\n";
+    os << std::setw(depth++ * 2) << "";
+    os << "_assign (" << assign.name << ") : " << assign.type << "\n";
     assign.rhs->accept(*this);
     --depth;
 }
 
-void AstNodeDisplayer::visit(const Block& block) 
+void AstNodeDisplayer::visit(Block& block) 
 { 
-    os << std::setw(depth++) << "";
-    os << "-block\n";
+    os << std::setw(depth++ * 2) << "";
+    os << "_block : " << block.type << "\n";
 
     for (auto& expr : block.body)
         expr->accept(*this);
     --depth;
 }
 
-void AstNodeDisplayer::visit(const If& ifstmt) 
+void AstNodeDisplayer::visit(If& ifstmt) 
 { 
-    os << std::setw(depth++) << "";
-    os << "-if\n";
+    os << std::setw(depth++ * 2) << "";
+    os << "_if : " << ifstmt.type << "\n";
 
     ifstmt.predicate->accept(*this);
     ifstmt.iftrue->accept(*this);
@@ -127,99 +127,99 @@ void AstNodeDisplayer::visit(const If& ifstmt)
     --depth;
 }
 
-void AstNodeDisplayer::visit(const While& whilestmt) 
+void AstNodeDisplayer::visit(While& whilestmt) 
 { 
-    os << std::setw(depth++) << "";
-    os << "-while\n";
+    os << std::setw(depth++ * 2) << "";
+    os << "_while : " << whilestmt.type << "\n";
 
     whilestmt.predicate->accept(*this);
     whilestmt.body->accept(*this);
     --depth;
 }
 
-void AstNodeDisplayer::visit(const Complement& comp) 
+void AstNodeDisplayer::visit(Complement& comp) 
 { 
-    os << std::setw(depth++) << "";
-    os << "-comp\n";
+    os << std::setw(depth++ * 2) << "";
+    os << "_complement : " << comp.type << "\n";
     comp.expr->accept(*this);
     --depth;
 }
 
-void AstNodeDisplayer::visit(const LessThan& lt) 
+void AstNodeDisplayer::visit(LessThan& lt) 
 { 
-    os << std::setw(depth++) << "";
-    os << "-lt\n";
+    os << std::setw(depth++ * 2) << "";
+    os << "_lessthan : " << lt.type << "\n";
     lt.lhs->accept(*this);
     lt.rhs->accept(*this);
     --depth;
 }
 
-void AstNodeDisplayer::visit(const EqualTo& eq) 
+void AstNodeDisplayer::visit(EqualTo& eq) 
 { 
-    os << std::setw(depth++) << "";
-    os << "-eq\n";
+    os << std::setw(depth++ * 2) << "";
+    os << "_equalto : " << eq.type << "\n";
     eq.lhs->accept(*this);
     eq.rhs->accept(*this);
     --depth;
 }
 
-void AstNodeDisplayer::visit(const LessThanEqualTo& lteq) 
+void AstNodeDisplayer::visit(LessThanEqualTo& lteq) 
 { 
-    os << std::setw(depth++) << "";
-    os << "-lteq\n";
+    os << std::setw(depth++ * 2) << "";
+    os << "_lessthanequalto : " << lteq.type << "\n";
     lteq.lhs->accept(*this);
     lteq.rhs->accept(*this);
     --depth;
 }
 
-void AstNodeDisplayer::visit(const Plus& plus) 
+void AstNodeDisplayer::visit(Plus& plus) 
 {
-    os << std::setw(depth++) << "";
-    os << "-plus\n";
+    os << std::setw(depth++ * 2) << "";
+    os << "_plus : " << plus.type << "\n";
     plus.lhs->accept(*this);
     plus.rhs->accept(*this);
     --depth;
 }
 
-void AstNodeDisplayer::visit(const Sub& sub) 
+void AstNodeDisplayer::visit(Sub& sub) 
 { 
-    os << std::setw(depth++) << "";
-    os << "-sub\n";
+    os << std::setw(depth++ * 2) << "";
+    os << "_sub : " << sub.type << "\n";
     sub.lhs->accept(*this);
     sub.rhs->accept(*this);
     --depth;
 }
 
-void AstNodeDisplayer::visit(const Mul& mul) 
+void AstNodeDisplayer::visit(Mul& mul) 
 { 
-    os << std::setw(depth++) << "";
-    os << "-mul\n";
+    os << std::setw(depth++ * 2) << "";
+    os << "_mul : " << mul.type << "\n";
     mul.lhs->accept(*this);
     mul.rhs->accept(*this);
     --depth;
 }
 
-void AstNodeDisplayer::visit(const Div& div) 
+void AstNodeDisplayer::visit(Div& div) 
 { 
-    os << std::setw(depth++) << "";
-    os << "-div\n";
+    os << std::setw(depth++ * 2) << "";
+    os << "_div : " << div.type << "\n";
     div.lhs->accept(*this);
     div.rhs->accept(*this);
     --depth;
 }
 
-void AstNodeDisplayer::visit(const Not& nt) 
+void AstNodeDisplayer::visit(Not& nt) 
 { 
-    os << std::setw(depth++) << "";
-    os << "-not\n";
+    os << std::setw(depth++ * 2) << "";
+    os << "_not : " << nt.type << "\n";
     nt.expr->accept(*this);
     --depth;
 }
 
-void AstNodeDisplayer::visit(const StaticDispatch& sdisp) 
+void AstNodeDisplayer::visit(StaticDispatch& sdisp) 
 { 
-    os << std::setw(depth++) << "";
-    os << "-static_dispatch\n";
+    os << std::setw(depth++ * 2) << "";
+    os << "_staticdispatch (" << sdisp.method << ") : " << sdisp.type << "\n";
 
     sdisp.obj->accept(*this);
     for (auto& e : sdisp.actual)
@@ -227,10 +227,10 @@ void AstNodeDisplayer::visit(const StaticDispatch& sdisp)
     --depth;
 }
 
-void AstNodeDisplayer::visit(const DynamicDispatch& ddisp) 
+void AstNodeDisplayer::visit(DynamicDispatch& ddisp) 
 { 
-    os << std::setw(depth++) << "";
-    os << "-dynamic_dispatch\n";
+    os << std::setw(depth++ * 2) << "";
+    os << "_dynamicdispatch (" << ddisp.method << ") : " << ddisp.type << "\n";
 
     ddisp.obj->accept(*this);
     for (auto& e : ddisp.actual)
@@ -238,20 +238,20 @@ void AstNodeDisplayer::visit(const DynamicDispatch& ddisp)
     --depth;
 }
 
-void AstNodeDisplayer::visit(const Let& let) 
+void AstNodeDisplayer::visit(Let& let) 
 { 
-    os << std::setw(depth++) << "";
-    os << "-let\n";
+    os << std::setw(depth++ * 2) << "";
+    os << "_let (" << let.name << ") : " << let.type << "\n";
     
     let.init->accept(*this);
     let.body->accept(*this);
     --depth;
 }
 
-void AstNodeDisplayer::visit(const Case& caze) 
+void AstNodeDisplayer::visit(Case& caze) 
 { 
-    os << std::setw(depth++) << "";
-    os << "-case\n";
+    os << std::setw(depth++ * 2) << "";
+    os << "_case : " << caze.type << "\n";
 
     caze.expr->accept(*this);
     for (auto& br : caze.branches)
@@ -259,14 +259,14 @@ void AstNodeDisplayer::visit(const Case& caze)
     --depth;
 }
 
-void AstNodeDisplayer::visit(const Object&) 
+void AstNodeDisplayer::visit(Object& obj) 
 { 
-    os << std::setw(depth) << "";
-    os << "-object\n";
+    os << std::setw(depth * 2) << "";
+    os << "_object (" << obj.name << ") : " << obj.type << "\n";
 }
 
-void AstNodeDisplayer::visit(const NoExpr&) 
+void AstNodeDisplayer::visit(NoExpr& ne) 
 { 
-    os << std::setw(depth) << "";
-    os << "-noexpr\n";
+    os << std::setw(depth * 2) << "";
+    os << "_noexpr : " << ne.type << "\n";
 }

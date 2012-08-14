@@ -20,7 +20,7 @@ public:
     Symbol type;
 
     Expression() {}
-    virtual void accept(AstNodeVisitor&) const = 0;
+    virtual void accept(AstNodeVisitor&) = 0;
 };
 typedef std::shared_ptr<Expression> ExpressionPtr;
 typedef std::vector<ExpressionPtr> Expressions;
@@ -35,7 +35,7 @@ public:
     };
 
     virtual feature_type get_type() const = 0;
-    virtual void accept(AstNodeVisitor&) const = 0;
+    virtual void accept(AstNodeVisitor&) = 0;
 };
 typedef std::shared_ptr<Feature> FeaturePtr;
 typedef std::vector<FeaturePtr> Features;
@@ -49,7 +49,7 @@ public:
 
     Attribute(const Symbol&, const Symbol&, const ExpressionPtr&);
     feature_type get_type() const;
-    void accept(AstNodeVisitor&) const;
+    void accept(AstNodeVisitor&);
 };
 typedef std::shared_ptr<Attribute> AttributePtr;
 
@@ -60,7 +60,7 @@ public:
     Symbol type_decl;
 
     Formal(const Symbol&, const Symbol&);
-    void accept(AstNodeVisitor&) const;
+    void accept(AstNodeVisitor&);
 };
 typedef std::shared_ptr<Formal> FormalPtr;
 typedef std::vector<FormalPtr> Formals;
@@ -76,7 +76,7 @@ public:
     Method(const Symbol&, const Symbol&, const Formals&,
             const ExpressionPtr&);
     feature_type get_type() const;
-    void accept(AstNodeVisitor&) const;
+    void accept(AstNodeVisitor&);
 };
 typedef std::shared_ptr<Method> MethodPtr;
 
@@ -90,7 +90,7 @@ public:
 
     Class(const Symbol&, const Symbol&, const Symbol&, 
            const Features&); 
-    void accept(AstNodeVisitor&) const;
+    void accept(AstNodeVisitor&);
 };
 typedef std::shared_ptr<Class> ClassPtr;
 typedef std::vector<ClassPtr> Classes;
@@ -101,7 +101,7 @@ public:
     Classes classes;
 
     Program(const Classes&);
-    void accept(AstNodeVisitor&) const;
+    void accept(AstNodeVisitor&);
 };
 typedef std::shared_ptr<Program> ProgramPtr;
 
@@ -111,7 +111,7 @@ public:
     Symbol token;
 
     StringConst(const Symbol&);
-    void accept(AstNodeVisitor&) const;
+    void accept(AstNodeVisitor&);
 };
 
 class IntConst : public Expression
@@ -120,7 +120,7 @@ public:
     Symbol token;
 
     IntConst(const Symbol&);
-    void accept(AstNodeVisitor&) const;
+    void accept(AstNodeVisitor&);
 };
 
 class BoolConst : public Expression
@@ -129,7 +129,7 @@ public:
     bool value;
 
     BoolConst(bool);
-    void accept(AstNodeVisitor&) const;
+    void accept(AstNodeVisitor&);
 };
 
 class New : public Expression
@@ -138,7 +138,7 @@ public:
     Symbol type_decl;
 
     New(const Symbol&);
-    void accept(AstNodeVisitor&) const;
+    void accept(AstNodeVisitor&);
 };
 
 class IsVoid : public Expression
@@ -147,7 +147,7 @@ public:
     ExpressionPtr expr;
 
     IsVoid(const ExpressionPtr&);
-    void accept(AstNodeVisitor&) const;
+    void accept(AstNodeVisitor&);
 };
 
 class CaseBranch : public Expression
@@ -158,7 +158,7 @@ public:
     ExpressionPtr expr;
 
     CaseBranch(const Symbol&, const Symbol&, const ExpressionPtr&);
-    void accept(AstNodeVisitor&) const;
+    void accept(AstNodeVisitor&);
 };
 typedef std::shared_ptr<CaseBranch> CaseBranchPtr;
 typedef std::vector<CaseBranchPtr> Cases;
@@ -170,7 +170,7 @@ public:
     ExpressionPtr rhs;
 
     Assign(const Symbol&, const ExpressionPtr&);
-    void accept(AstNodeVisitor&) const;
+    void accept(AstNodeVisitor&);
 };
 
 class Block : public Expression
@@ -179,7 +179,7 @@ public:
     Expressions body;
 
     Block(const Expressions&);
-    void accept(AstNodeVisitor&) const;
+    void accept(AstNodeVisitor&);
 };
 
 class If : public Expression
@@ -191,7 +191,7 @@ public:
 
     If(const ExpressionPtr&, const ExpressionPtr&, 
             const ExpressionPtr&);
-    void accept(AstNodeVisitor&) const;
+    void accept(AstNodeVisitor&);
 };
 
 class While : public Expression
@@ -201,7 +201,7 @@ public:
     ExpressionPtr body;
 
     While(const ExpressionPtr&, const ExpressionPtr&);
-    void accept(AstNodeVisitor&) const;
+    void accept(AstNodeVisitor&);
 };
 
 class Complement : public Expression
@@ -210,7 +210,7 @@ public:
     ExpressionPtr expr;
 
     Complement(const ExpressionPtr&);
-    void accept(AstNodeVisitor&) const;
+    void accept(AstNodeVisitor&);
 };
 
 class LessThan : public Expression
@@ -220,7 +220,7 @@ public:
     ExpressionPtr rhs;
 
     LessThan(const ExpressionPtr&, const ExpressionPtr&);
-    void accept(AstNodeVisitor&) const;
+    void accept(AstNodeVisitor&);
 };
 
 class EqualTo : public Expression
@@ -230,7 +230,7 @@ public:
     ExpressionPtr rhs;
 
     EqualTo(const ExpressionPtr&, const ExpressionPtr&);
-    void accept(AstNodeVisitor&) const;
+    void accept(AstNodeVisitor&);
 };
 
 class LessThanEqualTo : public Expression
@@ -241,7 +241,7 @@ public:
 
     LessThanEqualTo(const ExpressionPtr&, 
             const ExpressionPtr&);
-    void accept(AstNodeVisitor&) const;
+    void accept(AstNodeVisitor&);
 };
 
 class Plus : public Expression
@@ -251,7 +251,7 @@ public:
     ExpressionPtr rhs;
 
     Plus(const ExpressionPtr&, const ExpressionPtr&);
-    void accept(AstNodeVisitor&) const;
+    void accept(AstNodeVisitor&);
 };
 
 class Sub : public Expression
@@ -261,7 +261,7 @@ public:
     ExpressionPtr rhs;
 
     Sub(const ExpressionPtr&, const ExpressionPtr&);
-    void accept(AstNodeVisitor&) const;
+    void accept(AstNodeVisitor&);
 };
 
 class Mul : public Expression
@@ -271,7 +271,7 @@ public:
     ExpressionPtr rhs;
 
     Mul(const ExpressionPtr&, const ExpressionPtr&);
-    void accept(AstNodeVisitor&) const;
+    void accept(AstNodeVisitor&);
 };
 
 class Div : public Expression
@@ -282,7 +282,7 @@ public:
 
     Div(const ExpressionPtr&, 
             const ExpressionPtr&);
-    void accept(AstNodeVisitor&) const;
+    void accept(AstNodeVisitor&);
 };
 
 class Not : public Expression
@@ -291,7 +291,7 @@ public:
     ExpressionPtr expr;
 
     Not(const ExpressionPtr&);
-    void accept(AstNodeVisitor&) const;
+    void accept(AstNodeVisitor&);
 };
 
 class StaticDispatch : public Expression
@@ -304,7 +304,7 @@ public:
 
     StaticDispatch(const ExpressionPtr&, const Symbol&, const Symbol&,
            const Expressions&); 
-    void accept(AstNodeVisitor&) const;
+    void accept(AstNodeVisitor&);
 };
 
 class DynamicDispatch : public Expression
@@ -316,7 +316,7 @@ public:
 
     DynamicDispatch(const ExpressionPtr&, const Symbol&, 
             const Expressions&);
-    void accept(AstNodeVisitor&) const;
+    void accept(AstNodeVisitor&);
 };
 
 class Let : public Expression
@@ -329,7 +329,7 @@ public:
 
     Let(const Symbol&, const Symbol&, const ExpressionPtr&,
             const ExpressionPtr&);
-    void accept(AstNodeVisitor&) const;
+    void accept(AstNodeVisitor&);
 };
 
 class Case : public Expression
@@ -339,7 +339,7 @@ public:
     Cases branches;
 
     Case(const ExpressionPtr&, const Cases&);
-    void accept(AstNodeVisitor&) const;
+    void accept(AstNodeVisitor&);
 };
 
 class Object : public Expression
@@ -348,14 +348,14 @@ public:
     Symbol name;
 
     Object(const Symbol&);
-    void accept(AstNodeVisitor&) const;
+    void accept(AstNodeVisitor&);
 };
 
 class NoExpr : public Expression
 {
 public:
     NoExpr();
-    void accept(AstNodeVisitor&) const;
+    void accept(AstNodeVisitor&);
 };
 
 

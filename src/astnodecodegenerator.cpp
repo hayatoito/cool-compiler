@@ -501,7 +501,7 @@ void AstNodeCodeGenerator::emit_initial_data()
 }
 
 
-void AstNodeCodeGenerator::visit(const Program& prog)
+void AstNodeCodeGenerator::visit(Program& prog)
 {
     emit_initial_data();
     code_constants();
@@ -522,7 +522,7 @@ void AstNodeCodeGenerator::visit(const Program& prog)
         cs->accept(*this);
 }
 
-void AstNodeCodeGenerator::visit(const Class& cs)
+void AstNodeCodeGenerator::visit(Class& cs)
 {
     var_env.enter_scope();
     curr_class = cs.name;
@@ -557,7 +557,7 @@ void AstNodeCodeGenerator::visit(const Class& cs)
     var_env.exit_scope();
 }
 
-void AstNodeCodeGenerator::visit(const Attribute& attr)
+void AstNodeCodeGenerator::visit(Attribute& attr)
 {
     attr.init->accept(*this);
 
@@ -567,17 +567,17 @@ void AstNodeCodeGenerator::visit(const Attribute& attr)
         emit_sw("a0", 4 * (curr_attr_count + 2), "s0");
 }
 
-void AstNodeCodeGenerator::visit(const Feature& feature)
+void AstNodeCodeGenerator::visit(Feature& feature)
 {
     feature.accept(*this);
 }
 
-void AstNodeCodeGenerator::visit(const Formal&) 
+void AstNodeCodeGenerator::visit(Formal&) 
 { 
 
 }
 
-void AstNodeCodeGenerator::visit(const Method& method) 
+void AstNodeCodeGenerator::visit(Method& method) 
 { 
     if (utility::is_basic_class(curr_class))
         return;
@@ -606,17 +606,17 @@ void AstNodeCodeGenerator::visit(const Method& method)
     var_env.exit_scope();
 }
 
-void AstNodeCodeGenerator::visit(const StringConst& str) 
+void AstNodeCodeGenerator::visit(StringConst& str) 
 { 
     emit_la("a0", (std::string("str_const") + std::to_string(stringtable().get_idx(str.token.get_val()))).c_str());
 }
 
-void AstNodeCodeGenerator::visit(const IntConst& int_const) 
+void AstNodeCodeGenerator::visit(IntConst& int_const) 
 {
     emit_la("a0", (std::string("int_const") + std::to_string(inttable().get_idx(int_const.token.get_val()))).c_str());
 }
 
-void AstNodeCodeGenerator::visit(const BoolConst& bool_const) 
+void AstNodeCodeGenerator::visit(BoolConst& bool_const) 
 { 
     if (bool_const.value)
         emit_la("a0", "bool_const1");
@@ -624,25 +624,25 @@ void AstNodeCodeGenerator::visit(const BoolConst& bool_const)
         emit_la("a0", "bool_const0");
 }
 
-void AstNodeCodeGenerator::visit(const New& new_node) 
+void AstNodeCodeGenerator::visit(New& new_node) 
 {
     emit_la("a0", new_node.type.get_val() + "_prototype");
     emit_jal("Object.copy");
     emit_jal(new_node.type.get_val() + "_init");
 }
 
-void AstNodeCodeGenerator::visit(const IsVoid& isvoid) 
+void AstNodeCodeGenerator::visit(IsVoid& isvoid) 
 { 
     isvoid.expr->accept(*this); 
     emit_jal("isvoid");
 }
 
-void AstNodeCodeGenerator::visit(const CaseBranch& branch) 
+void AstNodeCodeGenerator::visit(CaseBranch& branch) 
 { 
     branch.expr->accept(*this);
 }
 
-void AstNodeCodeGenerator::visit(const Assign& assign) 
+void AstNodeCodeGenerator::visit(Assign& assign) 
 { 
     assign.rhs->accept(*this);
     boost::optional<int> offset(var_env.lookup(assign.name));
@@ -656,13 +656,13 @@ void AstNodeCodeGenerator::visit(const Assign& assign)
         emit_sw("a0", *offset, "fp");
 }
 
-void AstNodeCodeGenerator::visit(const Block& block) 
+void AstNodeCodeGenerator::visit(Block& block) 
 { 
     for (auto& expr : block.body)
         expr->accept(*this);
 }
 
-void AstNodeCodeGenerator::visit(const If& ifstmt) 
+void AstNodeCodeGenerator::visit(If& ifstmt) 
 { 
     ++if_count;
     std::string ifcnt(std::to_string(if_count));
@@ -680,7 +680,7 @@ void AstNodeCodeGenerator::visit(const If& ifstmt)
     emit_label("if-end" + ifcnt);
 }
 
-void AstNodeCodeGenerator::visit(const While& whilestmt) 
+void AstNodeCodeGenerator::visit(While& whilestmt) 
 { 
     ++while_count;
 
@@ -696,7 +696,7 @@ void AstNodeCodeGenerator::visit(const While& whilestmt)
     emit_li("a0", 0);
 }
 
-void AstNodeCodeGenerator::visit(const Complement& comp) 
+void AstNodeCodeGenerator::visit(Complement& comp) 
 { 
     comp.expr->accept(*this);
     emit_lw("t1", 12, "a0");
@@ -704,7 +704,7 @@ void AstNodeCodeGenerator::visit(const Complement& comp)
     emit_sw("t1", 12, "a0");
 }
 
-void AstNodeCodeGenerator::visit(const LessThan& lt) 
+void AstNodeCodeGenerator::visit(LessThan& lt) 
 { 
     lt.lhs->accept(*this);
     emit_move("a1", "a0");
@@ -713,7 +713,7 @@ void AstNodeCodeGenerator::visit(const LessThan& lt)
     emit_jal("less");
 }
 
-void AstNodeCodeGenerator::visit(const LessThanEqualTo& lteq) 
+void AstNodeCodeGenerator::visit(LessThanEqualTo& lteq) 
 { 
     lteq.lhs->accept(*this);
     emit_move("a1", "a0");
@@ -722,7 +722,7 @@ void AstNodeCodeGenerator::visit(const LessThanEqualTo& lteq)
     emit_jal("less_eq");
 }
 
-void AstNodeCodeGenerator::visit(const EqualTo& eq) 
+void AstNodeCodeGenerator::visit(EqualTo& eq) 
 { 
     eq.lhs->accept(*this);
     emit_move("a1", "a0");
@@ -731,7 +731,7 @@ void AstNodeCodeGenerator::visit(const EqualTo& eq)
     emit_jal("eq");
 }
 
-void AstNodeCodeGenerator::visit(const Plus& plus) 
+void AstNodeCodeGenerator::visit(Plus& plus) 
 {
     plus.lhs->accept(*this);
     emit_sw("a0", 0, "sp");
@@ -747,7 +747,7 @@ void AstNodeCodeGenerator::visit(const Plus& plus)
     emit_pop(1);
 }
 
-void AstNodeCodeGenerator::visit(const Sub& sub) 
+void AstNodeCodeGenerator::visit(Sub& sub) 
 { 
     sub.lhs->accept(*this);
     emit_sw("a0", 0, "sp");
@@ -763,7 +763,7 @@ void AstNodeCodeGenerator::visit(const Sub& sub)
     emit_pop(1);
 }
 
-void AstNodeCodeGenerator::visit(const Mul& mul) 
+void AstNodeCodeGenerator::visit(Mul& mul) 
 { 
     mul.lhs->accept(*this);
     emit_sw("a0", 0, "sp");
@@ -779,7 +779,7 @@ void AstNodeCodeGenerator::visit(const Mul& mul)
     emit_pop(1);
 }
 
-void AstNodeCodeGenerator::visit(const Div& div) 
+void AstNodeCodeGenerator::visit(Div& div) 
 { 
     div.lhs->accept(*this);
     emit_sw("a0", 0, "sp");
@@ -795,40 +795,40 @@ void AstNodeCodeGenerator::visit(const Div& div)
     emit_pop(1);
 }
 
-void AstNodeCodeGenerator::visit(const Not& nt) 
+void AstNodeCodeGenerator::visit(Not& nt) 
 { 
     nt.expr->accept(*this);
     emit_jal("lnot");
 }
 
-void AstNodeCodeGenerator::visit(const StaticDispatch& sdisp) 
+void AstNodeCodeGenerator::visit(StaticDispatch& sdisp) 
 { 
     sdisp.obj->accept(*this);
     for (auto& e : sdisp.actual)
        e->accept(*this); 
 }
 
-void AstNodeCodeGenerator::visit(const DynamicDispatch& ddisp) 
+void AstNodeCodeGenerator::visit(DynamicDispatch& ddisp) 
 { 
     ddisp.obj->accept(*this);
     for (auto& e : ddisp.actual)
        e->accept(*this); 
 }
 
-void AstNodeCodeGenerator::visit(const Let& let) 
+void AstNodeCodeGenerator::visit(Let& let) 
 { 
     let.init->accept(*this);
     let.body->accept(*this);
 }
 
-void AstNodeCodeGenerator::visit(const Case& caze) 
+void AstNodeCodeGenerator::visit(Case& caze) 
 { 
     caze.expr->accept(*this);
     for (auto& br : caze.branches)
         br->accept(*this);
 }
 
-void AstNodeCodeGenerator::visit(const Object& obj) 
+void AstNodeCodeGenerator::visit(Object& obj) 
 { 
     if (obj.name == SELF)
     {
@@ -845,7 +845,7 @@ void AstNodeCodeGenerator::visit(const Object& obj)
     }
 }
 
-void AstNodeCodeGenerator::visit(const NoExpr&) 
+void AstNodeCodeGenerator::visit(NoExpr&) 
 { 
     
 }

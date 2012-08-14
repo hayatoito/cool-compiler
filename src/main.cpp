@@ -53,9 +53,6 @@ int main(int argc, char **argv)
         exit(1);
     }
     
-    AstNodeDisplayer print(std::cout);
-    ast_root->accept(print);
-
     SemanticAnalyzer semant;
     semant.install_basic(ast_root);
     if (!semant.validate_inheritance(ast_root->classes))
@@ -64,6 +61,9 @@ int main(int argc, char **argv)
         exit(1);
     }
     semant.type_check(ast_root);
+
+    AstNodeDisplayer print(std::cout);
+    ast_root->accept(print);
 
     //std::ofstream out("output.s");
     //AstNodeCodeGenerator codegen(semant.get_inherit_graph(), out);

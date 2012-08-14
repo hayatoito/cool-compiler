@@ -15,7 +15,7 @@ Program::Program(const Classes& c)
 
 }
 
-void Program::accept(AstNodeVisitor& visitor) const
+void Program::accept(AstNodeVisitor& visitor)
 {
     visitor.visit(*this);
 }
@@ -27,7 +27,7 @@ Class::Class(const Symbol& cname, const Symbol& super, const Symbol& file,
 
 }
 
-void Class::accept(AstNodeVisitor& visitor) const
+void Class::accept(AstNodeVisitor& visitor)
 {
     visitor.visit(*this);
 }
@@ -40,7 +40,7 @@ Attribute::Attribute(const Symbol& aname, const Symbol& type,
 
 }
 
-void Attribute::accept(AstNodeVisitor& visitor) const
+void Attribute::accept(AstNodeVisitor& visitor)
 {
     visitor.visit(*this);
 }
@@ -50,7 +50,7 @@ Feature::feature_type Attribute::get_type() const
     return Feature::ATTRIBUTE;
 }
 
-void Feature::accept(AstNodeVisitor& visitor) const
+void Feature::accept(AstNodeVisitor& visitor)
 {
     visitor.visit(*this);
 }
@@ -62,7 +62,7 @@ Method::Method(const Symbol& mname, const Symbol& ret,
 
 }
 
-void Method::accept(AstNodeVisitor& visitor) const
+void Method::accept(AstNodeVisitor& visitor)
 {
     visitor.visit(*this);
 }
@@ -78,7 +78,7 @@ Formal::Formal(const Symbol& fname, const Symbol& type)
 
 }
 
-void Formal::accept(AstNodeVisitor& visitor) const
+void Formal::accept(AstNodeVisitor& visitor)
 {
     visitor.visit(*this);
 }
@@ -89,7 +89,7 @@ StringConst::StringConst(const Symbol& tok)
 
 }
 
-void StringConst::accept(AstNodeVisitor& visitor) const
+void StringConst::accept(AstNodeVisitor& visitor)
 {
     visitor.visit(*this);
 }
@@ -100,7 +100,7 @@ IntConst::IntConst(const Symbol& tok)
 
 }
 
-void IntConst::accept(AstNodeVisitor& visitor) const
+void IntConst::accept(AstNodeVisitor& visitor)
 {
     visitor.visit(*this);
 }
@@ -111,7 +111,7 @@ BoolConst::BoolConst(bool val)
 
 }
 
-void BoolConst::accept(AstNodeVisitor& visitor) const
+void BoolConst::accept(AstNodeVisitor& visitor)
 {
     visitor.visit(*this);
 }
@@ -122,7 +122,7 @@ New::New(const Symbol& typ)
 
 }
 
-void New::accept(AstNodeVisitor& visitor) const
+void New::accept(AstNodeVisitor& visitor)
 {
     visitor.visit(*this);
 }
@@ -133,7 +133,7 @@ IsVoid::IsVoid(const ExpressionPtr& pred)
 
 }
 
-void IsVoid::accept(AstNodeVisitor& visitor) const
+void IsVoid::accept(AstNodeVisitor& visitor)
 {
     visitor.visit(*this);
 }
@@ -145,7 +145,7 @@ CaseBranch::CaseBranch(const Symbol& cname, const Symbol& type,
 
 }
 
-void CaseBranch::accept(AstNodeVisitor& visitor) const
+void CaseBranch::accept(AstNodeVisitor& visitor)
 {
     visitor.visit(*this);
 }
@@ -156,7 +156,7 @@ Assign::Assign(const Symbol& aname, const ExpressionPtr& init)
 
 }
 
-void Assign::accept(AstNodeVisitor& visitor) const
+void Assign::accept(AstNodeVisitor& visitor)
 {
     visitor.visit(*this);
 }
@@ -167,7 +167,7 @@ Block::Block(const Expressions& block)
 
 }
 
-void Block::accept(AstNodeVisitor& visitor) const
+void Block::accept(AstNodeVisitor& visitor)
 {
     visitor.visit(*this);
 }
@@ -179,7 +179,7 @@ If::If(const ExpressionPtr& pred, const ExpressionPtr& truebr,
 
 }
 
-void If::accept(AstNodeVisitor& visitor) const
+void If::accept(AstNodeVisitor& visitor)
 {
     visitor.visit(*this);
 }
@@ -190,7 +190,7 @@ While::While(const ExpressionPtr& pred, const ExpressionPtr& bod)
 
 }
 
-void While::accept(AstNodeVisitor& visitor) const
+void While::accept(AstNodeVisitor& visitor)
 {
     visitor.visit(*this);
 }
@@ -201,7 +201,7 @@ Complement::Complement(const ExpressionPtr& e)
 
 }
 
-void Complement::accept(AstNodeVisitor& visitor) const
+void Complement::accept(AstNodeVisitor& visitor)
 {
     visitor.visit(*this);
 }
@@ -212,7 +212,7 @@ LessThan::LessThan(const ExpressionPtr& l, const ExpressionPtr& r)
 
 }
 
-void LessThan::accept(AstNodeVisitor& visitor) const
+void LessThan::accept(AstNodeVisitor& visitor)
 {
     visitor.visit(*this);
 }
@@ -223,7 +223,7 @@ EqualTo::EqualTo(const ExpressionPtr& l, const ExpressionPtr& r)
 
 }
 
-void EqualTo::accept(AstNodeVisitor& visitor) const
+void EqualTo::accept(AstNodeVisitor& visitor)
 {
     visitor.visit(*this);
 }
@@ -235,7 +235,7 @@ LessThanEqualTo::LessThanEqualTo(const ExpressionPtr& l,
 
 }
 
-void LessThanEqualTo::accept(AstNodeVisitor& visitor) const
+void LessThanEqualTo::accept(AstNodeVisitor& visitor)
 {
     visitor.visit(*this);
 }
@@ -246,7 +246,7 @@ Plus::Plus(const ExpressionPtr& l, const ExpressionPtr& r)
 
 }
 
-void Plus::accept(AstNodeVisitor& visitor) const
+void Plus::accept(AstNodeVisitor& visitor)
 {
     visitor.visit(*this);
 }
@@ -257,7 +257,7 @@ Sub::Sub(const ExpressionPtr& l, const ExpressionPtr& r)
 
 }
 
-void Sub::accept(AstNodeVisitor& visitor) const
+void Sub::accept(AstNodeVisitor& visitor)
 {
     visitor.visit(*this);
 }
@@ -268,7 +268,7 @@ Mul::Mul(const ExpressionPtr& l, const ExpressionPtr& r)
 
 }
 
-void Mul::accept(AstNodeVisitor& visitor) const
+void Mul::accept(AstNodeVisitor& visitor)
 {
     visitor.visit(*this);
 }
@@ -279,7 +279,7 @@ Div::Div(const ExpressionPtr& l, const ExpressionPtr& r)
 
 }
 
-void Div::accept(AstNodeVisitor& visitor) const
+void Div::accept(AstNodeVisitor& visitor)
 {
     visitor.visit(*this);
 }
@@ -290,7 +290,7 @@ Not::Not(const ExpressionPtr& rhs)
 
 }
 
-void Not::accept(AstNodeVisitor& visitor) const
+void Not::accept(AstNodeVisitor& visitor)
 {
     visitor.visit(*this);
 }
@@ -302,7 +302,7 @@ StaticDispatch::StaticDispatch(const ExpressionPtr& objexpr, const Symbol& stype
 
 }
 
-void StaticDispatch::accept(AstNodeVisitor& visitor) const
+void StaticDispatch::accept(AstNodeVisitor& visitor)
 {
     visitor.visit(*this);
 }
@@ -314,7 +314,7 @@ DynamicDispatch::DynamicDispatch(const ExpressionPtr& objexpr,
 
 }
 
-void DynamicDispatch::accept(AstNodeVisitor& visitor) const
+void DynamicDispatch::accept(AstNodeVisitor& visitor)
 {
     visitor.visit(*this);
 }
@@ -326,7 +326,7 @@ Let::Let(const Symbol& lname, const Symbol& type, const ExpressionPtr& initexpr,
 
 }
 
-void Let::accept(AstNodeVisitor& visitor) const
+void Let::accept(AstNodeVisitor& visitor)
 {
     visitor.visit(*this);
 }
@@ -337,7 +337,7 @@ Case::Case(const ExpressionPtr& exp, const Cases& cb)
 
 }
 
-void Case::accept(AstNodeVisitor& visitor) const
+void Case::accept(AstNodeVisitor& visitor)
 {
     visitor.visit(*this);
 }
@@ -348,7 +348,7 @@ Object::Object(const Symbol& obj)
 
 }
 
-void Object::accept(AstNodeVisitor& visitor) const
+void Object::accept(AstNodeVisitor& visitor)
 {
     visitor.visit(*this);
 }
@@ -358,7 +358,7 @@ NoExpr::NoExpr()
 
 }
 
-void NoExpr::accept(AstNodeVisitor& visitor) const
+void NoExpr::accept(AstNodeVisitor& visitor)
 {
     visitor.visit(*this);
 }

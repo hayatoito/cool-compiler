@@ -1,5 +1,6 @@
 #include "astnodetypechecker.hpp"
 #include "constants.hpp"
+#include "utility.hpp"
 
 using namespace constants;
 
@@ -71,7 +72,10 @@ void AstNodeTypeChecker::visit(Program& prog)
                 MethodPtr mptr = std::dynamic_pointer_cast<Method>(feature);
                 
                 for (auto& formal : mptr->params) 
+                {
+                    std::cerr << "Adding [" << cl << "][" << mptr->name << "] -> \n";
                     mtbl[cl][mptr->name].push_back(formal->type_decl);
+                }
 
                 mtbl[cl][mptr->name].push_back(mptr->return_type);
             }
@@ -79,17 +83,20 @@ void AstNodeTypeChecker::visit(Program& prog)
     }
 
     for (auto& cs : prog.classes)
-        cs->accept(*this);
+        if (!utility::is_basic_class(cs->name))
+            cs->accept(*this);
 }
 
 void AstNodeTypeChecker::visit(Class& cs)
 {
+    std::cerr << "entering class : " << cs.name << "\n";
     env.enter_scope();
 
     for (auto& f : cs.features)
         f->accept(*this);
 
     env.exit_scope();
+    std::cerr << "leaving class : " << cs.name << "\n";
 }
 
 void AstNodeTypeChecker::visit(Feature& f)
@@ -145,6 +152,7 @@ void AstNodeTypeChecker::visit(BoolConst& boolean)
 
 void AstNodeTypeChecker::visit(New& nnode)
 {
+    std::cerr << "**** in new node ****\n";
     nnode.type = nnode.type_decl;
 }
 
@@ -375,6 +383,7 @@ void AstNodeTypeChecker::visit(StaticDispatch& stat)
 
 void AstNodeTypeChecker::visit(DynamicDispatch& dyn)
 {
+    std::cerr << "in dynamic dispatch\n";
     std::vector<Symbol> disptypes;
 
     // get type of object that dispatches
@@ -391,18 +400,25 @@ void AstNodeTypeChecker::visit(DynamicDispatch& dyn)
     if (obj_type == curr_class)
         obj_type = curr_class;
 
+    std::cerr << "before equal\n";
     // check if each dispatch argument's type is a subtype of declared type for method
     bool result = std::equal(begin(disptypes), end(disptypes), begin(mtbl[curr_class][dyn.method]),
             [&](const Symbol& t1, const Symbol& t2) {
                 return is_subtype(t1, t2);
             });
 
+    std::cerr << "after equal\n";
+
+    std::cerr << mtbl[curr_class][dyn.method].empty();
+
     if (result)
     {
-        dyn.type = mtbl[curr_class][dyn.method].back();
+        std::cerr << "cp1\n";
+        dyn.type = (mtbl[curr_class][dyn.method]).back();
     }
     else
     {
+        std::cerr << "cp2\n";
         std::cerr << "Type mismatch for dispatch to method " << dyn.method << "\n";
         dyn.type = OBJECT;
     }
@@ -410,6 +426,7 @@ void AstNodeTypeChecker::visit(DynamicDispatch& dyn)
 
 void AstNodeTypeChecker::visit(Let& let)
 {
+    std::cerr << "**** in let ****\n";
     let.type = OBJECT;
     let.init->accept(*this);
 
@@ -417,19 +434,25 @@ void AstNodeTypeChecker::visit(Let& let)
 
     if (let.init->type != NOTYPE)
     {
+        std::cerr << "**** before subtype ****\n";
         type_status = is_subtype(let.init->type, let.type_decl);
+        std::cerr << "**** after subtype ****\n";
         if (!type_status)
             std::cerr << "Let init type mismatch\n";
     }
+    std::cerr << "**** after if ****\n";
 
     env.enter_scope();
     env.add(let.name, let.type_decl);
+    std::cerr << "**** before body ****\n";
     let.body->accept(*this);
+    std::cerr << "**** after body accept ****\n";
 
     if (type_status)
         let.type = let.body->type;
 
     env.exit_scope();
+    std::cerr << "**** out let ****\n";
 }
 
 void AstNodeTypeChecker::visit(Case& cs)

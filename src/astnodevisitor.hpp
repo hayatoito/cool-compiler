@@ -49,38 +49,6 @@ class NoExpr;
 class AstNodeVisitor 
 {
 public:
-    virtual void visit(const Program&) {}
-    virtual void visit(const Class&) {}
-    virtual void visit(const Feature&) {}
-    virtual void visit(const Attribute&) {}
-    virtual void visit(const Method&) {}
-    virtual void visit(const Formal&) {}
-    virtual void visit(const StringConst&) {}
-    virtual void visit(const IntConst&) {}
-    virtual void visit(const BoolConst&) {}
-    virtual void visit(const New&) {}
-    virtual void visit(const IsVoid&) {}
-    virtual void visit(const CaseBranch&) {}
-    virtual void visit(const Assign&) {}
-    virtual void visit(const Block&) {}
-    virtual void visit(const If&) {}
-    virtual void visit(const While&) {}
-    virtual void visit(const Complement&) {}
-    virtual void visit(const LessThan&) {}
-    virtual void visit(const EqualTo&) {}
-    virtual void visit(const LessThanEqualTo&) {}
-    virtual void visit(const Plus&) {}
-    virtual void visit(const Sub&) {}
-    virtual void visit(const Mul&) {}
-    virtual void visit(const Div&) {}
-    virtual void visit(const Not&) {}
-    virtual void visit(const StaticDispatch&) {}
-    virtual void visit(const DynamicDispatch&) {}
-    virtual void visit(const Let&) {}
-    virtual void visit(const Case&) {}
-    virtual void visit(const Object&) {}
-    virtual void visit(const NoExpr&) {}
-
     virtual void visit(Program&) {}
     virtual void visit(Class&) {}
     virtual void visit(Feature&) {}
@@ -102,6 +70,7 @@ public:
     virtual void visit(EqualTo&) {}
     virtual void visit(LessThanEqualTo&) {}
     virtual void visit(Plus&) {}
+    virtual void visit(Div&) {}
     virtual void visit(Sub&) {}
     virtual void visit(Mul&) {}
     virtual void visit(Not&) {}
@@ -123,37 +92,37 @@ private:
 public:
     AstNodeDisplayer(std::ostream&);
 
-    void visit(const Program&);
-    void visit(const Class&);
-    void visit(const Feature&);
-    void visit(const Attribute&);
-    void visit(const Formal&);
-    void visit(const Method&);
-    void visit(const StringConst&);
-    void visit(const IntConst&);
-    void visit(const BoolConst&);
-    void visit(const New&);
-    void visit(const IsVoid&);
-    void visit(const CaseBranch&);
-    void visit(const Assign&);
-    void visit(const Block&);
-    void visit(const If&);
-    void visit(const While&);
-    void visit(const Complement&);
-    void visit(const LessThan&);
-    void visit(const EqualTo&);
-    void visit(const LessThanEqualTo&);
-    void visit(const Plus&);
-    void visit(const Sub&);
-    void visit(const Mul&);
-    void visit(const Div&);
-    void visit(const Not&);
-    void visit(const StaticDispatch&);
-    void visit(const DynamicDispatch&);
-    void visit(const Let&);
-    void visit(const Case&);
-    void visit(const Object&);
-    void visit(const NoExpr&);
+    void visit(Program&);
+    void visit(Class&);
+    void visit(Feature&);
+    void visit(Attribute&);
+    void visit(Formal&);
+    void visit(Method&);
+    void visit(StringConst&);
+    void visit(IntConst&);
+    void visit(BoolConst&);
+    void visit(New&);
+    void visit(IsVoid&);
+    void visit(CaseBranch&);
+    void visit(Assign&);
+    void visit(Block&);
+    void visit(If&);
+    void visit(While&);
+    void visit(Complement&);
+    void visit(LessThan&);
+    void visit(EqualTo&);
+    void visit(LessThanEqualTo&);
+    void visit(Plus&);
+    void visit(Sub&);
+    void visit(Mul&);
+    void visit(Div&);
+    void visit(Not&);
+    void visit(StaticDispatch&);
+    void visit(DynamicDispatch&);
+    void visit(Let&);
+    void visit(Case&);
+    void visit(Object&);
+    void visit(NoExpr&);
 };
 
 #endif
