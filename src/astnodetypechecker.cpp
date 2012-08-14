@@ -15,6 +15,7 @@ bool AstNodeTypeChecker::is_subtype(const Symbol& child, const Symbol& parent)
 {
     if (child == NOTYPE || child == parent) return true;
     if (child == OBJECT) return false;
+    if (child == SELF_TYPE || parent == SELF_TYPE) return true;
 
     auto child_cptr = std::find_if(begin(inherit_graph), end(inherit_graph),
             [&](const std::pair<ClassPtr, ClassPtr>& p) {
@@ -102,6 +103,7 @@ void AstNodeTypeChecker::visit(Class& cs)
 {
     env.enter_scope();
     curr_class = cs.name;
+    env.add(SELF, curr_class);
 
     for (auto& f : cs.features)
         f->accept(*this);
@@ -117,7 +119,6 @@ void AstNodeTypeChecker::visit(Feature& f)
 void AstNodeTypeChecker::visit(Attribute& attr)
 {
     env.add(attr.name, attr.type_decl);
-    env.add(SELF, curr_class);
     attr.init->accept(*this);
 
     if (attr.init->type != NOTYPE)
@@ -215,6 +216,7 @@ void AstNodeTypeChecker::visit(If& ifstmt)
 
     ifstmt.iftrue->accept(*this);
     ifstmt.iffalse->accept(*this);
+
     ifstmt.type = lub(std::vector<Symbol> {ifstmt.iftrue->type, ifstmt.iffalse->type});
 }
 
@@ -409,7 +411,7 @@ void AstNodeTypeChecker::visit(DynamicDispatch& dyn)
         obj_type = curr_class;
 
     // check if each dispatch argument's type is a subtype of declared type for method
-    bool result = std::equal(begin(disptypes), end(disptypes), begin(mtbl[curr_class][dyn.method]),
+    bool result = std::equal(begin(disptypes), end(disptypes), begin(mtbl[obj_type][dyn.method]),
             [&](const Symbol& t1, const Symbol& t2) {
                 return is_subtype(t1, t2);
             });
@@ -470,7 +472,12 @@ void AstNodeTypeChecker::visit(Case& cs)
 void AstNodeTypeChecker::visit(Object& var)
 {
     boost::optional<Symbol> obj_type = env.lookup(var.name);
-    var.type = obj_type ? *obj_type : OBJECT;
+    var.type = OBJECT;
+
+    if (obj_type)
+        var.type = *obj_type;
+    else
+        std::cerr << "Object " << var.name << " not in scope.\n";
 }
 
 void AstNodeTypeChecker::visit(NoExpr& ne)
