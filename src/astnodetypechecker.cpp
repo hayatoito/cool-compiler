@@ -1,6 +1,8 @@
 #include "astnodetypechecker.hpp"
 #include "constants.hpp"
 
+#include <functional>
+
 using namespace constants;
 
 AstNodeTypeChecker::AstNodeTypeChecker(const std::map<ClassPtr, ClassPtr>& ig)
@@ -12,6 +14,7 @@ AstNodeTypeChecker::AstNodeTypeChecker(const std::map<ClassPtr, ClassPtr>& ig)
 bool AstNodeTypeChecker::is_subtype(const Symbol& child, const Symbol& parent)
 {
     if (child == NOTYPE || child == parent) return true;
+    if (child == OBJECT) return false;
 
     auto child_cptr = std::find_if(begin(inherit_graph), end(inherit_graph),
             [&](const std::pair<ClassPtr, ClassPtr>& p) {
@@ -34,6 +37,9 @@ Symbol AstNodeTypeChecker::lub(const std::vector<Symbol>& types)
 {
     Symbol base = types.front(); 
 
+    if (std::all_of(begin(types), end(types), std::bind2nd(std::equal_to<Symbol>(), base)))
+        return base;
+
     auto base_ptr = std::find_if(begin(inherit_graph), end(inherit_graph),
             [&](const std::pair<ClassPtr, ClassPtr>& p) {
                 return p.first->name == base;
@@ -49,7 +55,7 @@ Symbol AstNodeTypeChecker::lub(const std::vector<Symbol>& types)
                 });
 
         if (result == end(types))
-            return *result;
+            return curr->parent;
 
         curr = inherit_graph[curr];
     }
