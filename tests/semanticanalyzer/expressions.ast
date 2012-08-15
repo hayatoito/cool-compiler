@@ -1,0 +1,124 @@
+_class (A)
+  _method (double)
+    _formal (num)
+    _mul : Int
+      _object (num) : Int
+      _intconst(2) : Int
+_class (B)
+  _method (multiply)
+    _formal (lhs)
+    _formal (rhs)
+    _mul : Int
+      _object (lhs) : Int
+      _object (rhs) : Int
+_class (C)
+  _method (double)
+    _formal (num)
+    _mul : Int
+      _object (num) : Int
+      _intconst(3) : Int
+  _method (divide)
+    _formal (lhs)
+    _formal (rhs)
+    _div : Int
+      _object (lhs) : Int
+      _object (rhs) : Int
+_class (Main)
+  _attribute (isTrue)
+    _boolconst(1) : Bool
+  _attribute (language)
+    _stringconst(COOL) : String
+  _attribute (printer)
+    _new (IO) : IO
+  _method (main)
+    _block : Object
+      _let (x) : String
+        _intconst(42) : Int
+        _let (y) : String
+          _intconst(11) : Int
+          _let (z) : String
+            _noexpr : NoType
+            _if : String
+              _lessthan : Bool
+                _object (x) : Int
+                _object (y) : Int
+              _stringconst(Yes) : String
+              _stringconst(No) : String
+      _let (num) : Int
+        _noexpr : NoType
+        _let (num2) : Int
+          _noexpr : NoType
+          _let (doubler) : Int
+            _new (A) : A
+            _assign (num) : Int
+              _dynamicdispatch (double) : Int
+                _object (doubler) : A
+                _intconst(5) : Int
+      _let (num) : C
+        _noexpr : NoType
+        _let (doubler) : C
+          _new (A) : A
+          _block : C
+            _assign (doubler) : B
+              _new (B) : B
+            _assign (num) : Int
+              _dynamicdispatch (double) : Int
+                _object (doubler) : A
+                _intconst(10) : Int
+            _assign (doubler) : C
+              _new (C) : C
+      _block : Bool
+        _not : Bool
+          _object (isTrue) : Bool
+        _plus : Int
+          _sub : Int
+            _mul : Int
+              _div : Int
+                _intconst(1) : Int
+                _intconst(2) : Int
+              _plus : Int
+                _intconst(5) : Int
+                _intconst(7) : Int
+            _intconst(100) : Int
+          _mul : Int
+            _intconst(9) : Int
+            _intconst(0) : Int
+        _lessthan : Bool
+          _intconst(5) : Int
+          _intconst(3) : Int
+        _equalto : Bool
+          _intconst(10) : Int
+          _intconst(10) : Int
+        _lessthanequalto : Bool
+          _intconst(3) : Int
+          _intconst(7) : Int
+        _complement : Int
+          _intconst(99) : Int
+        _isvoid : Bool
+          _object (language) : String
+      _while : Object
+        _object (isTrue) : Bool
+        _boolconst(0) : Bool
+      _let (lhs) : Int
+        _intconst(17) : Int
+        _let (rhs) : Int
+          _intconst(1) : Int
+          _let (divider) : Int
+            _new (C) : C
+            _assign (lhs) : Int
+              _staticdispatch (double) : Int
+                _object (divider) : C
+                _object (rhs) : Int
+      _if : String
+        _object (isTrue) : Bool
+        _stringconst(Yes) : String
+        _stringconst(No) : String
+      _case : Object
+        _dynamicdispatch (length) : Int
+          _object (language) : String
+        _casebranch (alpha) : IO
+          _object (printer) : IO
+        _casebranch (bravo) : String
+          _stringconst(hi) : String
+        _casebranch (charlie) : Int
+          _intconst(5) : Int
