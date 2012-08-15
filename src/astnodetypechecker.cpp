@@ -88,6 +88,24 @@ void AstNodeTypeChecker::visit(Program& prog)
 
                         mtbl[cl][mptr->name].push_back(mptr->return_type);
                     }
+                    else
+                    {
+                        // if there is an overriden version of this method, type check
+                        // to ensure that the signature including return type is exactly same 
+                        
+                        // have to subtract 1 from mtbl because the last element is the return type (ie. it has one extra element)
+                        if (mptr->params.size() != mtbl[cl][mptr->name].size() - 1 || 
+                                !std::equal(begin(mptr->params), end(mptr->params), begin(mtbl[cl][mptr->name]), 
+                                        [](const FormalPtr& f, const Symbol& s) {
+                                            return f->type_decl == s; 
+                                        }))
+                            std::cerr << "Overriden method " << curr->name << "." << mptr->name 
+                             << " has different parameters from " << cl << "." << mptr->name << "\n";   
+
+                        if (mptr->return_type != mtbl[cl][mptr->name].back())
+                            std::cerr << "Overriden method " << curr->name << "." << mptr->name
+                                << " has different return type from " << cl << "." << mptr->name << "\n";
+                    }
                 }
             }
 
