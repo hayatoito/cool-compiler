@@ -10,7 +10,7 @@ class B inherits A
 {
     multiply(lhs:Int, rhs:Int):Int
     {
-        lhs / rhs
+        lhs * rhs
     };
 };
 
