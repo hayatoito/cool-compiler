@@ -1,5 +1,7 @@
 class A
 {
+    afoo:Int <- 7;
+
     double(num:Int):Int
     {
         num * 2
@@ -16,6 +18,8 @@ class B inherits A
 
 class C inherits A
 {
+    cfoo:Int <- 10;
+
     double(num:Int):Int
     {
         num * 3
@@ -27,7 +31,7 @@ class C inherits A
     };
 };
 
-class Main inherits IO
+class Main inherits C
 {
     isTrue:Bool <- true;
     language:String <- "COOL";
@@ -44,12 +48,12 @@ class Main inherits IO
                 fi;
 
             let num:Int, num2:Int, doubler:A <- new A in
-                num <- doubler.double(5);
+                num <- doubler.double(cfoo);
 
             let num:Int, doubler:A <- new A in
                 {
                     doubler <- new B;
-                    num <- doubler.double(10);
+                    num <- doubler.double(afoo);
                     doubler <- new C;
                 };
 
@@ -62,6 +66,8 @@ class Main inherits IO
                 ~99;
                 isvoid(language);
             };
+
+            
 
             while isTrue 
             loop

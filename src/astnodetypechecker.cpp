@@ -123,8 +123,41 @@ void AstNodeTypeChecker::visit(Class& cs)
     curr_class = cs.name;
     env.add(SELF, curr_class);
 
+    auto cs_ptr = std::find_if(begin(inherit_graph), end(inherit_graph),
+            [&](const std::pair<ClassPtr, ClassPtr>& p) {
+                return cs.parent == p.first->name;
+            });
+
+    if (cs_ptr != end(inherit_graph))
+    {
+        ClassPtr cptr = cs_ptr->first;
+
+        while (cptr->name != OBJECT)
+        {
+            for (auto& f : cptr->features)
+            {
+                if (f->get_type() == Feature::ATTRIBUTE)
+                {
+                    AttributePtr attrib = std::dynamic_pointer_cast<Attribute>(f);
+
+                    if (env.probe(attrib->name))
+                        std::cerr << "Attribute " << attrib->name << " from class " << cptr->name << " redefined in one of its subclasses.\n";
+                    else
+                        env.add(attrib->name, attrib->type_decl);
+                }
+            }
+
+            cptr = inherit_graph[cptr];
+        }
+    }
+
     for (auto& f : cs.features)
-        f->accept(*this);
+        if (f->get_type() == Feature::ATTRIBUTE)
+            f->accept(*this);
+
+    for (auto& f : cs.features)
+        if (f->get_type() == Feature::METHOD)
+            f->accept(*this);
 
     env.exit_scope();
 }

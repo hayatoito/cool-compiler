@@ -1,4 +1,6 @@
 _class (A)
+  _attribute (afoo)
+    _intconst(7) : Int
   _method (double)
     _formal (num)
     _mul : Int
@@ -12,6 +14,8 @@ _class (B)
       _object (lhs) : Int
       _object (rhs) : Int
 _class (C)
+  _attribute (cfoo)
+    _intconst(10) : Int
   _method (double)
     _formal (num)
     _mul : Int
@@ -53,7 +57,7 @@ _class (Main)
             _assign (num) : Int
               _dynamicdispatch (double) : Int
                 _object (doubler) : A
-                _intconst(5) : Int
+                _object (cfoo) : Int
       _let (num) : C
         _noexpr : NoType
         _let (doubler) : C
@@ -64,7 +68,7 @@ _class (Main)
             _assign (num) : Int
               _dynamicdispatch (double) : Int
                 _object (doubler) : A
-                _intconst(10) : Int
+                _object (afoo) : Int
             _assign (doubler) : C
               _new (C) : C
       _block : Bool
