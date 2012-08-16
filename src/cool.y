@@ -13,7 +13,7 @@ extern int yylex();
 extern int yylineno;
 extern std::string curr_filename;
 
-void yyerror(char *s);        
+void yyerror(char *);        
 %}
     
 %token CLASS 258 ELSE 259 FI 260 IF 261 IN 262 
@@ -139,12 +139,48 @@ expression : OBJECTID ASSIGN expression { $$ = std::make_shared<Assign>($1, $3);
 
 %%
 
+std::string convert_token(int token)
+{
+    std::string rep;
+
+    switch (token)
+    {
+        case CLASS: rep = "class"; break;
+        case ELSE: rep = "else"; break;
+        case FI: rep = "fi"; break;
+        case IF: rep = "if"; break;
+        case IN: rep = "in"; break;
+        case INHERITS: rep = "inherits"; break;
+        case LET: rep = "let"; break;
+        case LOOP: rep = "loop"; break;
+        case POOL: rep = "pool"; break;
+        case THEN: rep = "then"; break;
+        case WHILE: rep = "while"; break;
+        case CASE: rep = "case"; break;
+        case ESAC: rep = "esac"; break;
+        case OF: rep = "of"; break;
+        case DARROW: rep = "=>"; break;
+        case NEW: rep = "new"; break;
+        case ISVOID: rep = "isvoid"; break;
+        case ASSIGN: rep = "<-"; break;
+        case NOT: rep = "not"; break;
+        case LE: rep = "<="; break;
+        case STR_CONST: rep = "STR_CONST = " + yylval.symbol.get_val(); break;
+        case INT_CONST: rep = "INT_CONST = " + yylval.symbol.get_val(); break;
+        case BOOL_CONST: rep = "BOOL_CONST = " + yylval.boolean; break;
+        case TYPEID: rep = "TYPEID = " + yylval.symbol.get_val(); break;
+        case OBJECTID: rep = "OBJECTID = " + yylval.symbol.get_val(); break;
+    }     
+    
+    return rep;
+}
+
 void yyerror(char *)
 {
     if (yylval.error_msg.length() <= 0)
-        std::cerr << curr_filename << ":error:" << yylineno << ": " << "syntax error near or at character '" << (char) yychar << "'\n";
+        std::cerr << curr_filename << ":" << yylineno << ": " << "error: " <<  "syntax error near or at character or token '" << convert_token(yychar) << "'\n";
     else
-        std::cerr << curr_filename << ":error:" << yylineno << ": " << yylval.error_msg << "\n";
+        std::cerr << curr_filename << ":" << yylineno << ": " << "error: " << yylval.error_msg << "\n";
 }
 
 

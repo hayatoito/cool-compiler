@@ -42,14 +42,14 @@ int main(int argc, char **argv)
             }
             else
             {
-                std::cerr << argv[i] << ":error:cannot be opened\n";
+                std::cerr << argv[i] << ": error: cannot be opened\n";
             }
         }
     }
 
     if (yynerrs > 0)
     {
-        std::cerr << argv[0] << ": **compilation halted due to lexical or syntax errors.**\n";
+        std::cerr << "Compilation halted due to lexical or syntax errors.\n";
         exit(1);
     }
     
@@ -57,7 +57,7 @@ int main(int argc, char **argv)
     semant.install_basic(ast_root);
     if (!semant.validate_inheritance(ast_root->classes))
     {
-        std:: cerr << argv[0] << ": **compilation halted due to inheritance errors.**\n";
+        std:: cerr << "Compilation halted due to inheritance errors.\n";
         exit(1);
     }
     semant.type_check(ast_root);

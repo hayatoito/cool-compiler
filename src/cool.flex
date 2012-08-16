@@ -14,7 +14,7 @@ char string_buf[MAX_STR_CONST];  // buffer to store string contstants encountere
 char *string_buf_ptr;
 
 int num_comment = 0;      // count to keep track how many opening comment tokens have been encountered
-size_t curr_lineno = 0;      // keep track of current line number of source file
+std::size_t curr_lineno = 0;      // keep track of current line number of source file
 bool str_too_long = false;   // used to handle string constant size error check
 
 
