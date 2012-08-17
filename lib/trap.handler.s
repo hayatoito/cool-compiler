@@ -109,6 +109,7 @@ __start:
     jal __memmgr_init
     la $a0, Main_prototype
     jal Object.copy
+    move $s0, $a0
     jal Main_init
 	jal Main.main
 	li $v0 10
@@ -174,6 +175,16 @@ __copy_attrib:
     move $a0, $v0
     lw $ra, 8($sp)
     addiu $sp, $sp, 8
+    jr $ra
+
+    .globl IO.out_string
+IO.out_string:
+    lw $a0, 4($fp)
+    la $a0, STR_CONST_OFFSET($a0)
+    li $v0, 4
+    syscall
+    lw $fp, 16($sp)
+    lw $s0, 12($sp)
     jr $ra
 
     .globl less
