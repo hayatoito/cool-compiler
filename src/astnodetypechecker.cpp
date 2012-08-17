@@ -87,45 +87,40 @@ void AstNodeTypeChecker::visit(Program& prog)
 
         while (curr->parent != NOCLASS)
         {
-            for (auto& feature : curr->features)
+            for (auto& method : curr->methods)
             {
-                if (feature->get_type() == Feature::METHOD)
+                // if an overriden method already exists, don't add anymore
+                if (mtbl[cl].find(method->name) == end(mtbl[cl]))
                 {
-                    MethodPtr mptr = std::dynamic_pointer_cast<Method>(feature);
+                    for (auto& formal : method->params) 
+                        mtbl[cl][method->name].push_back(formal->type_decl);
 
-                    // if an overriden method already exists, don't add anymore
-                    if (mtbl[cl].find(mptr->name) == end(mtbl[cl]))
+                    mtbl[cl][method->name].push_back(method->return_type);
+                }
+                else
+                {
+                    // if there is an overriden version of this method, type check
+                    // to ensure that the signature including return type is exactly same 
+                    
+                    // have to subtract 1 from mtbl because the last element is the return type (ie. it has one extra element)
+                    if (method->params.size() != mtbl[cl][method->name].size() - 1 || 
+                            !std::equal(begin(method->params), end(method->params), begin(mtbl[cl][method->name]), 
+                                    [](const FormalPtr& f, const Symbol& s) {
+                                        return f->type_decl == s; 
+                                    }))
                     {
-                        for (auto& formal : mptr->params) 
-                            mtbl[cl][mptr->name].push_back(formal->type_decl);
-
-                        mtbl[cl][mptr->name].push_back(mptr->return_type);
+                        std::ostringstream oss;
+                        oss << "overriden method " << curr->name << "." << method->name 
+                            << " has different parameters from " << cl << "." << method->name;   
+                        error(*method, oss.str());
                     }
-                    else
-                    {
-                        // if there is an overriden version of this method, type check
-                        // to ensure that the signature including return type is exactly same 
-                        
-                        // have to subtract 1 from mtbl because the last element is the return type (ie. it has one extra element)
-                        if (mptr->params.size() != mtbl[cl][mptr->name].size() - 1 || 
-                                !std::equal(begin(mptr->params), end(mptr->params), begin(mtbl[cl][mptr->name]), 
-                                        [](const FormalPtr& f, const Symbol& s) {
-                                            return f->type_decl == s; 
-                                        }))
-                        {
-                            std::ostringstream oss;
-                            oss << "overriden method " << curr->name << "." << mptr->name 
-                             << " has different parameters from " << cl << "." << mptr->name;   
-                            error(*feature, oss.str());
-                        }
 
-                        if (mptr->return_type != mtbl[cl][mptr->name].back())
-                        {
-                            std::ostringstream oss;
-                            oss << "overriden method " << curr->name << "." << mptr->name
-                                << " has different return type from " << cl << "." << mptr->name << "\n";
-                            error(*feature, oss.str());
-                        }
+                    if (method->return_type != mtbl[cl][method->name].back())
+                    {
+                        std::ostringstream oss;
+                        oss << "overriden method " << curr->name << "." << method->name
+                            << " has different return type from " << cl << "." << method->name << "\n";
+                        error(*method, oss.str());
                     }
                 }
             }
@@ -155,37 +150,25 @@ void AstNodeTypeChecker::visit(Class& cs)
 
         while (cptr->name != OBJECT)
         {
-            for (auto& f : cptr->features)
+            for (auto& attrib : cptr->attributes)
             {
-                if (f->get_type() == Feature::ATTRIBUTE)
-                {
-                    AttributePtr attrib = std::dynamic_pointer_cast<Attribute>(f);
-
-                    if (env.probe(attrib->name))
-                        error(*attrib, "attribute " + attrib->name.get_val() + " redefined in one of its subclasses");
-                    else
-                        env.add(attrib->name, attrib->type_decl);
-                }
+                if (env.probe(attrib->name))
+                    error(*attrib, "attribute " + attrib->name.get_val() + " redefined in one of its subclasses");
+                else
+                    env.add(attrib->name, attrib->type_decl);
             }
 
             cptr = inherit_graph[cptr];
         }
     }
 
-    for (auto& f : cs.features)
-        if (f->get_type() == Feature::ATTRIBUTE)
-            f->accept(*this);
+    for (auto& attrib : cs.attributes)
+        attrib->accept(*this);
 
-    for (auto& f : cs.features)
-        if (f->get_type() == Feature::METHOD)
-            f->accept(*this);
+    for (auto& method : cs.methods)
+        method->accept(*this);
 
     env.exit_scope();
-}
-
-void AstNodeTypeChecker::visit(Feature& f)
-{
-    f.accept(*this);
 }
 
 void AstNodeTypeChecker::visit(Attribute& attr)

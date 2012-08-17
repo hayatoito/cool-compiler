@@ -10,7 +10,6 @@
 //and the visitors
 class Program;
 class Class;
-class Feature;
 class Attribute;
 class Method;
 class Formal;
@@ -51,7 +50,6 @@ class AstNodeVisitor
 public:
     virtual void visit(Program&) {}
     virtual void visit(Class&) {}
-    virtual void visit(Feature&) {}
     virtual void visit(Attribute&) {}
     virtual void visit(Method&) {}
     virtual void visit(Formal&) {}
@@ -96,7 +94,6 @@ public:
 
     void visit(Program&);
     void visit(Class&);
-    void visit(Feature&);
     void visit(Attribute&);
     void visit(Formal&);
     void visit(Method&);

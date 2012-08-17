@@ -29,8 +29,10 @@ void yyerror(char *);
 %type <program> program
 %type <clazz> class
 %type <classes> class_list
-%type <feature> feature
-%type <features> feature_list
+%type <attribute> attribute
+%type <attributes> attribute_list
+%type <method> method
+%type <methods> method_list
 %type <expression> expression
 %type <expression> let_expr 
 %type <expressions> expression_list
@@ -57,46 +59,52 @@ void yyerror(char *);
 program	: class_list	{ @$ = @1; ast_root = std::make_shared<Program>($1); }
 ;
 
-class_list : class { $$ = std::vector<std::shared_ptr<Class>>(); $$.push_back($1); }
+class_list : class { $$ = Classes(); $$.push_back($1); }
             | class_list class { $$.push_back($2); }
 ;
 
-class : CLASS TYPEID '{' feature_list '}' ';' { $$ = std::make_shared<Class>($2, idtable().add("Object"), $4); SETLOC($$, @1); }
-        | CLASS TYPEID INHERITS TYPEID '{' feature_list '}' ';' { $$ = std::make_shared<Class>($2, $4, $6); SETLOC($$, @1); }
+class : CLASS TYPEID '{' attribute_list method_list '}' ';' { $$ = std::make_shared<Class>($2, idtable().add("Object"), $4, $5); SETLOC($$, @1); }
+        | CLASS TYPEID INHERITS TYPEID '{' attribute_list method_list '}' ';' { $$ = std::make_shared<Class>($2, $4, $6, $7); SETLOC($$, @1); }
         | error ';' { yyerrok; } 
 ;
 
-/* Feature list may be empty, but no empty features in list. */
-feature_list : /* no methods */ { $$ = std::vector<std::shared_ptr<Feature>>(); }
-                | feature_list feature { $$.push_back($2); }
+attribute_list : attribute ';' { $$ = Attributes(); $$.push_back($1); }
+               | attribute_list attribute ';' { $$.push_back($2); }
+               | error ';' { yyerrok; }
 ;
 
-feature : OBJECTID '(' formal_list ')' ':' TYPEID '{' expression '}' ';' { $$ = std::make_shared<Method>($1, $6, $3, $8); SETLOC($$, @1); }
-        | OBJECTID '(' ')' ':' TYPEID '{' expression '}' ';' { $$ = std::make_shared<Method>($1, $5, Formals(), $7); SETLOC($$, @1); }
-        | OBJECTID ':' TYPEID ';' { $$ = std::make_shared<Attribute>($1, $3, std::make_shared<NoExpr>()); SETLOC($$, @1); }
-        | OBJECTID ':' TYPEID ASSIGN expression ';' { $$ = std::make_shared<Attribute>($1, $3, $5); SETLOC($$, @5); }
-        | error ';' { yyerrok; } 
+attribute : OBJECTID ':' TYPEID { $$ = std::make_shared<Attribute>($1, $3, std::make_shared<NoExpr>()); SETLOC($$, @1); }
+          | OBJECTID ':' TYPEID ASSIGN expression { $$ = std::make_shared<Attribute>($1, $3, $5); SETLOC($$, @5); }
 ;
 
-formal_list : formal { $$ = std::vector<std::shared_ptr<Formal>>(); $$.push_back($1); }
+method_list : method ';' { $$ = Methods(); $$.push_back($1); }
+            | method_list method ';' { $$.push_back($2); }
+            | error ';' { yyerrok; }
+;
+
+method : OBJECTID '(' formal_list ')' ':' TYPEID '{' expression '}' { $$ = std::make_shared<Method>($1, $6, $3, $8); SETLOC($$, @1); }
+       | OBJECTID '(' ')' ':' TYPEID '{' expression '}' { $$ = std::make_shared<Method>($1, $5, Formals(), $7); SETLOC($$, @1); }
+;
+
+formal_list : formal { $$ = Formals(); $$.push_back($1); }
             | formal_list ',' formal { $$.push_back($3); } 
 ;
 
 formal : OBJECTID ':' TYPEID { $$ = std::make_shared<Formal>($1, $3); SETLOC($$, @1); }
 ;
 
-case_list : case { $$ = std::vector<std::shared_ptr<CaseBranch>>(); $$.push_back($1); }
+case_list : case { $$ = Cases(); $$.push_back($1); }
             | case_list case { $$.push_back($2); }
 ;
 
 case : OBJECTID ':' TYPEID DARROW expression ';' { $$ = std::make_shared<CaseBranch>($1, $3, $5); SETLOC($$, @5); }
 ;
 
-method_expr_list : expression { $$ = std::vector<std::shared_ptr<Expression>>(); $$.push_back($1); }
+method_expr_list : expression { $$ = Expressions(); $$.push_back($1); }
                     | method_expr_list ',' expression { $$.push_back($3); }
 ;
 
-expression_list : expression ';' { $$ = std::vector<std::shared_ptr<Expression>>(); $$.push_back($1); }
+expression_list : expression ';' { $$ = Expressions(); $$.push_back($1); }
                 | expression_list expression ';' { $$.push_back($2); }
                 | error ';' { yyerrok; }
 ;

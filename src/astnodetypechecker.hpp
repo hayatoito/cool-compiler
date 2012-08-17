@@ -22,7 +22,6 @@ public:
     AstNodeTypeChecker(const std::map<ClassPtr, ClassPtr>&);
     void visit(Program&);
     void visit(Class&);
-    void visit(Feature&);
     void visit(Attribute&);
     void visit(Method&);
     void visit(Formal&);

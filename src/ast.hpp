@@ -30,22 +30,7 @@ public:
 typedef std::shared_ptr<Expression> ExpressionPtr;
 typedef std::vector<ExpressionPtr> Expressions;
 
-class Feature : public AstNode
-{
-public:
-    enum feature_type
-    {
-        ATTRIBUTE,
-        METHOD
-    };
-
-    virtual feature_type get_type() const = 0;
-    virtual void accept(AstNodeVisitor&) = 0;
-};
-typedef std::shared_ptr<Feature> FeaturePtr;
-typedef std::vector<FeaturePtr> Features;
-
-class Attribute : public Feature
+class Attribute : public AstNode
 {
 public:
     Symbol name;
@@ -53,10 +38,10 @@ public:
     ExpressionPtr init;
 
     Attribute(const Symbol&, const Symbol&, const ExpressionPtr&);
-    feature_type get_type() const;
     void accept(AstNodeVisitor&);
 };
 typedef std::shared_ptr<Attribute> AttributePtr;
+typedef std::vector<AttributePtr> Attributes;
 
 class Formal : public AstNode
 {
@@ -70,7 +55,7 @@ public:
 typedef std::shared_ptr<Formal> FormalPtr;
 typedef std::vector<FormalPtr> Formals;
 
-class Method : public Feature
+class Method : public AstNode
 {
 public:
     Symbol name;
@@ -80,19 +65,20 @@ public:
 
     Method(const Symbol&, const Symbol&, const Formals&,
             const ExpressionPtr&);
-    feature_type get_type() const;
     void accept(AstNodeVisitor&);
 };
 typedef std::shared_ptr<Method> MethodPtr;
+typedef std::vector<MethodPtr> Methods;
 
 class Class : public AstNode
 {
 public:
     Symbol name;
     Symbol parent;
-    Features features;
+    Attributes attributes;
+    Methods methods;
 
-    Class(const Symbol&, const Symbol&, const Features&); 
+    Class(const Symbol&, const Symbol&, const Attributes&, const Methods&); 
     void accept(AstNodeVisitor&);
 };
 typedef std::shared_ptr<Class> ClassPtr;

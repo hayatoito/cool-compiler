@@ -10,36 +10,36 @@ using namespace constants;
 
 void SemanticAnalyzer::install_basic(ProgramPtr& ast_root)
 {
-    Features object_features = { 
+    Methods object_methods = { 
         std::make_shared<Method>(ABORT, OBJECT, Formals(), std::make_shared<NoExpr>()),
         std::make_shared<Method>(TYPE_NAME, STRING, Formals(), std::make_shared<NoExpr>()),
         std::make_shared<Method>(COPY, SELF_TYPE, Formals(), std::make_shared<NoExpr>())
     };
 
-    ast_root->classes.push_back(std::make_shared<Class>(OBJECT, NOCLASS, object_features));
+    ast_root->classes.push_back(std::make_shared<Class>(OBJECT, NOCLASS, Attributes(), object_methods));
 
     Formals io_formal1 = { std::make_shared<Formal>(ARG, STRING) };
     Formals io_formal2 = { std::make_shared<Formal>(ARG, INTEGER) };
-    Features io_features = {
+    Methods io_methods = {
         std::make_shared<Method>(OUT_STRING, SELF_TYPE, io_formal1, std::make_shared<NoExpr>()),
         std::make_shared<Method>(OUT_INT, SELF_TYPE, io_formal2, std::make_shared<NoExpr>()),
         std::make_shared<Method>(IN_STRING, STRING, Formals(), std::make_shared<NoExpr>()),
         std::make_shared<Method>(IN_INT, INTEGER, Formals(), std::make_shared<NoExpr>())
     };
 
-    ast_root->classes.push_back(std::make_shared<Class>(IO, OBJECT, io_features));
+    ast_root->classes.push_back(std::make_shared<Class>(IO, OBJECT, Attributes(), io_methods));
 
-    Features int_features = {
+    Attributes int_attributes = {
         std::make_shared<Attribute>(VAL, PRIM_SLOT, std::make_shared<NoExpr>())
     };
 
-    ast_root->classes.push_back(std::make_shared<Class>(INTEGER, OBJECT, int_features));
+    ast_root->classes.push_back(std::make_shared<Class>(INTEGER, OBJECT, int_attributes, Methods()));
 
-    Features bool_features = {
+    Attributes bool_attributes = {
         std::make_shared<Attribute>(VAL, PRIM_SLOT, std::make_shared<NoExpr>())
     };
 
-    ast_root->classes.push_back(std::make_shared<Class>(BOOLEAN, OBJECT, bool_features));
+    ast_root->classes.push_back(std::make_shared<Class>(BOOLEAN, OBJECT, bool_attributes, Methods()));
 
     Formals string_formal1 = { std::make_shared<Formal>(ARG, STRING) };
     Formals string_formal2 = { 
@@ -47,15 +47,18 @@ void SemanticAnalyzer::install_basic(ProgramPtr& ast_root)
         std::make_shared<Formal>(ARG2, INTEGER)
     };
 
-    Features string_features = {
-        std::make_shared<Attribute>(VAL, PRIM_SLOT, std::make_shared<NoExpr>()),
-        std::make_shared<Attribute>(STR_FIELD, PRIM_SLOT, std::make_shared<NoExpr>()),    
+    Methods string_methods = {
         std::make_shared<Method>(LENGTH, INTEGER, Formals(), std::make_shared<NoExpr>()),
         std::make_shared<Method>(CONCAT, STRING, string_formal1, std::make_shared<NoExpr>()),
         std::make_shared<Method>(SUBSTR, STRING, string_formal2, std::make_shared<NoExpr>())
     };
 
-    ast_root->classes.push_back(std::make_shared<Class>(STRING, OBJECT, string_features));
+    Attributes string_attributes = {
+        std::make_shared<Attribute>(VAL, PRIM_SLOT, std::make_shared<NoExpr>()),
+        std::make_shared<Attribute>(STR_FIELD, PRIM_SLOT, std::make_shared<NoExpr>()),    
+    };
+
+    ast_root->classes.push_back(std::make_shared<Class>(STRING, OBJECT, string_attributes, string_methods));
 
     //Add basic classes to string table so a string constant (codegen)
     //will be created for them
@@ -125,7 +128,7 @@ bool SemanticAnalyzer::validate_inheritance(const Classes& classes)
             {
                 // The Object class' parent is not included in the classes list so we explicitly add a parent NoClass
                 // to signal that the end of the class hierarchy is reached.
-                inherit_graph[c] = std::make_shared<Class>(NOCLASS, NOCLASS, Features());
+                inherit_graph[c] = std::make_shared<Class>(NOCLASS, NOCLASS, Attributes(), Methods());
             }
             else
             {

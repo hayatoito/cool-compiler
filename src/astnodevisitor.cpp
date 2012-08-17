@@ -37,8 +37,11 @@ void AstNodeDisplayer::visit(Class& cs)
     os << std::setw(depth++ * 2) << "";
     os << "_class (" << cs.name << ")\n";  
     
-    for (auto& feature : cs.features)
-        feature->accept(*this);
+    for (auto& attrib : cs.attributes)
+        attrib->accept(*this);
+
+    for (auto& func : cs.methods)
+        func->accept(*this);
 
     --depth;
 }
@@ -49,11 +52,6 @@ void AstNodeDisplayer::visit(Attribute& attr)
     os << "_attribute (" << attr.name << ")\n";
     attr.init->accept(*this);
     --depth;
-}
-
-void AstNodeDisplayer::visit(Feature& feature)
-{
-    feature.accept(*this);
 }
 
 void AstNodeDisplayer::visit(Formal& formal) 

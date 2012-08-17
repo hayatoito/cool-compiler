@@ -7,6 +7,8 @@ _class (A)
       _object (num) : Int
       _intconst(2) : Int
 _class (B)
+  _attribute (dfoo)
+    _intconst(11) : Int
   _method (multiply)
     _formal (lhs)
     _formal (rhs)
@@ -29,7 +31,7 @@ _class (C)
       _object (rhs) : Int
 _class (Main)
   _attribute (isTrue)
-    _boolconst(1) : Bool
+    _object (isTrue) : Bool
   _attribute (language)
     _stringconst(COOL) : String
   _attribute (printer)
@@ -37,7 +39,7 @@ _class (Main)
   _method (main)
     _block : Object
       _let (x) : String
-        _intconst(42) : Int
+        _intconst(77) : Int
         _let (y) : String
           _intconst(11) : Int
           _let (z) : String

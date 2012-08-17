@@ -10,6 +10,8 @@ class A
 
 class B inherits A
 {
+    dfoo:Int <- 11;
+
     multiply(lhs:Int, rhs:Int):Int
     {
         lhs * rhs
@@ -33,14 +35,14 @@ class C inherits A
 
 class Main inherits C
 {
-    isTrue:Bool <- true;
+    isTrue:Bool <- isTrue;
     language:String <- "COOL";
     printer:IO <- new IO;
 
     main():Object
     {
         {
-            let x:Int <- 42, y:Int <- 11, z:String in
+            let x:Int <- 77, y:Int <- 11, z:String in
                 if x < y then
                     "Yes"
                 else

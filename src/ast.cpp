@@ -26,8 +26,8 @@ void Program::accept(AstNodeVisitor& visitor)
     visitor.visit(*this);
 }
 
-Class::Class(const Symbol& cname, const Symbol& super, const Features& f)
-    : name(cname), parent(super), features(f)
+Class::Class(const Symbol& cname, const Symbol& super, const Attributes& attr, const Methods& funcs)
+    : name(cname), parent(super), attributes(attr), methods(funcs)
 {
 
 }
@@ -50,16 +50,6 @@ void Attribute::accept(AstNodeVisitor& visitor)
     visitor.visit(*this);
 }
 
-Feature::feature_type Attribute::get_type() const
-{
-    return Feature::ATTRIBUTE;
-}
-
-void Feature::accept(AstNodeVisitor& visitor)
-{
-    visitor.visit(*this);
-}
-
 Method::Method(const Symbol& mname, const Symbol& ret, 
         const Formals& formals, const ExpressionPtr& expr)
     : name(mname), return_type(ret), params(formals), body(expr)
@@ -70,11 +60,6 @@ Method::Method(const Symbol& mname, const Symbol& ret,
 void Method::accept(AstNodeVisitor& visitor)
 {
     visitor.visit(*this);
-}
-
-Feature::feature_type Method::get_type() const
-{
-    return Feature::METHOD;
 }
 
 Formal::Formal(const Symbol& fname, const Symbol& type)

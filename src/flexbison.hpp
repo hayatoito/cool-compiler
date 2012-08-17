@@ -11,16 +11,18 @@ class ParserType
 public:
     bool boolean;
     Symbol symbol;
-    std::shared_ptr<Program> program;
-    std::shared_ptr<Class> clazz;
+    ProgramPtr program;
+    ClassPtr clazz;
     Classes classes;
-    std::shared_ptr<Feature> feature;
-    Features features;
-    std::shared_ptr<Formal> formal;
+    AttributePtr attribute;
+    Attributes attributes;
+    MethodPtr method;
+    Methods methods;
+    FormalPtr formal;
     Formals formals;
-    std::shared_ptr<CaseBranch> branch;
+    CaseBranchPtr branch;
     Cases cases;
-    std::shared_ptr<Expression> expression;
+    ExpressionPtr expression;
     Expressions expressions;
     std::string error_msg;
 
