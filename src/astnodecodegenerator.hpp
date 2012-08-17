@@ -33,6 +33,11 @@ private:
 
     SymbolTable<Symbol, int> var_env; //the variable environment mapping that maps variable names
                                       //to offsets in the current AR
+    
+    std::map<Symbol, std::map<Symbol, int>> method_tbl; //contains mapping of [class name][method name] -> offset in dispatch table
+                                                        //used to implement dispatch
+
+    std::map<Symbol, std::map<Symbol, int>> attr_tbl;
 
     std::size_t while_count;
     std::size_t if_count;
@@ -121,7 +126,7 @@ private:
     void code_constants();
     //void code_class_name_table();
     //void code_prototype_table();
-    void code_dispatch_table(const ClassPtr&);
+    void code_dispatch_table(const ClassPtr&, const ClassPtr&, std::size_t&);
     void code_prototype_objects();
     int calc_obj_size(const ClassPtr&);
     void emit_obj_attribs(const ClassPtr&);

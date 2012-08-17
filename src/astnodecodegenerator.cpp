@@ -377,15 +377,19 @@ void AstNodeCodeGenerator::code_prototype_table()
 }
 */
 
-void AstNodeCodeGenerator::code_dispatch_table(const ClassPtr& class_node)
+void AstNodeCodeGenerator::code_dispatch_table(const ClassPtr& actual_class, const ClassPtr& class_node,
+        std::size_t& disp_offset)
 {
     if (class_node->name == NOCLASS)
         return;
 
-    code_dispatch_table(inherit_graph[class_node]);
+    code_dispatch_table(actual_class, inherit_graph[class_node], disp_offset);
 
     for (auto& method : class_node->methods)
+    {
+        method_tbl[actual_class->name][method->name] = disp_offset++;
         emit_word(class_node->name.get_val() + "." + method->name.get_val());
+    }
 }
 
 int AstNodeCodeGenerator::calc_obj_size(const ClassPtr& class_node)
@@ -470,10 +474,11 @@ void AstNodeCodeGenerator::visit(Program& prog)
     
     for (auto& p : inherit_graph)
     {
+        std::size_t disp_offset = 0;
         if (p.first->name != NOCLASS)
         {
             emit_label(p.first->name.get_val() + "_disptable");
-            code_dispatch_table(p.first);
+            code_dispatch_table(p.first, p.first, disp_offset);
         }
     }
 
@@ -523,6 +528,7 @@ void AstNodeCodeGenerator::visit(Attribute& attr)
     attr.init->accept(*this);
 
     ++curr_attr_count;
+    attr_tbl[curr_class][attr.name] = curr_attr_count;
 
     if (attr.type_decl != PRIM_SLOT)
         emit_sw("a0", 4 * (curr_attr_count + 2), "s0");
@@ -541,11 +547,6 @@ void AstNodeCodeGenerator::visit(Method& method)
     var_env.enter_scope();
     emit_label(curr_class.get_val() + "." + method.name.get_val());
 
-    emit_push(AR_BASE_SIZE);
-    emit_sw("fp", 12, "sp");
-    emit_sw("s0", 8, "sp");
-    emit_sw("ra", 4, "sp");
-    
     int curr_offset = 1;
 
     for (auto& formal : method.params)
@@ -553,8 +554,9 @@ void AstNodeCodeGenerator::visit(Method& method)
 
     method.body->accept(*this);
 
-    emit_lw("fp", 12, "sp");
-    emit_lw("s0", 8, "sp");
+    std::size_t ar_size = AR_BASE_SIZE + method.params.size();
+    emit_lw("fp", ar_size * 4, "sp");
+    emit_lw("s0", ar_size * 4 - 4, "sp");
     emit_lw("ra", 4, "sp");
     emit_pop(AR_BASE_SIZE + method.params.size());
     emit_jr("ra");
@@ -766,9 +768,27 @@ void AstNodeCodeGenerator::visit(StaticDispatch& sdisp)
 
 void AstNodeCodeGenerator::visit(DynamicDispatch& ddisp) 
 { 
-    ddisp.obj->accept(*this);
+    std::size_t ar_size = AR_BASE_SIZE + ddisp.actual.size();
+
+    emit_push(ar_size);
+    emit_sw("fp", ar_size * 4, "sp");
+    emit_sw("s0", ar_size * 4 - 4, "sp");
+
+    std::size_t formal_offset = 8;
     for (auto& e : ddisp.actual)
-       e->accept(*this); 
+    { 
+        e->accept(*this); 
+        emit_sw("a0", formal_offset, "sp");
+        formal_offset += 4;
+    }
+
+    emit_sw("ra", 4, "sp");
+    emit_addiu("fp", "sp", 4);
+    
+    ddisp.obj->accept(*this);
+    emit_lw("t1", 8, "a0");
+    emit_lw("t1", method_tbl[ddisp.obj->type][ddisp.method] * 4, "t1");
+    emit_jalr("t1");
 }
 
 void AstNodeCodeGenerator::visit(Let& let) 
@@ -788,16 +808,15 @@ void AstNodeCodeGenerator::visit(Object& obj)
 { 
     if (obj.name == SELF)
     {
-        //if object is self, store the saved self object
-        //to a0. the self object is stored just above
-        //the formal parameters in the AR
-        emit_lw("a0", 4 * (var_env.size() + 1), "fp");
+        emit_move("a0", "s0");
     }
     else
     {
         boost::optional<int> offset(var_env.lookup(obj.name));
         if (offset)
             emit_lw("a0", *offset, "fp"); 
+        else
+            emit_lw("a0", 4 * (attr_tbl[curr_class][obj.name] + 2), "s0");
     }
 }
 
