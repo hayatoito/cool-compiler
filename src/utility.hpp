@@ -10,6 +10,7 @@ namespace utility
     void print_error(const AstNodePtr&, const std::string&);
     void print_error(const std::string&, std::size_t, const std::string&);
     void print_error(const std::string&, const std::string&);
+    void print_error(const AstNode&, const std::string&);
 }
 
 #endif

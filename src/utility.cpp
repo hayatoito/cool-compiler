@@ -25,4 +25,9 @@ namespace utility
     {
         std::cerr << filename << ": error: " << msg << "\n";
     }
+
+    void print_error(const AstNode& ast, const std::string& msg)
+    {
+        print_error(ast.filename, ast.line_no, msg);
+    }
 }

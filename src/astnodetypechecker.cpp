@@ -1,14 +1,27 @@
 #include "astnodetypechecker.hpp"
 #include "constants.hpp"
+#include "utility.hpp"
 
 #include <functional>
+#include <sstream>
 
 using namespace constants;
 
 AstNodeTypeChecker::AstNodeTypeChecker(const std::map<ClassPtr, ClassPtr>& ig)
-    : inherit_graph(ig)
+    : inherit_graph(ig), err_count(0)
 {
 
+}
+
+std::size_t AstNodeTypeChecker::get_err_count() const
+{
+    return err_count;
+}
+
+void AstNodeTypeChecker::error(const AstNode& node, const std::string& msg)
+{
+    utility::print_error(node, msg);
+    ++err_count;
 }
 
 bool AstNodeTypeChecker::is_subtype(const Symbol& child, const Symbol& parent)
@@ -99,12 +112,20 @@ void AstNodeTypeChecker::visit(Program& prog)
                                         [](const FormalPtr& f, const Symbol& s) {
                                             return f->type_decl == s; 
                                         }))
-                            std::cerr << "Overriden method " << curr->name << "." << mptr->name 
-                             << " has different parameters from " << cl << "." << mptr->name << "\n";   
+                        {
+                            std::ostringstream oss;
+                            oss << "overriden method " << curr->name << "." << mptr->name 
+                             << " has different parameters from " << cl << "." << mptr->name;   
+                            error(*feature, oss.str());
+                        }
 
                         if (mptr->return_type != mtbl[cl][mptr->name].back())
-                            std::cerr << "Overriden method " << curr->name << "." << mptr->name
+                        {
+                            std::ostringstream oss;
+                            oss << "overriden method " << curr->name << "." << mptr->name
                                 << " has different return type from " << cl << "." << mptr->name << "\n";
+                            error(*feature, oss.str());
+                        }
                     }
                 }
             }
@@ -141,7 +162,7 @@ void AstNodeTypeChecker::visit(Class& cs)
                     AttributePtr attrib = std::dynamic_pointer_cast<Attribute>(f);
 
                     if (env.probe(attrib->name))
-                        std::cerr << "Attribute " << attrib->name << " from class " << cptr->name << " redefined in one of its subclasses.\n";
+                        error(*attrib, "attribute " + attrib->name.get_val() + " redefined in one of its subclasses");
                     else
                         env.add(attrib->name, attrib->type_decl);
                 }
@@ -174,7 +195,7 @@ void AstNodeTypeChecker::visit(Attribute& attr)
 
     if (attr.init->type != NOTYPE)
         if (!is_subtype(attr.init->type, attr.type_decl))
-            std::cerr << "Attribute initialization type mismatch.\n";
+            error(attr, "type of attribute initializer not a subtype of declared type");
 }
 
 void AstNodeTypeChecker::visit(Method& method)
@@ -187,7 +208,7 @@ void AstNodeTypeChecker::visit(Method& method)
     method.body->accept(*this);
 
     if (!is_subtype(method.body->type, method.return_type))
-        std::cerr << "Method body type not a subtype of return type.\n";
+        error(method, "method body type not a subtype of return type");
 
     env.exit_scope();
 }
@@ -221,6 +242,12 @@ void AstNodeTypeChecker::visit(IsVoid& isvoid)
 {
     isvoid.expr->accept(*this);
     isvoid.type = BOOLEAN;
+
+    if (isvoid.expr->type == OBJECT)
+    {
+        error(isvoid, "isvoid expression doesn't evaluate to type Bool");
+        isvoid.type = OBJECT;
+    }
 }
 
 void AstNodeTypeChecker::visit(CaseBranch& br)
@@ -235,7 +262,7 @@ void AstNodeTypeChecker::visit(Assign& assign)
     assign.type = OBJECT;
 
     if (!obj_type)
-        std::cerr << "Variable " << assign.name << " not in scope.\n";
+        error(assign, "variable " + assign.name.get_val() + " not in scope");
 
     assign.rhs->accept(*this);
 
@@ -246,7 +273,7 @@ void AstNodeTypeChecker::visit(Assign& assign)
     }
     else
     {
-        std::cerr << "Type of RHS not a subtype of variable being assigned to.\n";
+        error(assign, "type of RHS not a subtype of variable type");
     }
 }
 
@@ -263,7 +290,7 @@ void AstNodeTypeChecker::visit(If& ifstmt)
     ifstmt.predicate->accept(*this);
 
     if (ifstmt.predicate->type != BOOLEAN)
-        std::cerr << "Predicate of IF conditional must be of type Bool\n";
+        error(ifstmt, "predicate doesn't evaluate to type Bool");
 
     ifstmt.iftrue->accept(*this);
     ifstmt.iffalse->accept(*this);
@@ -276,7 +303,7 @@ void AstNodeTypeChecker::visit(While& wstmt)
     wstmt.predicate->accept(*this);
     
     if (wstmt.predicate->type != BOOLEAN)
-        std::cerr << "While statement predicate not boolean type.\n";
+        error(wstmt, "predicate doesn't evaluate to type Bool");
 
     wstmt.body->accept(*this);
     wstmt.type = OBJECT;
@@ -288,7 +315,10 @@ void AstNodeTypeChecker::visit(Complement& cmpl)
     cmpl.type = INTEGER;
 
     if (cmpl.expr->type != INTEGER)
+    {
+        error(cmpl, "RHS of expression must evaluate to type Int");
         cmpl.type = OBJECT;
+    }
 }
 
 void AstNodeTypeChecker::visit(LessThan& lt)
@@ -299,7 +329,7 @@ void AstNodeTypeChecker::visit(LessThan& lt)
 
     if (lt.lhs->type != INTEGER || lt.rhs->type != INTEGER)
     {
-        std::cerr << "LHS or RHS of comparison operator not of type INT\n";
+        error(lt, "LHS or RHS of comparison operator not of type Int");
         lt.type = OBJECT;
     }
 }
@@ -318,7 +348,7 @@ void AstNodeTypeChecker::visit(EqualTo& eq)
     {
         if (lhs_type != rhs_type)
         {
-            std::cerr << "Comparison of primitives INT, BOOL, and STRING must be of same type\n";
+            error(eq, "comparison of primitives Int, Bool, and String must be of same type");
             eq.type = OBJECT;
         }
     }
@@ -332,7 +362,7 @@ void AstNodeTypeChecker::visit(LessThanEqualTo& lte)
 
     if (lte.lhs->type != INTEGER || lte.rhs->type != INTEGER)
     {
-        std::cerr << "LHS or RHS of comparison operator not of type INT\n";
+        error(lte, "LHS or RHS of comparison operator not of type Int");
         lte.type = OBJECT;
     }
 }
@@ -345,7 +375,7 @@ void AstNodeTypeChecker::visit(Plus& plus)
 
     if (plus.lhs->type != INTEGER || plus.rhs->type != INTEGER)
     {
-        std::cerr << "Operands of arithmetic expression not of type INT\n";
+        error(plus, "operands of arithmetic expression not of type Int");
         plus.type = OBJECT;
     }
 }
@@ -358,7 +388,7 @@ void AstNodeTypeChecker::visit(Sub& sub)
 
     if (sub.lhs->type != INTEGER || sub.rhs->type != INTEGER)
     {
-        std::cerr << "Operands of arithmetic expression not of type INT\n";
+        error(sub, "operands of arithmetic expression not of type Int");
         sub.type = OBJECT;
     }
 }
@@ -371,7 +401,7 @@ void AstNodeTypeChecker::visit(Mul& mul)
 
     if (mul.lhs->type != INTEGER || mul.rhs->type != INTEGER)
     {
-        std::cerr << "Operands of arithmetic expression not of type INT\n";
+        error(mul, "operands of arithmetic expression not of type Int");
         mul.type = OBJECT;
     }
 }
@@ -384,7 +414,7 @@ void AstNodeTypeChecker::visit(Div& div)
 
     if (div.lhs->type != INTEGER || div.rhs->type != INTEGER)
     {
-        std::cerr << "Operands of arithmetic expression not of type INT\n";
+        error(div, "operands of arithmetic expression not of type Int");
         div.type = OBJECT;
     }
 }
@@ -396,7 +426,7 @@ void AstNodeTypeChecker::visit(Not& nt)
 
     if (nt.expr->type != BOOLEAN)
     {
-        std::cerr << "Expression in not node not of boolean type\n";
+        error(nt, "not expression does not evaluate to Bool");
         nt.type = OBJECT;
     }
 }
@@ -420,7 +450,7 @@ void AstNodeTypeChecker::visit(StaticDispatch& stat)
     
     if (!statsub)
     {
-        std::cerr << obj_type << " is not a subtype of static dispatch type " << stat.type_decl << "\n";
+        error(stat, "dispatch object type not a subtype of static dispatch type");
         stat.type = OBJECT;
     }
 
@@ -437,7 +467,7 @@ void AstNodeTypeChecker::visit(StaticDispatch& stat)
     }
     else
     {
-        std::cerr << "Type mismatch for dispatch to method " << stat.method << "\n";
+        error(stat, "type mismatch in one of the arguments of the dispatch");
         stat.type = OBJECT;
     }
 }
@@ -472,7 +502,7 @@ void AstNodeTypeChecker::visit(DynamicDispatch& dyn)
     }
     else
     {
-        std::cerr << "Type mismatch for dispatch to method " << dyn.method << "\n";
+        error(dyn, "type mismatch in one of the arguments of the dispatch");
         dyn.type = OBJECT;
     }
 }
@@ -488,7 +518,7 @@ void AstNodeTypeChecker::visit(Let& let)
     {
         type_status = is_subtype(let.init->type, let.type_decl);
         if (!type_status)
-            std::cerr << "Let init type mismatch\n";
+            error(let, "initialization of " + let.name.get_val() + " not a subtype of declared type");
     }
 
     env.enter_scope();
@@ -527,7 +557,7 @@ void AstNodeTypeChecker::visit(Object& var)
     if (obj_type)
         var.type = *obj_type;
     else
-        std::cerr << "Object " << var.name << " not in scope.\n";
+        error(var, "variable " + var.name.get_val() + " not in scope");
 }
 
 void AstNodeTypeChecker::visit(NoExpr& ne)

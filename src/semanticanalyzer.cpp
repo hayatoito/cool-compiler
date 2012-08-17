@@ -161,7 +161,7 @@ bool SemanticAnalyzer::type_check(const ProgramPtr& root)
 {
     AstNodeTypeChecker typechecker(inherit_graph);
     root->accept(typechecker);
-    return true;
+    return typechecker.get_err_count() == 0;
 }
 
 ClassPtrMap SemanticAnalyzer::get_inherit_graph() const

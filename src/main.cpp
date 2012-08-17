@@ -3,6 +3,7 @@
 #include "ast.hpp"
 #include "semanticanalyzer.hpp"
 #include "astnodevisitor.hpp"
+#include "utility.hpp"
 
 #include <cstdio>
 #include <iostream>
@@ -42,7 +43,7 @@ int main(int argc, char **argv)
             }
             else
             {
-                std::cerr << argv[i] << ": error: cannot be opened\n";
+                utility::print_error(argv[i], "cannot be opened");
             }
         }
     }
@@ -57,10 +58,15 @@ int main(int argc, char **argv)
     semant.install_basic(ast_root);
     if (!semant.validate_inheritance(ast_root->classes))
     {
-        std:: cerr << "Compilation halted due to inheritance errors.\n";
+        std::cerr << "Compilation halted due to inheritance errors.\n";
         exit(1);
     }
-    semant.type_check(ast_root);
+
+    if (!semant.type_check(ast_root))
+    {
+        std::cerr << "Compilation halted due to type errors.\n";
+        exit(1);
+    }
 
     AstNodeDisplayer print(std::cout, AstNodeDisplayer::DISPLAYNONBASIC);
     ast_root->accept(print);

@@ -8,6 +8,8 @@
 #include "symboltable.hpp"
 #include "y.tab.h"
 
+#define YY_USER_ACTION yylloc.first_line = yylloc.last_line = yylineno; 
+
 static const int MAX_STR_CONST = 1025;
 
 char string_buf[MAX_STR_CONST];  // buffer to store string contstants encountered in source file

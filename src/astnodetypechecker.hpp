@@ -12,9 +12,11 @@ private:
     Symbol curr_class;
     MethodTypeTable mtbl;
     std::map<ClassPtr, ClassPtr> inherit_graph;
+    std::size_t err_count;
 
     bool is_subtype(const Symbol&, const Symbol&);
     Symbol lub(const std::vector<Symbol>&);
+    void error(const AstNode&, const std::string&);
 
 public:
     AstNodeTypeChecker(const std::map<ClassPtr, ClassPtr>&);
@@ -49,6 +51,8 @@ public:
     void visit(Case&);
     void visit(Object&);
     void visit(NoExpr&);
+
+    std::size_t get_err_count() const;
 };
 
 #endif
