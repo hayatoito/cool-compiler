@@ -10,7 +10,7 @@ extern ProgramPtr ast_root;
 using namespace constants;
 
 //Code generation implementation
-AstNodeCodeGenerator::AstNodeCodeGenerator(const std::map<std::string, std::string>& ig, 
+AstNodeCodeGenerator::AstNodeCodeGenerator(const std::map<ClassPtr, ClassPtr>& ig, 
         std::ostream& stream)
     : inherit_graph(ig), os(stream), curr_attr_count(0), while_count(0), if_count(0)
 {
@@ -301,8 +301,8 @@ void AstNodeCodeGenerator::code_constants()
 {
     //Add all class names to the string table so string constants 
     //will be created for them
-    for (auto it = begin(inherit_graph); it != end(inherit_graph); ++it)
-        stringtable().add(it->first);
+    for (auto& p : inherit_graph)
+        stringtable().add(p.first->name.get_val());
 
     //emit assembly for string constants
     auto str_consts = stringtable().get_elems();
@@ -352,6 +352,7 @@ void AstNodeCodeGenerator::code_constants()
     emit_word(1);
 }
 
+/*
 void AstNodeCodeGenerator::code_class_name_table()
 {
     emit_label("class_name_table");
@@ -374,108 +375,67 @@ void AstNodeCodeGenerator::code_prototype_table()
         emit_word(it->first + "_init");
     }
 }
+*/
 
-void AstNodeCodeGenerator::code_dispatch_table(const std::string& class_node)
+void AstNodeCodeGenerator::code_dispatch_table(const ClassPtr& class_node)
 {
-    if (class_node == "NoClass")
+    if (class_node->name == NOCLASS)
         return;
 
     code_dispatch_table(inherit_graph[class_node]);
 
-    //ugly stuff here, have to fix this
-    //two issues: 1. inheritance graph only contains class names as strings
-    //            2. a dynamic cast has to be done to access method or attribute names
-    for (auto it = begin(ast_root->classes); it != end(ast_root->classes); ++it)
-    {
-        if ((*it)->name == class_node)
-        {
-            for (auto fit = begin((*it)->features); fit != end((*it)->features); ++fit)
-            {
-                if ((*fit)->get_type() == Feature::METHOD)
-                {
-                    MethodPtr mptr(std::dynamic_pointer_cast<Method>(*fit));
-                    emit_word(class_node + "." + mptr->name.get_val());
-                }
-            }
-        }
-    }
+    for (auto& method : class_node->methods)
+        emit_word(class_node->name.get_val() + "." + method->name.get_val());
 }
 
-std::map<std::string, int> AstNodeCodeGenerator::count_attrs()
-{
-    std::map<std::string, int> attr_count;
-
-    for (auto it = begin(ast_root->classes); it != end(ast_root->classes); ++it)
-    {
-        attr_count[(*it)->name.get_val()] = 0;
-        for (auto fit = begin((*it)->features); fit != end((*it)->features); ++fit)
-        {
-            if ((*fit)->get_type() == Feature::ATTRIBUTE)
-                attr_count[(*it)->name.get_val()]++;
-        }
-    }
-
-    return attr_count;
-}
-
-int AstNodeCodeGenerator::calc_obj_size(std::map<std::string, int>& attr_count, const std::string& class_name)
+int AstNodeCodeGenerator::calc_obj_size(const ClassPtr& class_node)
 {
     int total = 0;
-    std::string curr_class = class_name;
+    ClassPtr curr_class = class_node;
 
-    while (curr_class != "NoClass")
+    while (curr_class->name != NOCLASS)
     {
-        total += attr_count[curr_class];
+        total += curr_class->attributes.size();
         curr_class = inherit_graph[curr_class];
     }
 
     return total;
 }
 
-void AstNodeCodeGenerator::emit_obj_attribs(const std::string& class_name)
+void AstNodeCodeGenerator::emit_obj_attribs(const ClassPtr& class_node)
 {
-    if (class_name == "NoClass")
+    if (class_node->name == NOCLASS)
         return;
 
-    emit_obj_attribs(inherit_graph[class_name]);
+    emit_obj_attribs(inherit_graph[class_node]);
 
-    for (auto it = begin(ast_root->classes); it != end(ast_root->classes); ++it)
-    {
-        if ((*it)->name == class_name)
-        {
-            for (auto fit = begin((*it)->features); fit != end((*it)->features); ++fit)
-            {
-                if ((*fit)->get_type() == Feature::ATTRIBUTE)
-                {
-                    AttributePtr aptr(std::dynamic_pointer_cast<Attribute>(*fit));
-                    emit_word(0);
-                }
-            }
-        }
-    }
+    for (auto& attrib : class_node->attributes)
+        emit_word(0);
 }
 
 void AstNodeCodeGenerator::code_prototype_objects()
 {
     int classtag = 1;
-    std::map<std::string, int> attr_count = count_attrs();
 
-    for (auto it = begin(inherit_graph); it != end(inherit_graph); ++it)
+    for (auto& p : inherit_graph)
     {
-        emit_label(it->first + "_prototype");
+        if (p.first->name == NOCLASS)
+            continue;
 
-        if (it->first == "String")
+        emit_label(p.first->name.get_val() + "_prototype");
+
+        if (p.first->name == STRING)
             emit_word(STR_CLASS_TAG);
-        else if (it->first == "Int")
+        else if (p.first->name == INTEGER)
             emit_word(INT_CLASS_TAG);
-        else if (it->first == "Bool")
+        else if (p.first->name == BOOLEAN)
             emit_word(BOOL_CLASS_TAG);
         else
             emit_word(classtag++);
 
-        emit_word(OBJECT_HEADER_SIZE + calc_obj_size(attr_count, it->first));
-        emit_word(it->first + "_disptable");
-        emit_obj_attribs(it->first);
+        emit_word(OBJECT_HEADER_SIZE + calc_obj_size(p.first));
+        emit_word(p.first->name.get_val() + "_disptable");
+        emit_obj_attribs(p.first);
     }
 }
 
@@ -483,7 +443,7 @@ void AstNodeCodeGenerator::emit_initial_data()
 {
     os << ".data\n" 
        << "\t.align\t2\n"
-       << "\t.globl\tclass_name_table\n"
+       // << "\t.globl\tclass_name_table\n"
        << "\t.globl\tMain_prototype\n"
        << "\t.globl\tMain_init\n"
        << "\t.globl\tMain.main\n"
@@ -505,13 +465,16 @@ void AstNodeCodeGenerator::visit(Program& prog)
 {
     emit_initial_data();
     code_constants();
-    code_class_name_table();
-    code_prototype_table();
+    //code_class_name_table();
+    //code_prototype_table();
     
-    for (auto it = begin(inherit_graph); it != end(inherit_graph); ++it)
+    for (auto& p : inherit_graph)
     {
-        emit_label(it->first + "_disptable");
-        code_dispatch_table(it->first);
+        if (p.first->name != NOCLASS)
+        {
+            emit_label(p.first->name.get_val() + "_disptable");
+            code_dispatch_table(p.first);
+        }
     }
 
     code_prototype_objects();
@@ -537,9 +500,8 @@ void AstNodeCodeGenerator::visit(Class& cs)
     if (cs.name != OBJECT) 
         emit_jal(cs.parent.get_val() + "_init");
 
-    for (auto& feature : cs.features)
-        if (feature->get_type() == Feature::ATTRIBUTE)
-            feature->accept(*this);
+    for (auto& attrib : cs.attributes)
+        attrib->accept(*this);
 
     emit_move("a0", "s0");
     emit_lw("fp", 12, "sp");
@@ -550,9 +512,8 @@ void AstNodeCodeGenerator::visit(Class& cs)
 
     curr_attr_count = 0;
 
-    for (auto& feature : cs.features)
-        if (feature->get_type() == Feature::METHOD)
-            feature->accept(*this);
+    for (auto& method : cs.methods)
+        method->accept(*this);
 
     var_env.exit_scope();
 }
@@ -565,11 +526,6 @@ void AstNodeCodeGenerator::visit(Attribute& attr)
 
     if (attr.type_decl != PRIM_SLOT)
         emit_sw("a0", 4 * (curr_attr_count + 2), "s0");
-}
-
-void AstNodeCodeGenerator::visit(Feature& feature)
-{
-    feature.accept(*this);
 }
 
 void AstNodeCodeGenerator::visit(Formal&) 

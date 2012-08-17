@@ -23,7 +23,7 @@ private:
     //stack frame size in # of 32-bit words
     static const int AR_BASE_SIZE = 3;
 
-    std::map<std::string, std::string> inherit_graph; //inheritance graph created from semantic analysis stage
+    std::map<ClassPtr, ClassPtr> inherit_graph; //inheritance graph created from semantic analysis stage
     std::ostream& os; //code generation output
 
     std::size_t curr_attr_count; //used to keep track of current attribute count for a specific class when 
@@ -119,21 +119,19 @@ private:
 
     //helper functions for generating code for object layout, etc
     void code_constants();
-    void code_class_name_table();
-    void code_prototype_table();
-    void code_dispatch_table(const std::string&);
+    //void code_class_name_table();
+    //void code_prototype_table();
+    void code_dispatch_table(const ClassPtr&);
     void code_prototype_objects();
-    std::map<std::string, int> count_attrs();
-    int calc_obj_size(std::map<std::string, int>&, const std::string&);
-    void emit_obj_attribs(const std::string&);
+    int calc_obj_size(const ClassPtr&);
+    void emit_obj_attribs(const ClassPtr&);
 
 public:
-    AstNodeCodeGenerator(const std::map<std::string, std::string>&, 
+    AstNodeCodeGenerator(const std::map<ClassPtr, ClassPtr>&, 
             std::ostream&);
 
     void visit(Program&);
     void visit(Class&);
-    void visit(Feature&);
     void visit(Attribute&);
     void visit(Formal&);
     void visit(Method&);

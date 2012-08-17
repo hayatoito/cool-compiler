@@ -6,8 +6,8 @@ FLEX=flex
 BISON=bison
 CC=g++
 
-SRCS=y.tab.c ast.cpp tokentable.cpp symboltable.cpp main.cpp lex.yy.c semanticanalyzer.cpp astnodevisitor.cpp constants.cpp astnodetypechecker.cpp utility.cpp
-OBJS=y.tab.o ast.o tokentable.o symboltable.o main.o lex.yy.o semanticanalyzer.o astnodevisitor.o constants.o astnodetypechecker.o utility.o
+SRCS=y.tab.c ast.cpp tokentable.cpp symboltable.cpp main.cpp lex.yy.c semanticanalyzer.cpp astnodevisitor.cpp constants.cpp astnodetypechecker.cpp utility.cpp astnodecodegenerator.cpp
+OBJS=y.tab.o ast.o tokentable.o symboltable.o main.o lex.yy.o semanticanalyzer.o astnodevisitor.o constants.o astnodetypechecker.o utility.o astnodecodegenerator.o
 
 cooc : ${OBJS} 
 	${CC} ${CFLAGS} -o $@ ${OBJS}

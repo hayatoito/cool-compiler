@@ -3,6 +3,7 @@
 #include "ast.hpp"
 #include "semanticanalyzer.hpp"
 #include "astnodevisitor.hpp"
+#include "astnodecodegenerator.hpp"
 #include "utility.hpp"
 
 #include <cstdio>
@@ -71,9 +72,9 @@ int main(int argc, char **argv)
     AstNodeDisplayer print(std::cout, AstNodeDisplayer::DISPLAYNONBASIC);
     ast_root->accept(print);
 
-    //std::ofstream out("output.s");
-    //AstNodeCodeGenerator codegen(semant.get_inherit_graph(), out);
-    //ast_root->accept(codegen);
+    std::ofstream out("output.s");
+    AstNodeCodeGenerator codegen(semant.get_inherit_graph(), out);
+    ast_root->accept(codegen);
 
     return 0;
 }
