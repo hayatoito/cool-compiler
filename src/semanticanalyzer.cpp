@@ -59,14 +59,6 @@ void SemanticAnalyzer::install_basic(ProgramPtr& ast_root)
     };
 
     ast_root->classes.push_back(std::make_shared<Class>(STRING, OBJECT, string_attributes, string_methods));
-
-    //Add basic classes to string table so a string constant (codegen)
-    //will be created for them
-    stringtable().add("Object");
-    stringtable().add("Bool");
-    stringtable().add("IO");
-    stringtable().add("Int");
-    stringtable().add("String");
 }
 
 bool SemanticAnalyzer::invalid_parent(const Symbol& parent)
@@ -76,7 +68,7 @@ bool SemanticAnalyzer::invalid_parent(const Symbol& parent)
 
 bool SemanticAnalyzer::cyclic_check(ClassPtrMap& graph, const ClassPtr& node)
 {
-    if (node->name == OBJECT || node->name == IO)
+    if (node->name == OBJECT || node->name == IO || node->name == NOCLASS)
         return true;
 
     if (visited.count(node) == 1 && processed.count(node) == 0)
@@ -128,7 +120,9 @@ bool SemanticAnalyzer::validate_inheritance(const Classes& classes)
             {
                 // The Object class' parent is not included in the classes list so we explicitly add a parent NoClass
                 // to signal that the end of the class hierarchy is reached.
-                inherit_graph[c] = std::make_shared<Class>(NOCLASS, NOCLASS, Attributes(), Methods());
+                ClassPtr noclass = std::make_shared<Class>(NOCLASS, NOCLASS, Attributes(), Methods());
+                inherit_graph[c] = noclass;
+                inherit_graph[noclass] = noclass;
             }
             else
             {

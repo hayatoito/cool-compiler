@@ -85,7 +85,7 @@ void AstNodeTypeChecker::visit(Program& prog)
         Symbol cl = cs->name;
         ClassPtr curr = cs;
 
-        while (curr->parent != NOCLASS)
+        while (curr->name != NOCLASS)
         {
             for (auto& method : curr->methods)
             {
@@ -148,7 +148,7 @@ void AstNodeTypeChecker::visit(Class& cs)
     {
         ClassPtr cptr = cs_ptr->first;
 
-        while (cptr->name != OBJECT)
+        while (cptr->name != NOCLASS)
         {
             for (auto& attrib : cptr->attributes)
             {
