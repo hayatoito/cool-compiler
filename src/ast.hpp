@@ -11,8 +11,13 @@ class AstNodeVisitor;
 class AstNode
 {
 public:
+    std::size_t line_no;
+    std::string filename;
+
     AstNode() {}
+    void setloc(std::size_t, const std::string&);
 };
+typedef std::shared_ptr<AstNode> AstNodePtr;
 
 class Expression : public AstNode
 {
@@ -85,11 +90,9 @@ class Class : public AstNode
 public:
     Symbol name;
     Symbol parent;
-    Symbol filename;
     Features features;
 
-    Class(const Symbol&, const Symbol&, const Symbol&, 
-           const Features&); 
+    Class(const Symbol&, const Symbol&, const Features&); 
     void accept(AstNodeVisitor&);
 };
 typedef std::shared_ptr<Class> ClassPtr;

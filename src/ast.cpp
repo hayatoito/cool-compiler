@@ -9,6 +9,12 @@
 
 using namespace constants;
 
+void AstNode::setloc(std::size_t line, const std::string& file)
+{
+    line_no = line;
+    filename = file;
+}
+
 Program::Program(const Classes& c)
     : classes(c)
 {
@@ -20,9 +26,8 @@ void Program::accept(AstNodeVisitor& visitor)
     visitor.visit(*this);
 }
 
-Class::Class(const Symbol& cname, const Symbol& super, const Symbol& file, 
-        const Features& f)
-    : name(cname), parent(super), filename(file), features(f)
+Class::Class(const Symbol& cname, const Symbol& super, const Features& f)
+    : name(cname), parent(super), features(f)
 {
 
 }
