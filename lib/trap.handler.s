@@ -185,6 +185,17 @@ IO.out_string:
     syscall
     lw $fp, 16($sp)
     lw $s0, 12($sp)
+    addiu $sp $sp 16
+    jr $ra
+
+    .globl IO.out_int
+IO.out_int:
+    lw $a0, 4($fp)
+    li $v0, 1
+    syscall
+    lw $fp, 16($sp)
+    lw $s0, 12($sp)
+    addiu $sp $sp 16
     jr $ra
 
     .globl less
