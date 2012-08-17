@@ -16,7 +16,7 @@ void SemanticAnalyzer::install_basic(ProgramPtr& ast_root)
         std::make_shared<Method>(COPY, SELF_TYPE, Formals(), std::make_shared<NoExpr>())
     };
 
-    ast_root->classes.push_back(std::make_shared<Class>(OBJECT, NOCLASS, idtable().add("filename"), object_features));
+    ast_root->classes.push_back(std::make_shared<Class>(OBJECT, NOCLASS, object_features));
 
     Formals io_formal1 = { std::make_shared<Formal>(ARG, STRING) };
     Formals io_formal2 = { std::make_shared<Formal>(ARG, INTEGER) };
@@ -27,19 +27,19 @@ void SemanticAnalyzer::install_basic(ProgramPtr& ast_root)
         std::make_shared<Method>(IN_INT, INTEGER, Formals(), std::make_shared<NoExpr>())
     };
 
-    ast_root->classes.push_back(std::make_shared<Class>(IO, OBJECT, idtable().add("filename"), io_features));
+    ast_root->classes.push_back(std::make_shared<Class>(IO, OBJECT, io_features));
 
     Features int_features = {
         std::make_shared<Attribute>(VAL, PRIM_SLOT, std::make_shared<NoExpr>())
     };
 
-    ast_root->classes.push_back(std::make_shared<Class>(INTEGER, OBJECT, idtable().add("filename"), int_features));
+    ast_root->classes.push_back(std::make_shared<Class>(INTEGER, OBJECT, int_features));
 
     Features bool_features = {
         std::make_shared<Attribute>(VAL, PRIM_SLOT, std::make_shared<NoExpr>())
     };
 
-    ast_root->classes.push_back(std::make_shared<Class>(BOOLEAN, OBJECT, idtable().add("filename"), bool_features));
+    ast_root->classes.push_back(std::make_shared<Class>(BOOLEAN, OBJECT, bool_features));
 
     Formals string_formal1 = { std::make_shared<Formal>(ARG, STRING) };
     Formals string_formal2 = { 
@@ -55,7 +55,7 @@ void SemanticAnalyzer::install_basic(ProgramPtr& ast_root)
         std::make_shared<Method>(SUBSTR, STRING, string_formal2, std::make_shared<NoExpr>())
     };
 
-    ast_root->classes.push_back(std::make_shared<Class>(STRING, OBJECT, idtable().add("filename"), string_features));
+    ast_root->classes.push_back(std::make_shared<Class>(STRING, OBJECT, string_features));
 
     //Add basic classes to string table so a string constant (codegen)
     //will be created for them
@@ -78,7 +78,7 @@ bool SemanticAnalyzer::cyclic_check(ClassPtrMap& graph, const ClassPtr& node)
 
     if (visited.count(node) == 1 && processed.count(node) == 0)
     {
-        std::cerr << "Cyclic dependency found in class " << node->name << "\n";
+        utility::print_error(node, "cyclic dependency found in class " + node->name.get_val());
         return false;
     }
 
@@ -100,16 +100,16 @@ bool SemanticAnalyzer::validate_inheritance(const Classes& classes)
 
         if (invalid_parent(c->parent))
         {
-            std::cerr << "error:Cannot inherit from any of the basic classes - String, Bool, Int\n";
+            utility::print_error(c, "cannot inherit from basic class " + c->parent.get_val());
             status = false;
         }
 
         if (inherit_graph.count(c) > 0)
         {
             if (utility::is_basic_class(c->name))
-                std::cerr << "error:Redefinition of any basic class - IO, String, Bool, Int not allowed.\n";
+                utility::print_error(c, "redefinition of basic class " + c->name.get_val() + " not allowed");
             else
-                std::cerr << "error:Class " << c->name << " has multiple definitions.\n";
+                utility::print_error(c, "class " + c->name.get_val() + " has multiple definitions");
 
             status = false;
         }
@@ -125,11 +125,11 @@ bool SemanticAnalyzer::validate_inheritance(const Classes& classes)
             {
                 // The Object class' parent is not included in the classes list so we explicitly add a parent NoClass
                 // to signal that the end of the class hierarchy is reached.
-                inherit_graph[c] = std::make_shared<Class>(NOCLASS, NOCLASS, idtable().add("filename"), Features());
+                inherit_graph[c] = std::make_shared<Class>(NOCLASS, NOCLASS, Features());
             }
             else
             {
-                std::cerr << "error:" << c->name << " inherits from a class that doesn't exist.\n";
+                utility::print_error(c, c->name.get_val() + " inherits from a class that doesn't exist");
                 status = false;
             }
         }
