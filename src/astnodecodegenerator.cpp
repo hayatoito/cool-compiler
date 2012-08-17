@@ -628,29 +628,29 @@ void AstNodeCodeGenerator::visit(If& ifstmt)
     ifstmt.predicate->accept(*this);
     
     emit_la("t1", "bool_const1");
-    emit_beq("a0", "t1", "if-true" + ifcnt);
+    emit_beq("a0", "t1", "iftrue" + ifcnt);
     ifstmt.iffalse->accept(*this);
-    emit_b("if-end" + ifcnt);
+    emit_b("ifend" + ifcnt);
 
-    emit_label("if-true" + ifcnt);
+    emit_label("iftrue" + ifcnt);
     ifstmt.iftrue->accept(*this);
 
-    emit_label("if-end" + ifcnt);
+    emit_label("ifend" + ifcnt);
 }
 
 void AstNodeCodeGenerator::visit(While& whilestmt) 
 { 
     ++while_count;
 
-    emit_label("while-loop" + std::to_string(while_count));
+    emit_label("whileloop" + std::to_string(while_count));
     whilestmt.predicate->accept(*this);
     emit_la("t1", "bool_const1");
-    emit_bne("a0", "t1", "while-end" + std::to_string(while_count));
+    emit_bne("a0", "t1", "whileend" + std::to_string(while_count));
 
     whilestmt.body->accept(*this);
 
-    emit_b("while-loop" + std::to_string(while_count));
-    emit_label("while-end" + std::to_string(while_count));
+    emit_b("whileloop" + std::to_string(while_count));
+    emit_label("whileend" + std::to_string(while_count));
     emit_li("a0", 0);
 }
 
