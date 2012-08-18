@@ -473,6 +473,13 @@ void AstNodeTypeChecker::visit(DynamicDispatch& dyn)
     if (obj_type == curr_class)
         obj_type = curr_class;
 
+    if (mtbl[obj_type].find(dyn.method) == end(mtbl[obj_type]))
+    {
+        error(dyn, "method " + dyn.method.get_val() + " is not defined in this class");
+        dyn.type = OBJECT;
+        return;
+    }
+
     // check if each dispatch argument's type is a subtype of declared type for method
     bool result = std::equal(begin(disptypes), end(disptypes), begin(mtbl[obj_type][dyn.method]),
             [&](const Symbol& t1, const Symbol& t2) {
