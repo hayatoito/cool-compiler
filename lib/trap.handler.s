@@ -87,6 +87,7 @@ OBJ_HDR_SIZE=4
 OBJ_HDR_DISP=8
 OBJ_HDR_COUNT=3
 OBJ_ATTRIB_START=12
+INT_CONST_OFFSET=12
 STR_CONST_OFFSET=16
 
 # variable that holds address of start of heap (dynamically allocated portion)
@@ -111,6 +112,9 @@ __start:
     jal Object.copy
     move $s0, $a0
     jal Main_init
+    addiu $sp, $sp, -12
+    sw $fp, 12($sp)
+    sw $s0, 8($sp)
 	jal Main.main
 	li $v0 10
 	syscall		# syscall 10 (exit)
@@ -191,6 +195,7 @@ IO.out_string:
     .globl IO.out_int
 IO.out_int:
     lw $a0, 4($fp)
+    lw $a0, INT_CONST_OFFSET($a0)
     li $v0, 1
     syscall
     lw $fp, 16($sp)
