@@ -4,6 +4,7 @@
 
 #include <cmath>
 #include <sstream>
+#include <stack>
 
 extern ProgramPtr ast_root;
 
@@ -377,18 +378,42 @@ void AstNodeCodeGenerator::code_prototype_table()
 }
 */
 
-void AstNodeCodeGenerator::code_dispatch_table(const ClassPtr& actual_class, const ClassPtr& class_node,
-        std::size_t& disp_offset)
+void AstNodeCodeGenerator::code_dispatch_table(const ClassPtr& class_node)
 {
-    if (class_node->name == NOCLASS)
-        return;
+    std::map<Symbol, Symbol> mnames;
+    std::stack<ClassPtr> recur;
 
-    code_dispatch_table(actual_class, inherit_graph[class_node], disp_offset);
-
-    for (auto& method : class_node->methods)
+    ClassPtr cptr = class_node;
+    while (cptr->name != NOCLASS)
     {
-        method_tbl[actual_class->name][method->name] = disp_offset++;
-        emit_word(class_node->name.get_val() + "." + method->name.get_val());
+        recur.push(cptr);
+        
+        for (auto& method : cptr->methods)
+        {
+            if (mnames.find(method->name) == end(mnames))
+                mnames[method->name] = cptr->name;
+        }
+
+        cptr = inherit_graph[cptr];
+    }
+
+    std::size_t dispoffset = 0;
+
+    while (!recur.empty())
+    {
+        ClassPtr head = recur.top();
+        
+        for (auto& method : head->methods)
+        {
+            if (mnames.find(method->name) != end(mnames))
+            {
+                method_tbl[class_node->name][method->name] = dispoffset++;
+                emit_word(mnames[method->name].get_val() + "." + method->name.get_val());
+                mnames.erase(method->name);
+            }
+        }
+
+        recur.pop(); 
     }
 }
 
@@ -474,11 +499,10 @@ void AstNodeCodeGenerator::visit(Program& prog)
     
     for (auto& p : inherit_graph)
     {
-        std::size_t disp_offset = 0;
         if (p.first->name != NOCLASS)
         {
             emit_label(p.first->name.get_val() + "_disptable");
-            code_dispatch_table(p.first, p.first, disp_offset);
+            code_dispatch_table(p.first);
         }
     }
 
@@ -546,6 +570,8 @@ void AstNodeCodeGenerator::visit(Method& method)
 
     var_env.enter_scope();
     emit_label(curr_class.get_val() + "." + method.name.get_val());
+
+    emit_sw("ra", 4, "sp");
 
     int curr_offset = 1;
 
@@ -782,7 +808,6 @@ void AstNodeCodeGenerator::visit(DynamicDispatch& ddisp)
         formal_offset += 4;
     }
 
-    emit_sw("ra", 4, "sp");
     emit_addiu("fp", "sp", 4);
     
     ddisp.obj->accept(*this);

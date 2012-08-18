@@ -126,7 +126,7 @@ private:
     void code_constants();
     //void code_class_name_table();
     //void code_prototype_table();
-    void code_dispatch_table(const ClassPtr&, const ClassPtr&, std::size_t&);
+    void code_dispatch_table(const ClassPtr&);
     void code_prototype_objects();
     int calc_obj_size(const ClassPtr&);
     void emit_obj_attribs(const ClassPtr&);
