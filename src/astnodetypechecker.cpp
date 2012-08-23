@@ -28,13 +28,19 @@ bool AstNodeTypeChecker::is_subtype(const Symbol& child, const Symbol& parent)
 {
     if (child == NOTYPE || child == parent) return true;
     if (child == OBJECT) return false;
+
+    // SELF_TYPE hasn't been implemented yet so this will turn off type check
+    // for methods that return SELF_TYPE
     if (child == SELF_TYPE || parent == SELF_TYPE) return true;
 
+    // find @child's pointer to class
     auto child_cptr = std::find_if(begin(inherit_graph), end(inherit_graph),
             [&](const std::pair<ClassPtr, ClassPtr>& p) {
                 return p.first->name == child;
             }); 
 
+    // this simply checks if parent is encountered anywhere in 
+    // child's inheritance tree
     ClassPtr curr = child_cptr->first;
     while(curr->name != OBJECT) 
     {

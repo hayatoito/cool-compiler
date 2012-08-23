@@ -8,6 +8,9 @@
 #include "symboltable.hpp"
 #include "y.tab.h"
 
+// yylloc is defined by bison. this macro allows the execution of this line
+// (assignment of current line being processed) each time a whole token is read
+// this allows for line number to be stored in each ast node (done in bison)
 #define YY_USER_ACTION yylloc.first_line = yylloc.last_line = yylineno; 
 
 static const int MAX_STR_CONST = 1025;

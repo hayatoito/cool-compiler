@@ -34,6 +34,8 @@ void AstNodeDisplayer::visit(Program& prog)
 
 void AstNodeDisplayer::visit(Class& cs)
 {
+    // the * 2 is just an arbitrary multiplier to make
+    // the indentation look nicer
     os << std::setw(depth++ * 2) << "";
     os << "_class (" << cs.name << ")\n";  
     

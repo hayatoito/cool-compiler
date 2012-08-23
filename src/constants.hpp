@@ -3,6 +3,7 @@
 
 #include "symboltable.hpp"
 
+// Symbol constants to be used by different stages of the compiler
 namespace constants
 {
     extern const Symbol OBJECT;

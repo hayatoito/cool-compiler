@@ -10,6 +10,7 @@
 #include <iostream>
 #include <fstream>
 
+// all defined by lexer
 extern int yyparse(); 
 extern int yynerrs; 
 extern FILE* yyin;

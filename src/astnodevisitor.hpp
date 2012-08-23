@@ -5,9 +5,9 @@
 #include "tokentable.hpp"
 #include <iostream>
 
-//Forward declarations since there are 
-//circular dependencies of the ast node classes
-//and the visitors
+// Forward declarations since there are 
+// circular dependencies of the ast node classes
+// and the visitors
 class Program;
 class Class;
 class Attribute;
@@ -39,12 +39,7 @@ class Case;
 class Object;
 class NoExpr;
 
-//Abstract base class for all the AST node visitors
-//
-//There are three kinds of visits in order to provide more flexibility
-//in the traversal order. For example, a visitor that dumps the 
-//AST node would need a pre-order traversal while a code generating
-//visitor would need to do a post-order traversal of the AST
+// Abstract base class for all the AST node visitors
 class AstNodeVisitor 
 {
 public:

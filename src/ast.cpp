@@ -1,13 +1,4 @@
 #include "ast.hpp"
-#include "tokentable.hpp"
-#include "constants.hpp"
-
-#include <iomanip>
-#include <iostream>
-#include <algorithm>
-#include <functional>
-
-using namespace constants;
 
 void AstNode::setloc(std::size_t line, const std::string& file)
 {

@@ -6,11 +6,11 @@
 #include <sstream>
 #include <stack>
 
+// defined in main.cpp
 extern ProgramPtr ast_root;
 
 using namespace constants;
 
-//Code generation implementation
 AstNodeCodeGenerator::AstNodeCodeGenerator(const std::map<ClassPtr, ClassPtr>& ig, 
         std::ostream& stream)
     : inherit_graph(ig), os(stream), curr_attr_count(0), while_count(0), if_count(0)
@@ -290,32 +290,33 @@ void AstNodeCodeGenerator::emit_label(const std::string& label)
 
 void AstNodeCodeGenerator::emit_push(int num_words)
 {
-    emit_addiu("sp", "sp", 4 * -num_words);
+    emit_addiu("sp", "sp", WORD_SIZE * -num_words);
 }
 
 void AstNodeCodeGenerator::emit_pop(int num_bytes)
 {
-    emit_addiu("sp", "sp", 4 * num_bytes);
+    emit_addiu("sp", "sp", WORD_SIZE * num_bytes);
 }
 
 void AstNodeCodeGenerator::code_constants() 
 {
-    //Add all class names to the string table so string constants 
-    //will be created for them
+    // Add all class names to the string table so string constants 
+    // will be created for them (for class name table code gen)
     for (auto& p : inherit_graph)
         stringtable().add(p.first->name.get_val());
 
-    //emit assembly for string constants
     auto str_consts = stringtable().get_elems();
 
-    stringtable().add(""); //add empty string to string const table as this is the
-                           //default value of a newly allocated string object
+    stringtable().add(""); // add empty string to string const table as this is the
+                           // default value of a newly allocated string object
 
     for (auto it = begin(str_consts); it != end(str_consts); ++it)
     {
         os << "str_const";
         emit_label(std::to_string(stringtable().get_idx(it->first)).c_str());
         emit_word(STR_CLASS_TAG);
+
+        // total size of string constant is 4 + number of words required to store the characters
         emit_word(STR_CONST_BASE + ceil(it->first.size() / 4.0));
         emit_word("String_disptable");
         emit_word(it->first.size());
@@ -323,7 +324,6 @@ void AstNodeCodeGenerator::code_constants()
         emit_align(2); // align to word boundary (2^2)
     }
 
-    //emit assembly for int constants
     auto int_consts = inttable().get_elems();
 
     for (auto it = begin(int_consts); it != end(int_consts); ++it)
@@ -339,12 +339,14 @@ void AstNodeCodeGenerator::code_constants()
         emit_word(repr);
     }
 
-    //emit assembly for bool constants
+    // code gen for boolean constants true and false
+    // a boolean is internally represented as an object
+    // with one integer attribute (0 for false and 1 for true)
     emit_label("bool_const0"); // for false
     emit_word(BOOL_CLASS_TAG);
     emit_word(BOOL_CONST_SIZE);
     emit_word("Bool_disptable");
-    emit_word(0);
+    emit_word(0); 
  
     emit_label("bool_const1"); // for true
     emit_word(BOOL_CLASS_TAG);
@@ -380,10 +382,16 @@ void AstNodeCodeGenerator::code_prototype_table()
 
 void AstNodeCodeGenerator::code_dispatch_table(const ClassPtr& class_node)
 {
-    std::map<Symbol, Symbol> mnames;
-    std::stack<ClassPtr> recur;
+    std::map<Symbol, Symbol> mnames; // map of all method names
+    std::stack<ClassPtr> recur; // the methods in the dispatch table must be ordered
+                                // starting from the top of the hierarchy down to the class
+                                // class_node is pointing to
 
     ClassPtr cptr = class_node;
+
+    // go up the inheritance tree and for each class, push it to the stack (so class Object
+    // will be on the top of the stack after this loop) and add all the method names in mnames.
+    // this is used to check later if a method was overriden
     while (cptr->name != NOCLASS)
     {
         recur.push(cptr);
@@ -399,10 +407,15 @@ void AstNodeCodeGenerator::code_dispatch_table(const ClassPtr& class_node)
 
     std::size_t dispoffset = 0;
 
+    // go through the stack (goes down the inheritance tree, starting from Object)
     while (!recur.empty())
     {
         ClassPtr head = recur.top();
         
+        // for each method in the current class, if the method is still in the mnames
+        // table (not overriden), add it to the method table with the offset then remove
+        // the method name from mnames so there won't be any duplication if a method
+        // is overriden by a derived class
         for (auto& method : head->methods)
         {
             if (mnames.find(method->name) != end(mnames))
@@ -516,16 +529,22 @@ void AstNodeCodeGenerator::visit(Program& prog)
 
 void AstNodeCodeGenerator::visit(Class& cs)
 {
+    // as each class node is traversed, its _init method (akin to constructor)
+    // is also generated
     var_env.enter_scope();
     curr_class = cs.name;
     emit_label(cs.name.get_val() + "_init");
     emit_push(AR_BASE_SIZE);
+
+    // standard registers that are saved to the stack
     emit_sw("fp", 12, "sp");
     emit_sw("s0", 8, "sp");
     emit_sw("ra", 4, "sp");
     emit_addiu("fp", "sp", 4);
     emit_move("s0", "a0");
 
+    // if the class is anything other than object, call the 
+    // base class init method
     if (cs.name != OBJECT) 
         emit_jal(cs.parent.get_val() + "_init");
 
@@ -554,8 +573,12 @@ void AstNodeCodeGenerator::visit(Attribute& attr)
     ++curr_attr_count;
     attr_tbl[curr_class][attr.name] = curr_attr_count;
 
+    // PRIM_SLOT refers to an attribute of a primitive type (eg. Bool, String, Int)
+    // the current attribute counter is incremented by 2 since the starting offset
+    // for an attribute in the object layout is offset 3 (offstet 0-2 being the headers)
+    // and then multiplied by 4 since there are 4 bytes in a word
     if (attr.type_decl != PRIM_SLOT)
-        emit_sw("a0", 4 * (curr_attr_count + 2), "s0");
+        emit_sw("a0", WORD_SIZE * (curr_attr_count + 2), "s0");
 }
 
 void AstNodeCodeGenerator::visit(Formal&) 
@@ -580,9 +603,10 @@ void AstNodeCodeGenerator::visit(Method& method)
 
     method.body->accept(*this);
 
+    // refer to stack frame layout in header file
     std::size_t ar_size = AR_BASE_SIZE + method.params.size();
-    emit_lw("fp", ar_size * 4, "sp");
-    emit_lw("s0", ar_size * 4 - 4, "sp");
+    emit_lw("fp", ar_size * WORD_SIZE, "sp");
+    emit_lw("s0", ar_size * WORD_SIZE - WORD_SIZE, "sp");
     emit_lw("ra", 4, "sp");
     emit_pop(AR_BASE_SIZE + method.params.size());
     emit_jr("ra");
@@ -631,13 +655,12 @@ void AstNodeCodeGenerator::visit(Assign& assign)
     assign.rhs->accept(*this);
     boost::optional<int> offset(var_env.lookup(assign.name));
 
-    //result of evaluating rhs of assignment
-    //is expected to be in register $a0
-    //also note that offset is not checked for null
-    //because the semantic analyzer should've caught
-    //any variable misuse by this point
-    if (offset)
-        emit_sw("a0", *offset, "fp");
+    // result of evaluating rhs of assignment
+    // is expected to be in register $a0
+    // also note that offset is not checked for null
+    // because the semantic analyzer should've caught
+    // any variable misuse by this point
+    emit_sw("a0", *offset, "fp");
 }
 
 void AstNodeCodeGenerator::visit(Block& block) 
@@ -797,22 +820,22 @@ void AstNodeCodeGenerator::visit(DynamicDispatch& ddisp)
     std::size_t ar_size = AR_BASE_SIZE + ddisp.actual.size();
 
     emit_push(ar_size);
-    emit_sw("fp", ar_size * 4, "sp");
-    emit_sw("s0", ar_size * 4 - 4, "sp");
+    emit_sw("fp", ar_size * WORD_SIZE, "sp");
+    emit_sw("s0", ar_size * WORD_SIZE - WORD_SIZE, "sp");
 
     std::size_t formal_offset = 8;
     for (auto& e : ddisp.actual)
     { 
         e->accept(*this); 
         emit_sw("a0", formal_offset, "sp");
-        formal_offset += 4;
+        formal_offset += WORD_SIZE;
     }
 
     emit_addiu("fp", "sp", 4);
     
     ddisp.obj->accept(*this);
     emit_lw("t1", 8, "a0");
-    emit_lw("t1", method_tbl[ddisp.obj->type][ddisp.method] * 4, "t1");
+    emit_lw("t1", method_tbl[ddisp.obj->type][ddisp.method] * WORD_SIZE, "t1");
     emit_jalr("t1");
 }
 
@@ -837,11 +860,13 @@ void AstNodeCodeGenerator::visit(Object& obj)
     }
     else
     {
+        // If the object name is not in in the current local scope,
+        // check if it's an attribute of the current class
         boost::optional<int> offset(var_env.lookup(obj.name));
         if (offset)
             emit_lw("a0", *offset, "fp"); 
         else
-            emit_lw("a0", 4 * (attr_tbl[curr_class][obj.name] + 2), "s0");
+            emit_lw("a0", WORD_SIZE * (attr_tbl[curr_class][obj.name] + 2), "s0");
     }
 }
 

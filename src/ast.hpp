@@ -1,27 +1,41 @@
+// This is where the AST of COOL is defined. 
+// The visitor pattern is used to perform operations on AST including
+// type checking and code generation.
+
 #ifndef AST_H
 #define AST_H
 
 #include "symboltable.hpp"
 #include "astnodevisitor.hpp"
+
 #include <vector>
 #include <memory>
 
 class AstNodeVisitor;
 
+// Base class of all AST nodes
 class AstNode
 {
 public:
+    // All AST nodes will have a line number and filename which is the line number where 
+    // the node is found in the source file
     std::size_t line_no;
     std::string filename;
 
     AstNode() {}
+
+    // Convinience mutator to be used by parser to set the locations for each node
     void setloc(std::size_t, const std::string&);
 };
 typedef std::shared_ptr<AstNode> AstNodePtr;
 
+// Base class of COOL's expressions 
 class Expression : public AstNode
 {
 public:
+    // Each COOL expression will have a type
+    // This member is useful for type checking functionality
+    // as well as to allow easier testing
     Symbol type;
 
     Expression() {}
@@ -43,6 +57,7 @@ public:
 typedef std::shared_ptr<Attribute> AttributePtr;
 typedef std::vector<AttributePtr> Attributes;
 
+// A Formal in COOL is the same as a method parameter
 class Formal : public AstNode
 {
 public:
@@ -84,6 +99,7 @@ public:
 typedef std::shared_ptr<Class> ClassPtr;
 typedef std::vector<ClassPtr> Classes;
 
+// The root of the AST
 class Program : public AstNode
 {
 public:

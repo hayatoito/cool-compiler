@@ -7,13 +7,16 @@
 
 #include <iostream>
 
+// convinience function for setting location of each ast node
 #define SETLOC(lval,node) (lval)->setloc((node).first_line, curr_filename)
     
-extern std::shared_ptr<Program> ast_root;
+// both defined in main.cpp
+extern ProgramPtr ast_root;
+extern std::string curr_filename;
 
+// both defined in lexer
 extern int yylex();
 extern int yylineno;
-extern std::string curr_filename;
 
 void yyerror(char *);        
 %}
@@ -42,7 +45,6 @@ void yyerror(char *);
 %type <branch> case
 %type <cases> case_list
     
-/* Precedence declarations go here. */
 %nonassoc '='
 %left LET
 %right ASSIGN
@@ -151,6 +153,8 @@ expression : OBJECTID ASSIGN expression { $$ = std::make_shared<Assign>($1, $3);
 
 %%
 
+// utility function for converting bison tokens to its string representation
+// for better error reporting
 std::string convert_token(int token)
 {
     std::string rep;
