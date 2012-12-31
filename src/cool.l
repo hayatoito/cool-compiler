@@ -6,12 +6,13 @@
 #include "flexbison.hpp"
 #include "tokentable.hpp"
 #include "symboltable.hpp"
-#include "y.tab.h"
+// #include "y.tab.h"
+#include "cool.tab.hh"
 
 // yylloc is defined by bison. this macro allows the execution of this line
 // (assignment of current line being processed) each time a whole token is read
 // this allows for line number to be stored in each ast node (done in bison)
-#define YY_USER_ACTION yylloc.first_line = yylloc.last_line = yylineno; 
+#define YY_USER_ACTION yylloc.first_line = yylloc.last_line = yylineno;
 
 static const int MAX_STR_CONST = 1025;
 
@@ -85,7 +86,7 @@ DARROW =>
 }
 
 "=>" {
-    return DARROW; 
+    return DARROW;
 }
 
 (?i:class) {
@@ -205,7 +206,7 @@ f(?i:alse) {
 
  /*
   *  String constants (C syntax)
-  *  Escape sequence \c is accepted for all characters c. Except for 
+  *  Escape sequence \c is accepted for all characters c. Except for
   *  \n \t \b \f, the result is c.
   *
   */
@@ -305,7 +306,7 @@ f(?i:alse) {
 
     *string_buf_ptr++ = *yytext;
 }
-    
+
 . /* error for invalid tokens */ {
     yylval.error_msg = std::string(yytext) + " is not a valid character in the current context.";
     return ERROR;

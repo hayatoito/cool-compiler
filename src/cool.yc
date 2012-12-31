@@ -6,6 +6,7 @@
 #include "ast.hpp"
 
 #include <iostream>
+#include "boost/shared_ptr.hpp"
 
 // convinience function for setting location of each ast node
 #define SETLOC(lval,node) (lval)->setloc((node).first_line, curr_filename)
@@ -65,9 +66,10 @@ class_list : class { $$ = Classes(); $$.push_back($1); }
             | class_list class { $$.push_back($2); }
 ;
 
+/* Todo: Empty attribute_list or empty_method_list */
 class : CLASS TYPEID '{' attribute_list method_list '}' ';' { $$ = std::make_shared<Class>($2, idtable().add("Object"), $4, $5); SETLOC($$, @1); }
         | CLASS TYPEID INHERITS TYPEID '{' attribute_list method_list '}' ';' { $$ = std::make_shared<Class>($2, $4, $6, $7); SETLOC($$, @1); }
-        | error ';' { yyerrok; } 
+        | error ';' { yyerrok; }
 ;
 
 attribute_list : attribute ';' { $$ = Attributes(); $$.push_back($1); }

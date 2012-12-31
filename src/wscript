@@ -1,0 +1,11 @@
+def build(bld):
+    bld.program(source=('ast.cpp astnodecodegenerator.cpp astnodetypechecker.cpp'
+                        ' astnodevisitor.cpp constants.cpp'
+                        ' cool.l cool.yc'
+                        ' main.cpp semanticanalyzer.cpp symboltable.cpp tokentable.cpp'
+                        ' utility.cpp'),
+                target = 'coolc',
+                includes = '.',
+                cxxflags='-std=c++11 -stdlib=libc++',
+                linkflags='-std=c++11 -stdlib=libc++',
+                uselib = 'FLEX')
