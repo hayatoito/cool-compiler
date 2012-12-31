@@ -27,6 +27,6 @@ public:
     std::string error_msg;
 
     ParserType() {}
-}; 
+};
 
 #endif

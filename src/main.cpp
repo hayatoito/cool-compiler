@@ -11,8 +11,8 @@
 #include <fstream>
 
 // all defined by lexer
-extern int yyparse(); 
-extern int yynerrs; 
+extern int yyparse();
+extern int yynerrs;
 extern FILE* yyin;
 
 // Root of AST used by the parser. This should be populated
@@ -55,7 +55,7 @@ int main(int argc, char **argv)
         std::cerr << "Compilation halted due to lexical or syntax errors.\n";
         exit(1);
     }
-    
+
     SemanticAnalyzer semant;
     semant.install_basic(ast_root);
     if (!semant.validate_inheritance(ast_root->classes))

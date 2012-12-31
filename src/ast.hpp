@@ -1,4 +1,4 @@
-// This is where the AST of COOL is defined. 
+// This is where the AST of COOL is defined.
 // The visitor pattern is used to perform operations on AST including
 // type checking and code generation.
 
@@ -17,7 +17,7 @@ class AstNodeVisitor;
 class AstNode
 {
 public:
-    // All AST nodes will have a line number and filename which is the line number where 
+    // All AST nodes will have a line number and filename which is the line number where
     // the node is found in the source file
     std::size_t line_no;
     std::string filename;
@@ -29,7 +29,7 @@ public:
 };
 typedef std::shared_ptr<AstNode> AstNodePtr;
 
-// Base class of COOL's expressions 
+// Base class of COOL's expressions
 class Expression : public AstNode
 {
 public:
@@ -93,7 +93,7 @@ public:
     Attributes attributes;
     Methods methods;
 
-    Class(const Symbol&, const Symbol&, const Attributes&, const Methods&); 
+    Class(const Symbol&, const Symbol&, const Attributes&, const Methods&);
     void accept(AstNodeVisitor&);
 };
 typedef std::shared_ptr<Class> ClassPtr;
@@ -194,7 +194,7 @@ public:
     ExpressionPtr iftrue;
     ExpressionPtr iffalse;
 
-    If(const ExpressionPtr&, const ExpressionPtr&, 
+    If(const ExpressionPtr&, const ExpressionPtr&,
             const ExpressionPtr&);
     void accept(AstNodeVisitor&);
 };
@@ -244,7 +244,7 @@ public:
     ExpressionPtr lhs;
     ExpressionPtr rhs;
 
-    LessThanEqualTo(const ExpressionPtr&, 
+    LessThanEqualTo(const ExpressionPtr&,
             const ExpressionPtr&);
     void accept(AstNodeVisitor&);
 };
@@ -285,7 +285,7 @@ public:
     ExpressionPtr lhs;
     ExpressionPtr rhs;
 
-    Div(const ExpressionPtr&, 
+    Div(const ExpressionPtr&,
             const ExpressionPtr&);
     void accept(AstNodeVisitor&);
 };
@@ -308,7 +308,7 @@ public:
     Expressions actual;
 
     StaticDispatch(const ExpressionPtr&, const Symbol&, const Symbol&,
-           const Expressions&); 
+           const Expressions&);
     void accept(AstNodeVisitor&);
 };
 
@@ -319,7 +319,7 @@ public:
     Symbol method;
     Expressions actual;
 
-    DynamicDispatch(const ExpressionPtr&, const Symbol&, 
+    DynamicDispatch(const ExpressionPtr&, const Symbol&,
             const Expressions&);
     void accept(AstNodeVisitor&);
 };

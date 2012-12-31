@@ -14,7 +14,7 @@ private:
     // and IO simply because there is no need. These class tags are used
     // for determining equality since an Object of type String can only
     // be compared with another Object of the same type. The same goes
-    // for Int and Bool. 
+    // for Int and Bool.
     static const int STR_CLASS_TAG = 5;
     static const int INT_CLASS_TAG = 6;
     static const int BOOL_CLASS_TAG = 7;
@@ -38,7 +38,7 @@ private:
              -------------------------
             |   SIZE (32-bit words)   |  Object header section
              -------------------------
-            |   Dispatch Table Ptr.   |  
+            |   Dispatch Table Ptr.   |
              -------------------------   <----
             |       Attribute1        |
              -------------------------
@@ -48,14 +48,14 @@ private:
     */
 
     // Stack frame base size in # of 32-bit words
-    // Each stack frame will at least need 3 words for: 
+    // Each stack frame will at least need 3 words for:
     //   1. frame pointer to previous AR
     //   2. self object
     //   3. return address
     static const int AR_BASE_SIZE = 3;
 
     // The activation record layout is as follows:
-    /* 
+    /*
              -----------------------
             |   OLD FRAME POINTER   |
              -----------------------
@@ -66,13 +66,13 @@ private:
             |       ARGUMENTN       |
              -----------------------
             |    RETURN ADDRESS     | <---- current frame pointer
-             ----------------------- 
+             -----------------------
     */
 
     std::map<ClassPtr, ClassPtr> inherit_graph; // inheritance graph created from semantic analysis stage
     std::ostream& os; // code generation output
 
-    std::size_t curr_attr_count; // used to keep track of current attribute count for a specific class when 
+    std::size_t curr_attr_count; // used to keep track of current attribute count for a specific class when
                                  // generating code for class_init methods
 
     Symbol curr_class; // current class where code is being generated for, used by dynamic dispatch
@@ -80,11 +80,11 @@ private:
     SymbolTable<Symbol, int> var_env; // the variable environment mapping that maps variable names
                                       // to offsets in the current AR relative to the fp. this allows for easier
                                       // addressing. eg. the first parameter is in 4($fp), next is 8($fp) ... n($fp)
-    
+
     std::map<Symbol, std::map<Symbol, int>> method_tbl; // contains mapping of [class name][method name] -> offset in dispatch table
                                                         // used to implement dispatch
 
-    std::map<Symbol, std::map<Symbol, int>> attr_tbl; // table of class attributes used to determine valid names 
+    std::map<Symbol, std::map<Symbol, int>> attr_tbl; // table of class attributes used to determine valid names
                                                       // that are in scope
 
     std::size_t while_count; // running count of all while statements in the source file, used for label numbering
@@ -111,7 +111,7 @@ private:
     void emit_divu(const char*, const char*, const char*);
     void emit_mul(const char*, const char*, const char*);
     void emit_sub(const char*, const char*, const char*);
-    
+
     // logical instructions
     void emit_and(const char*, const char*, const char*);
     void emit_neg(const char*, const char*);
@@ -194,7 +194,7 @@ private:
     void emit_obj_attribs(const ClassPtr&);
 
 public:
-    AstNodeCodeGenerator(const std::map<ClassPtr, ClassPtr>&, 
+    AstNodeCodeGenerator(const std::map<ClassPtr, ClassPtr>&,
             std::ostream&);
 
     void visit(Program&);

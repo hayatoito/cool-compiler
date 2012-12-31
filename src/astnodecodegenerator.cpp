@@ -11,7 +11,7 @@ extern ProgramPtr ast_root;
 
 using namespace constants;
 
-AstNodeCodeGenerator::AstNodeCodeGenerator(const std::map<ClassPtr, ClassPtr>& ig, 
+AstNodeCodeGenerator::AstNodeCodeGenerator(const std::map<ClassPtr, ClassPtr>& ig,
         std::ostream& stream)
     : inherit_graph(ig), os(stream), curr_attr_count(0), while_count(0), if_count(0)
 {
@@ -298,9 +298,9 @@ void AstNodeCodeGenerator::emit_pop(int num_bytes)
     emit_addiu("sp", "sp", WORD_SIZE * num_bytes);
 }
 
-void AstNodeCodeGenerator::code_constants() 
+void AstNodeCodeGenerator::code_constants()
 {
-    // Add all class names to the string table so string constants 
+    // Add all class names to the string table so string constants
     // will be created for them (for class name table code gen)
     for (auto& p : inherit_graph)
         stringtable().add(p.first->name.get_val());
@@ -346,8 +346,8 @@ void AstNodeCodeGenerator::code_constants()
     emit_word(BOOL_CLASS_TAG);
     emit_word(BOOL_CONST_SIZE);
     emit_word("Bool_disptable");
-    emit_word(0); 
- 
+    emit_word(0);
+
     emit_label("bool_const1"); // for true
     emit_word(BOOL_CLASS_TAG);
     emit_word(BOOL_CONST_SIZE);
@@ -395,7 +395,7 @@ void AstNodeCodeGenerator::code_dispatch_table(const ClassPtr& class_node)
     while (cptr->name != NOCLASS)
     {
         recur.push(cptr);
-        
+
         for (auto& method : cptr->methods)
         {
             if (mnames.find(method->name) == end(mnames))
@@ -411,7 +411,7 @@ void AstNodeCodeGenerator::code_dispatch_table(const ClassPtr& class_node)
     while (!recur.empty())
     {
         ClassPtr head = recur.top();
-        
+
         // for each method in the current class, if the method is still in the mnames
         // table (not overriden), add it to the method table with the offset then remove
         // the method name from mnames so there won't be any duplication if a method
@@ -426,7 +426,7 @@ void AstNodeCodeGenerator::code_dispatch_table(const ClassPtr& class_node)
             }
         }
 
-        recur.pop(); 
+        recur.pop();
     }
 }
 
@@ -483,7 +483,7 @@ void AstNodeCodeGenerator::code_prototype_objects()
 
 void AstNodeCodeGenerator::emit_initial_data()
 {
-    os << ".data\n" 
+    os << ".data\n"
        << "\t.align\t2\n"
        // << "\t.globl\tclass_name_table\n"
        << "\t.globl\tMain_prototype\n"
@@ -509,7 +509,7 @@ void AstNodeCodeGenerator::visit(Program& prog)
     code_constants();
     //code_class_name_table();
     //code_prototype_table();
-    
+
     for (auto& p : inherit_graph)
     {
         if (p.first->name != NOCLASS)
@@ -543,9 +543,9 @@ void AstNodeCodeGenerator::visit(Class& cs)
     emit_addiu("fp", "sp", 4);
     emit_move("s0", "a0");
 
-    // if the class is anything other than object, call the 
+    // if the class is anything other than object, call the
     // base class init method
-    if (cs.name != OBJECT) 
+    if (cs.name != OBJECT)
         emit_jal(cs.parent.get_val() + "_init");
 
     for (auto& attrib : cs.attributes)
@@ -581,13 +581,13 @@ void AstNodeCodeGenerator::visit(Attribute& attr)
         emit_sw("a0", WORD_SIZE * (curr_attr_count + 2), "s0");
 }
 
-void AstNodeCodeGenerator::visit(Formal&) 
-{ 
+void AstNodeCodeGenerator::visit(Formal&)
+{
 
 }
 
-void AstNodeCodeGenerator::visit(Method& method) 
-{ 
+void AstNodeCodeGenerator::visit(Method& method)
+{
     if (utility::is_basic_class(curr_class))
         return;
 
@@ -614,44 +614,44 @@ void AstNodeCodeGenerator::visit(Method& method)
     var_env.exit_scope();
 }
 
-void AstNodeCodeGenerator::visit(StringConst& str) 
-{ 
+void AstNodeCodeGenerator::visit(StringConst& str)
+{
     emit_la("a0", (std::string("str_const") + std::to_string(stringtable().get_idx(str.token.get_val()))).c_str());
 }
 
-void AstNodeCodeGenerator::visit(IntConst& int_const) 
+void AstNodeCodeGenerator::visit(IntConst& int_const)
 {
     emit_la("a0", (std::string("int_const") + std::to_string(inttable().get_idx(int_const.token.get_val()))).c_str());
 }
 
-void AstNodeCodeGenerator::visit(BoolConst& bool_const) 
-{ 
+void AstNodeCodeGenerator::visit(BoolConst& bool_const)
+{
     if (bool_const.value)
         emit_la("a0", "bool_const1");
     else
         emit_la("a0", "bool_const0");
 }
 
-void AstNodeCodeGenerator::visit(New& new_node) 
+void AstNodeCodeGenerator::visit(New& new_node)
 {
     emit_la("a0", new_node.type.get_val() + "_prototype");
     emit_jal("Object.copy");
     emit_jal(new_node.type.get_val() + "_init");
 }
 
-void AstNodeCodeGenerator::visit(IsVoid& isvoid) 
-{ 
-    isvoid.expr->accept(*this); 
+void AstNodeCodeGenerator::visit(IsVoid& isvoid)
+{
+    isvoid.expr->accept(*this);
     emit_jal("isvoid");
 }
 
-void AstNodeCodeGenerator::visit(CaseBranch& branch) 
-{ 
+void AstNodeCodeGenerator::visit(CaseBranch& branch)
+{
     branch.expr->accept(*this);
 }
 
-void AstNodeCodeGenerator::visit(Assign& assign) 
-{ 
+void AstNodeCodeGenerator::visit(Assign& assign)
+{
     assign.rhs->accept(*this);
     boost::optional<int> offset(var_env.lookup(assign.name));
 
@@ -663,19 +663,19 @@ void AstNodeCodeGenerator::visit(Assign& assign)
     emit_sw("a0", *offset, "fp");
 }
 
-void AstNodeCodeGenerator::visit(Block& block) 
-{ 
+void AstNodeCodeGenerator::visit(Block& block)
+{
     for (auto& expr : block.body)
         expr->accept(*this);
 }
 
-void AstNodeCodeGenerator::visit(If& ifstmt) 
-{ 
+void AstNodeCodeGenerator::visit(If& ifstmt)
+{
     ++if_count;
     std::string ifcnt(std::to_string(if_count));
 
     ifstmt.predicate->accept(*this);
-    
+
     emit_la("t1", "bool_const1");
     emit_beq("a0", "t1", "iftrue" + ifcnt);
     ifstmt.iffalse->accept(*this);
@@ -687,8 +687,8 @@ void AstNodeCodeGenerator::visit(If& ifstmt)
     emit_label("ifend" + ifcnt);
 }
 
-void AstNodeCodeGenerator::visit(While& whilestmt) 
-{ 
+void AstNodeCodeGenerator::visit(While& whilestmt)
+{
     ++while_count;
 
     emit_label("whileloop" + std::to_string(while_count));
@@ -703,16 +703,16 @@ void AstNodeCodeGenerator::visit(While& whilestmt)
     emit_li("a0", 0);
 }
 
-void AstNodeCodeGenerator::visit(Complement& comp) 
-{ 
+void AstNodeCodeGenerator::visit(Complement& comp)
+{
     comp.expr->accept(*this);
     emit_lw("t1", 12, "a0");
     emit_not("t1", "t1");
     emit_sw("t1", 12, "a0");
 }
 
-void AstNodeCodeGenerator::visit(LessThan& lt) 
-{ 
+void AstNodeCodeGenerator::visit(LessThan& lt)
+{
     lt.lhs->accept(*this);
     emit_move("a1", "a0");
 
@@ -720,8 +720,8 @@ void AstNodeCodeGenerator::visit(LessThan& lt)
     emit_jal("less");
 }
 
-void AstNodeCodeGenerator::visit(LessThanEqualTo& lteq) 
-{ 
+void AstNodeCodeGenerator::visit(LessThanEqualTo& lteq)
+{
     lteq.lhs->accept(*this);
     emit_move("a1", "a0");
 
@@ -729,8 +729,8 @@ void AstNodeCodeGenerator::visit(LessThanEqualTo& lteq)
     emit_jal("less_eq");
 }
 
-void AstNodeCodeGenerator::visit(EqualTo& eq) 
-{ 
+void AstNodeCodeGenerator::visit(EqualTo& eq)
+{
     eq.lhs->accept(*this);
     emit_move("a1", "a0");
 
@@ -738,11 +738,11 @@ void AstNodeCodeGenerator::visit(EqualTo& eq)
     emit_jal("eq");
 }
 
-void AstNodeCodeGenerator::visit(Plus& plus) 
+void AstNodeCodeGenerator::visit(Plus& plus)
 {
     plus.lhs->accept(*this);
     emit_sw("a0", 0, "sp");
-    emit_push(1); 
+    emit_push(1);
 
     plus.rhs->accept(*this);
     emit_jal("Object.copy");
@@ -754,11 +754,11 @@ void AstNodeCodeGenerator::visit(Plus& plus)
     emit_pop(1);
 }
 
-void AstNodeCodeGenerator::visit(Sub& sub) 
-{ 
+void AstNodeCodeGenerator::visit(Sub& sub)
+{
     sub.lhs->accept(*this);
     emit_sw("a0", 0, "sp");
-    emit_push(1); 
+    emit_push(1);
 
     sub.rhs->accept(*this);
     emit_jal("Object.copy");
@@ -770,11 +770,11 @@ void AstNodeCodeGenerator::visit(Sub& sub)
     emit_pop(1);
 }
 
-void AstNodeCodeGenerator::visit(Mul& mul) 
-{ 
+void AstNodeCodeGenerator::visit(Mul& mul)
+{
     mul.lhs->accept(*this);
     emit_sw("a0", 0, "sp");
-    emit_push(1); 
+    emit_push(1);
 
     mul.rhs->accept(*this);
     emit_jal("Object.copy");
@@ -786,11 +786,11 @@ void AstNodeCodeGenerator::visit(Mul& mul)
     emit_pop(1);
 }
 
-void AstNodeCodeGenerator::visit(Div& div) 
-{ 
+void AstNodeCodeGenerator::visit(Div& div)
+{
     div.lhs->accept(*this);
     emit_sw("a0", 0, "sp");
-    emit_push(1); 
+    emit_push(1);
 
     div.rhs->accept(*this);
     emit_jal("Object.copy");
@@ -802,21 +802,21 @@ void AstNodeCodeGenerator::visit(Div& div)
     emit_pop(1);
 }
 
-void AstNodeCodeGenerator::visit(Not& nt) 
-{ 
+void AstNodeCodeGenerator::visit(Not& nt)
+{
     nt.expr->accept(*this);
     emit_jal("lnot");
 }
 
-void AstNodeCodeGenerator::visit(StaticDispatch& sdisp) 
-{ 
+void AstNodeCodeGenerator::visit(StaticDispatch& sdisp)
+{
     sdisp.obj->accept(*this);
     for (auto& e : sdisp.actual)
-       e->accept(*this); 
+       e->accept(*this);
 }
 
-void AstNodeCodeGenerator::visit(DynamicDispatch& ddisp) 
-{ 
+void AstNodeCodeGenerator::visit(DynamicDispatch& ddisp)
+{
     std::size_t ar_size = AR_BASE_SIZE + ddisp.actual.size();
 
     emit_push(ar_size);
@@ -825,35 +825,35 @@ void AstNodeCodeGenerator::visit(DynamicDispatch& ddisp)
 
     std::size_t formal_offset = 8;
     for (auto& e : ddisp.actual)
-    { 
-        e->accept(*this); 
+    {
+        e->accept(*this);
         emit_sw("a0", formal_offset, "sp");
         formal_offset += WORD_SIZE;
     }
 
     emit_addiu("fp", "sp", 4);
-    
+
     ddisp.obj->accept(*this);
     emit_lw("t1", 8, "a0");
     emit_lw("t1", method_tbl[ddisp.obj->type][ddisp.method] * WORD_SIZE, "t1");
     emit_jalr("t1");
 }
 
-void AstNodeCodeGenerator::visit(Let& let) 
-{ 
+void AstNodeCodeGenerator::visit(Let& let)
+{
     let.init->accept(*this);
     let.body->accept(*this);
 }
 
-void AstNodeCodeGenerator::visit(Case& caze) 
-{ 
+void AstNodeCodeGenerator::visit(Case& caze)
+{
     caze.expr->accept(*this);
     for (auto& br : caze.branches)
         br->accept(*this);
 }
 
-void AstNodeCodeGenerator::visit(Object& obj) 
-{ 
+void AstNodeCodeGenerator::visit(Object& obj)
+{
     if (obj.name == SELF)
     {
         emit_move("a0", "s0");
@@ -864,15 +864,13 @@ void AstNodeCodeGenerator::visit(Object& obj)
         // check if it's an attribute of the current class
         boost::optional<int> offset(var_env.lookup(obj.name));
         if (offset)
-            emit_lw("a0", *offset, "fp"); 
+            emit_lw("a0", *offset, "fp");
         else
             emit_lw("a0", WORD_SIZE * (attr_tbl[curr_class][obj.name] + 2), "s0");
     }
 }
 
-void AstNodeCodeGenerator::visit(NoExpr&) 
-{ 
-    
+void AstNodeCodeGenerator::visit(NoExpr&)
+{
+
 }
-
-
