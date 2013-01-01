@@ -6,7 +6,6 @@
 #include "ast.hpp"
 
 #include <iostream>
-#include "boost/shared_ptr.hpp"
 
 // convinience function for setting location of each ast node
 #define SETLOC(lval,node) (lval)->setloc((node).first_line, curr_filename)
