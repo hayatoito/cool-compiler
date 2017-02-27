@@ -1,11 +1,61 @@
+# e.g.
+# waf configure --boost-includes ~/src/brew/include --boost-libs ~/src/brew/lib --out ~/src/build/cool
+# waf
+
+def options(opt):
+    opt.add_option('--release', action='store_true', dest='release',
+                   help='configure release build')
+    opt.load('compiler_cxx')
+    opt.load('boost')
+
+
+def configure(conf):
+    conf.load('compiler_cxx')
+    conf.load('waf_unit_test')
+    conf.load('boost')
+    conf.check_boost(lib='system filesystem')
+    # conf.load('clang_compilation_database')
+    conf.env.append_unique('CXXFLAGS', ['-Wall', '-std=c++11'])
+
+    print('is_release:', conf.options.release)
+    configure_cc(conf, conf.options.release)
+    configure_flex_and_bison(conf)
+
+
+def configure_flex_and_bison(conf):
+    conf.load('flex bison')
+    conf.env.LIB_FLEX = 'fl'
+
+
+def add_cflags(env, flags):
+    env.CFLAGS = env.CFLAGS[:]
+    env.CXXFLAGS = env.CXXFLAGS[:]
+    env.append_unique('CFLAGS', flags)
+    env.append_unique('CXXFLAGS', flags)
+
+
+def configure_cc(conf, release=False):
+    if release:
+        add_cflags(conf.env, ['-O2', '-DNDEBUG'])
+    else:
+        add_cflags(conf.env, ['-O0', '-g'])
+
+
 def build(bld):
-    bld.program(source=('ast.cpp astnodecodegenerator.cpp astnodetypechecker.cpp'
-                        ' astnodevisitor.cpp constants.cpp'
-                        ' cool.l cool.yc'
-                        ' main.cpp semanticanalyzer.cpp symboltable.cpp tokentable.cpp'
-                        ' utility.cpp'),
-                target = 'coolc',
-                includes = '.',
-                cxxflags='-std=c++11 -stdlib=libc++',
-                linkflags='-std=c++11 -stdlib=libc++',
-                uselib = 'FLEX')
+
+    bld.program(source=['ast.cpp',
+                        'astnodecodegenerator.cpp',
+                        'astnodetypechecker.cpp',
+                        'astnodevisitor.cpp',
+                        'constants.cpp',
+                        'cool.l',
+                        'cool.yc',
+                        'main.cpp',
+                        'semanticanalyzer.cpp',
+                        'symboltable.cpp',
+                        'tokentable.cpp',
+                        'utility.cpp'],
+                target='coolc',
+                includes=['.', './boost/optional/include', './boost/assert/include'],
+                use='BOOST',
+                uselib='FLEX')
